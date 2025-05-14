@@ -1,6 +1,9 @@
 package model;
 import java.util.Optional;
 
+/**
+ * Defines a search filter for tree queries, based on name, life status, and relationship.
+ */
 public class CritereRecherche {
     private Optional<String> nom;
     private Optional<String> prenom;
@@ -14,11 +17,13 @@ public class CritereRecherche {
         this.lien = Optional.ofNullable(lien);
     }
 
+
     /**
-     * Vérifie si une personne correspond au critère de recherche
+     * Checks whether a person matches the given criteria.
+     * @param p The person to check.
+     * @return true if matched.
      */
     public boolean match(Personne p) {
-        // Si un critère est présent, il doit être respecté
         if (nom.isPresent() && !p.getNom().equalsIgnoreCase(nom.get())) return false;
         if (prenom.isPresent() && !p.getPrenom().equalsIgnoreCase(prenom.get())) return false;
         if (estVivant.isPresent() && p.isEstVivant() != estVivant.get()) return false;

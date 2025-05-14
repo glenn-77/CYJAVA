@@ -25,7 +25,7 @@ public class Personne {
     private NiveauVisibilite niveauVisibilite; 
     private int generation;
     private LienParente lien;
-    public Map<Personne, LienParente> liensParente;
+    private Map<Personne, LienParente> liensParente;
     private ArbreGenealogique arbre;
 
     private Compte compte; 

@@ -4,28 +4,41 @@ import service.LienService;
 
 import java.util.*;
 
+/**
+ * Represents a genealogical tree containing people and their familial relationships.
+ * Each tree has a single owner and supports adding, deleting, and querying persons.
+ */
 public class ArbreGenealogique {
 
+    /** List of all persons (nodes) in the tree */
     private List<Personne> noeuds;
+    /** The owner of the genealogical tree */
     private Personne proprietaire;
 
-    // Constructeur
+    /**
+     * Constructor initializing the genealogical tree with its owner.
+     * @param proprietaire The owner of the tree.
+     */
     public ArbreGenealogique(Personne proprietaire) {
         this.proprietaire = proprietaire;
         this.noeuds = new ArrayList<>();
     }
 
-    // Getters
+    /** Returns the list of people in the tree. */
     public List<Personne> getNoeuds() {
         return noeuds;
     }
-
+    /** Returns the owner of the tree. */
     public Personne getProprietaire() {
         return proprietaire;
     }
 
     /**
-     * Ajouter un lien de parenté entre deux personnes
+     * Attempts to add a family link between two people.
+     * @param demandeur The person requesting the link.
+     * @param personne The target person.
+     * @param lien The type of familial link.
+     * @return true if the link is added or the request is sent.
      */
     public boolean ajouterLien(Personne demandeur, Personne personne, LienParente lien) {
         if (!noeuds.contains(demandeur)) {
@@ -34,25 +47,29 @@ public class ArbreGenealogique {
         }
         if (!noeuds.contains(personne) && !demandeur.isEstInscrit()) {
             noeuds.add(personne);
-            personne.ajouterLien(demandeur, lien);
+            demandeur.ajouterLien(personne, lien);
             System.out.println("Lien ajoutée!");
             return true;
         }
         if (!noeuds.contains(personne) && demandeur.isEstInscrit()) {
             System.out.println("Demande de lien envoyée");
             LienService.envoyerDemandeLien(demandeur, personne, lien);
+            return false;
 
         }
-        return true;
+        System.out.println(personne.getPrenom() + personne.getNom() + " est déjà dans l'arbre.");
+        return false;
     }
 
     /**
-     * Supprimer un nœud de l’arbre
+     * Removes a person from the tree. If the person is registered, a request must be approved.
+     * @param personne The person to remove.
+     * @return true if removed, false otherwise.
      */
     public boolean supprimerNoeud(Personne personne) {
         if (personne.isEstInscrit()) {
             System.out.println("Approbation de la personne inscrite en attente de validation.");
-            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.liensParente.get(personne) );
+            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.getLiens().get(personne) );
             return false;
         }
         this.proprietaire.supprimerLien(personne);
@@ -61,7 +78,7 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Affichage textuel de l’arbre
+     * Displays the tree in a textual form.
      */
     public void afficherTexte() {
         for (Personne p : noeuds) {
@@ -70,14 +87,14 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Placeholder pour affichage graphique (à compléter avec JavaFX ou Swing)
+     * Placeholder for graphical tree display (JavaFX or Swing).
      */
     public void afficherGraphique() {
         // TODO : implémenter vue graphique
     }
 
     /**
-     * Vérifie les règles de cohérence de l’arbre
+     * Checks date-of-birth-based consistency (e.g., parents must be older).
      */
     public void verifierCoherence() {
         Set<LienParente> liensAscendants = Set.of(
@@ -107,7 +124,7 @@ public class ArbreGenealogique {
                         System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né après " + p.getNom());
                     }
                 } else if (liensDescendants.contains(lien)) {
-                    if (!autre.getDateNaissance().isAfter(p.getDateNaissance())) {
+                    if (autre.getDateNaissance().isBefore(p.getDateNaissance())) {
                         System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né avant " + p.getNom());
                     }
                 }
@@ -116,7 +133,9 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Recherche selon des critères
+     * Searches persons matching a specific set of criteria.
+     * @param critere The criteria to match.
+     * @return A list of matching persons.
      */
     public List<Personne> rechercherCriteres(CritereRecherche critere) {
         List<Personne> resultats = new ArrayList<>();
@@ -129,14 +148,18 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Vérifie si une personne figure dans l’arbre
+     * Checks whether a person exists in the tree.
+     * @param p The person to check.
+     * @return true if present, false otherwise.
      */
     public boolean contient(Personne p) {
         return noeuds.contains(p);
     }
 
     /**
-     * Retourne les personnes visibles selon les règles de visibilité
+     * Returns persons visible to a given viewer, based on visibility settings.
+     * @param demandeur The person requesting the view.
+     * @return A list of visible persons.
      */
     public List<Personne> afficherArbrePour(Personne demandeur) {
         List<Personne> visibles = new ArrayList<>();
@@ -149,7 +172,9 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Recherche de membres communs entre deux arbres
+     * Finds persons common to two genealogical trees.
+     * @param autre The other genealogical tree.
+     * @return A list of shared persons.
      */
     public List<Personne> trouverMembresCommuns(ArbreGenealogique autre) {
         List<Personne> communs = new ArrayList<>();
@@ -164,5 +189,51 @@ public class ArbreGenealogique {
         }
         return communs;
     }
+
+    /**
+     * Edits mutable fields of a person (email, phone, etc.), skipping immutable fields.
+     * @param cible The person to edit.
+     * @param nouvellesInfos Map of fields to update.
+     * @return true if successful, false otherwise.
+     */
+    public boolean modifierNoeud(Personne cible, Map<String, String> nouvellesInfos) {
+        if (!noeuds.contains(cible)) {
+            System.out.println("❌ La personne n'existe pas dans l'arbre.");
+            return false;
+        }
+
+        for (Map.Entry<String, String> entry : nouvellesInfos.entrySet()) {
+            String champ = entry.getKey().toLowerCase();
+            String valeur = entry.getValue();
+
+            switch (champ) {
+                case "adresse":
+                    cible.getCompte().setAdresse(valeur);
+                    break;
+                case "email":
+                    cible.getCompte().setEmail(valeur);
+                    break;
+                case "telephone":
+                    cible.getCompte().setTelephone(valeur);
+                    break;
+                case "login":
+                    cible.getCompte().setLogin(valeur);
+                    break;
+                case "motdepasse":
+                    cible.getCompte().setMotDePasse(valeur);
+                    break;
+                case "numero":
+                    cible.getCompte().setNumero(valeur);
+                    break;
+                default:
+                    System.out.println("⚠️ Champ immuable ou inconnu ignoré : " + champ);
+
+            }
+        }
+
+        System.out.println("✅ Modification effectuée pour " + cible.getPrenom() + cible.getNom());
+        return true;
+    }
+
 }
 

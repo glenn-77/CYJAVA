@@ -4,6 +4,9 @@ import java.util.Properties;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
 
+/**
+ * Email service to send notifications via SMTP (uses Gmail SMTP settings).
+ */
 public class MailService {
 
     private static final String SMTP_HOST = "smtp.gmail.com";
@@ -11,6 +14,7 @@ public class MailService {
     private static final String EMAIL_SENDER = "glenndiffo8@gmail.com"; // ← ton email ici
     private static final String EMAIL_PASSWORD = "Bigboss001+"; // ← mot de passe d'application
 
+    /** Sends a plain text email to a specified recipient with subject and body. */
     public static void envoyerEmail(String destinataire, String sujet, String corps) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");

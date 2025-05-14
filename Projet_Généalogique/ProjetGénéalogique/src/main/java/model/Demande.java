@@ -1,5 +1,8 @@
 package model;
 
+/**
+ * Represents a familial link request between two people.
+ */
 public class Demande {
 
     private Personne emetteur;

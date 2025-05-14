@@ -4,8 +4,12 @@ import model.LienParente;
 import model.Personne;
 import model.Demande;
 
+/**
+ * Utility service to manage link requests and email notifications for link addition or deletion.
+ */
 public class LienService {
 
+    /** Sends a link request and notifies the recipient by email. */
     public static void envoyerDemandeLien(Personne emetteur, Personne destinataire, LienParente lien) {
         Demande demande = new Demande(emetteur, destinataire, lien);
         DemandeService.ajouterDemande(demande);
@@ -21,6 +25,7 @@ public class LienService {
         MailService.envoyerEmail(destinataire.getCompte().getEmail(), sujet, corps);
     }
 
+    /** Accepts a link request and updates both trees. Sends confirmation emails. */
     public static void accepterDemandeLien(Demande demande) {
         Personne destinataire = demande.getDestinataire();
         Personne emetteur = demande.getEmetteur();
@@ -39,6 +44,7 @@ public class LienService {
         MailService.envoyerEmail(destinataire.getCompte().getEmail(), sujet, corpsDestinataire);
     }
 
+    /** Refuses a link request and notifies both parties. */
     public static void refuserDemandeLien(Demande demande) {
         Personne destinataire = demande.getDestinataire();
         Personne emetteur = demande.getEmetteur();
@@ -56,8 +62,7 @@ public class LienService {
         MailService.envoyerEmail(destinataire.getCompte().getEmail(), sujet, corpsDestinataire);
     }
 
-
-
+    /** Sends a link removal request and notifies the recipient. */
     public static void demandeSuppressionLien(Personne emetteur, Personne destinataire, LienParente lien) {
         Demande demande = new Demande(emetteur, destinataire, lien);
         DemandeService.ajouterDemande(demande);
@@ -75,6 +80,7 @@ public class LienService {
         MailService.envoyerEmail(destinataire.getCompte().getEmail(), sujet, corps);
     }
 
+    /** Accepts a link removal request and updates the tree. */
     public static void accepterDemandeSuppression(Demande demande) {
         Personne destinataire = demande.getDestinataire();
         Personne emetteur = demande.getEmetteur();
@@ -100,6 +106,7 @@ public class LienService {
 
     }
 
+    /** Refuses a link removal request. */
     public static void refuserDemandeSuppression(Demande demande) {
         Personne destinataire = demande.getDestinataire();
         Personne emetteur = demande.getEmetteur();

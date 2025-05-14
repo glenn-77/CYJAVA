@@ -6,8 +6,12 @@ import model.Personne;
 
 import java.util.*;
 
+/**
+ * Provides consistency checks on the genealogical tree to validate logical and biological rules.
+ */
 public class CoherenceVerifier {
 
+    /** Ensures reciprocal relationships are symmetrical between two persons. */
     public static void verifierReciprocite(ArbreGenealogique arbre) {
         for (Personne p : arbre.getNoeuds()) {
             for (Map.Entry<Personne, LienParente> entry : p.getLiens().entrySet()) {
@@ -23,6 +27,7 @@ public class CoherenceVerifier {
         }
     }
 
+    /** Ensures a person does not have more than two biological parents. */
     public static void verifierNbParents(ArbreGenealogique arbre) {
         for (Personne enfant : arbre.getNoeuds()) {
             int nbParents = 0;
@@ -37,6 +42,7 @@ public class CoherenceVerifier {
         }
     }
 
+    /** Detects and flags if a person is linked to themselves. */
     public static void verifierAutoLien(ArbreGenealogique arbre) {
         for (Personne p : arbre.getNoeuds()) {
             for (Personne autre : p.getLiens().keySet()) {
@@ -47,6 +53,7 @@ public class CoherenceVerifier {
         }
     }
 
+    /** Runs all coherence verification methods. */
     public static void verifierToutesLesCoherences(ArbreGenealogique arbre) {
         verifierReciprocite(arbre);
         verifierNbParents(arbre);
