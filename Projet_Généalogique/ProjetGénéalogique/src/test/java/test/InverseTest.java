@@ -1,10 +1,6 @@
-<<<<<<<< HEAD:Projet_Généalogique/ProjetGénéalogique/src/test/java/test/InverseTest.java
+
 package test;
-
-========
->>>>>>>> 8a072f2 (git pull):Projet_Généalogique/ProjetGénéalogique/src/test/java/InverseTest.java
 import model.*;
-
 import java.util.*;
 
 public class InverseTest {
