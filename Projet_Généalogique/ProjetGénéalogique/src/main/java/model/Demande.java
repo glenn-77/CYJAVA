@@ -1,12 +1,12 @@
 package model;
 
-public class DemandeLien {
+public class Demande {
 
     private Personne emetteur;
     private Personne destinataire;
     private LienParente lien;
 
-    public DemandeLien(Personne emetteur, Personne destinataire, LienParente lien) {
+    public Demande(Personne emetteur, Personne destinataire, LienParente lien) {
         this.emetteur = emetteur;
         this.destinataire = destinataire;
         this.lien = lien;

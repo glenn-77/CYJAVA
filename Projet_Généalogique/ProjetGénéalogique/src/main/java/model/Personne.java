@@ -1,14 +1,7 @@
 package model;
 
-
-import controller.DemandeLienService;
-import controller.MailService;
-
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
+import java.util.*;
 
 public class Personne {
 
@@ -32,7 +25,7 @@ public class Personne {
     private NiveauVisibilite niveauVisibilite; 
     private int generation;
     private LienParente lien;
-    private Map<Personne, LienParente> liensParente;
+    public Map<Personne, LienParente> liensParente;
     private ArbreGenealogique arbre;
 
     private Compte compte; 
@@ -210,35 +203,15 @@ public class Personne {
         this.estVivant = estVivant;
     }
 
-    public void demanderLien(Personne autre, LienParente lien) {
-        DemandeLien demande = new DemandeLien(this, autre, lien);
-        DemandeLienService.ajouterDemande(demande);
-
-        String sujet = "Demande de lien de parenté sur Arbre Généalogique Pro++";
-        String corps = String.format(
-                "Bonjour %s,\n\n%s souhaite vous ajouter à son arbre généalogique comme \"%s\".\n" +
-                        "Veuillez vous connecter pour accepter ou refuser cette demande.\n\n" +
-                        "L'équipe Arbre Généalogique Pro++",
-                autre.getNom(),
-                this.getNom() + " " + this.getPrenom(),
-                lien.name().toLowerCase().replace("_", "-")
-        );
-
-        MailService.envoyerEmail(autre.getCompte().getEmail(), sujet, corps);
-    }
-
-    public void accepterDemande(DemandeLien demande) {
-        this.ajouterLien(demande.getEmetteur(), demande.getLien());
-        DemandeLienService.supprimerDemande(demande);
-    }
-
-    public void refuserDemande(DemandeLien demande) {
-        DemandeLienService.supprimerDemande(demande);
-    }
-
     public void ajouterLien(Personne autre, LienParente lien) {
         this.liensParente.put(autre, lien);
         if(autre.isEstInscrit()) autre.liensParente.put(this, inverseLien(lien));
+    }
+
+    public void supprimerLien(Personne autre) {
+        this.liensParente.remove(autre);
+        if(autre.isEstInscrit()) autre.liensParente.remove(this);
+
     }
 
     public LienParente inverseLien(LienParente lien) {
@@ -255,6 +228,35 @@ public class Personne {
             case BEAU_PERE, BELLE_MERE -> this.genre == Genre.HOMME ? LienParente.BEAU_FILS : LienParente.BELLE_FILLE;
             case ARRIERE_GRAND_PERE, ARRIERE_GRAND_MERE -> this.genre == Genre.HOMME ? LienParente.ARRIERE_PETIT_FILS : LienParente.ARRIERE_PETITE_FILLE;
             case ARRIERE_PETIT_FILS, ARRIERE_PETITE_FILLE -> this.genre == Genre.FEMME ? LienParente.ARRIERE_GRAND_MERE : LienParente.ARRIERE_GRAND_PERE;
+            case COUSIN, COUSINE -> this.genre == Genre.HOMME ? LienParente.COUSIN : LienParente.COUSINE;
+            default -> {
+                System.out.println("⚠️ Lien inverse non défini pour : " + lien);
+                yield null;
+            }
         };
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Personne autre = (Personne) obj;
+
+        if (this.nss != null && autre.nss != null) {
+            return this.nss.equals(autre.nss);
+        }
+
+        return Objects.equals(this.nom, autre.nom)
+                && Objects.equals(this.prenom, autre.prenom)
+                && Objects.equals(this.dateNaissance, autre.dateNaissance);
+    }
+
+    @Override
+    public int hashCode() {
+        return nss != null ?
+                Objects.hash(nss) :
+                Objects.hash(nom, prenom, dateNaissance);
     }
 }

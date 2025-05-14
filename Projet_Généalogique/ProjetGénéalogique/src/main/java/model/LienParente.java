@@ -5,6 +5,8 @@ public enum LienParente {
     MERE,
     FRERE,
     SOEUR,
+    COUSIN,
+    COUSINE,
     DEMI_SOEUR,
     DEMI_FRERE,
     GRAND_PERE,

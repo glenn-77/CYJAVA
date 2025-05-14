@@ -1,5 +1,7 @@
 package model;
 
+import service.LienService;
+
 import java.util.*;
 
 public class ArbreGenealogique {
@@ -33,10 +35,12 @@ public class ArbreGenealogique {
         if (!noeuds.contains(personne) && !demandeur.isEstInscrit()) {
             noeuds.add(personne);
             personne.ajouterLien(demandeur, lien);
+            System.out.println("Lien ajoutée!");
             return true;
         }
         if (!noeuds.contains(personne) && demandeur.isEstInscrit()) {
-            demandeur.demanderLien(personne, lien);
+            System.out.println("Demande de lien envoyée");
+            LienService.envoyerDemandeLien(demandeur, personne, lien);
 
         }
         return true;
@@ -47,9 +51,12 @@ public class ArbreGenealogique {
      */
     public boolean supprimerNoeud(Personne personne) {
         if (personne.isEstInscrit()) {
-            System.out.println("Suppression impossible sans approbation de la personne inscrite.");
+            System.out.println("Approbation de la personne inscrite en attente de validation.");
+            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.liensParente.get(personne) );
             return false;
         }
+        this.proprietaire.supprimerLien(personne);
+        System.out.println("Suppression validée");
         return noeuds.remove(personne);
     }
 
@@ -73,15 +80,35 @@ public class ArbreGenealogique {
      * Vérifie les règles de cohérence de l’arbre
      */
     public void verifierCoherence() {
+        Set<LienParente> liensAscendants = Set.of(
+                LienParente.PERE, LienParente.MERE,
+                LienParente.GRAND_PERE, LienParente.GRAND_MERE,
+                LienParente.ARRIERE_GRAND_PERE, LienParente.ARRIERE_GRAND_MERE,
+                LienParente.BEAU_PERE, LienParente.BELLE_MERE
+        );
+
+        Set<LienParente> liensDescendants = Set.of(
+                LienParente.FILS, LienParente.FILLE,
+                LienParente.PETIT_FILS, LienParente.PETITE_FILLE,
+                LienParente.ARRIERE_PETIT_FILS, LienParente.ARRIERE_PETITE_FILLE,
+                LienParente.BEAU_FILS, LienParente.BELLE_FILLE,
+                LienParente.NEVEU, LienParente.NIECE
+        );
+
         for (Personne p : noeuds) {
             for (Map.Entry<Personne, LienParente> entry : p.getLiens().entrySet()) {
                 Personne autre = entry.getKey();
                 LienParente lien = entry.getValue();
 
-                // Ex : un parent ne peut pas être plus jeune que son enfant
-                if (lien == LienParente.PERE || lien == LienParente.MERE || lien == LienParente.GRAND_PERE || lien == LienParente.GRAND_MERE || lien == LienParente.ARRIERE_GRAND_MERE || lien == LienParente.ARRIERE_GRAND_PERE || lien == LienParente.BELLE_MERE || lien == LienParente.BEAU_PERE) {
-                    if (autre.getDateNaissance().isBefore(p.getDateNaissance())) {
-                        System.out.println("Incohérence détectée entre " + p.getNom() + " et " + autre.getNom());
+                if (p.getDateNaissance() == null || autre.getDateNaissance() == null) continue;
+
+                if (liensAscendants.contains(lien)) {
+                    if (!autre.getDateNaissance().isBefore(p.getDateNaissance())) {
+                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né après " + p.getNom());
+                    }
+                } else if (liensDescendants.contains(lien)) {
+                    if (!autre.getDateNaissance().isAfter(p.getDateNaissance())) {
+                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né avant " + p.getNom());
                     }
                 }
             }

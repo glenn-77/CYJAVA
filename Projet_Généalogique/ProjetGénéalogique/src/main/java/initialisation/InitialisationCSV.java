@@ -2,19 +2,17 @@ package initialisation;
 
 import model.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InitialisationCSV {
 
-    public List<Personne> chargerUtilisateurs(String filePath) throws IOException {
+    public List<Personne> chargerUtilisateurs(InputStream in) throws IOException {
         List<Personne> utilisateurs = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
             String line;
             br.readLine(); // Ignorer l'en-tête
 

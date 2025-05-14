@@ -15,19 +15,27 @@ public class AuthService {
     public AuthService() {
         this.utilisateurs = new HashMap<>();
         try {
-            chargerUtilisateursDepuisCSV("ressources/utilisateurs.csv");
+            chargerUtilisateursDepuisCSV();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void chargerUtilisateursDepuisCSV(String filePath) throws IOException {
-        InitialisationCSV loader = new InitialisationCSV(); 
-        List<Personne> utilisateursList = loader.chargerUtilisateurs(filePath);
-        for (Personne personne : utilisateursList) {
-            utilisateurs.put(personne.getCompte().getEmail(), personne); // Utilise l'email du compte
+    private void chargerUtilisateursDepuisCSV() throws IOException {
+        InitialisationCSV loader = new InitialisationCSV();
+        // Utilisation du ClassLoader pour trouver le fichier dans les ressources
+        try (var inputStream = getClass().getClassLoader().getResourceAsStream("utilisateurs.csv")) {
+            if (inputStream == null) {
+                throw new IOException("Fichier utilisateurs.csv introuvable dans les ressources.");
+            }
+
+            List<Personne> utilisateursList = loader.chargerUtilisateurs(inputStream);
+            for (Personne personne : utilisateursList) {
+                utilisateurs.put(personne.getCompte().getEmail(), personne);
+            }
         }
     }
+
 
     public Personne authentifier(String email, String motDePasse) {
         if (utilisateurs.containsKey(email)) {

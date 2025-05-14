@@ -1,4 +1,4 @@
-package controller;
+package service;
 
 import java.util.Properties;
 import jakarta.mail.*;
