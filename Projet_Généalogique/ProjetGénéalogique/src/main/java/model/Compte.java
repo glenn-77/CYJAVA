@@ -65,6 +65,7 @@ public class Compte {
     public void setAdresse(String adresse) {
         this.adresse = adresse;
     }
+
 }
 
    

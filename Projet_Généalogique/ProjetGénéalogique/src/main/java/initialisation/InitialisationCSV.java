@@ -1,8 +1,6 @@
 package initialisation;
 
-import model.Compte;
-import model.Genre;
-import model.Personne;
+import model.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -52,7 +50,7 @@ public class InitialisationCSV {
 
                     // Création de l'objet Personne avec le compte
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite, 
-                                                      codePrive, genre, compte);
+                                                      codePrive, genre, compte, null );
 
                     utilisateurs.add(personne);
 
