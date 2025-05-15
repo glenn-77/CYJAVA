@@ -1,6 +1,7 @@
 package view;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -15,7 +16,8 @@ import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 public class InscriptionView {
-    private AuthService authService;
+
+    private final AuthService authService;
 
     public InscriptionView(AuthService authService) {
         this.authService = authService;
@@ -25,7 +27,12 @@ public class InscriptionView {
         stage.setTitle("Inscription");
 
         VBox layout = new VBox(10);
-        layout.setPadding(new Insets(20));
+        layout.setPadding(new Insets(30));
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #f4f4f4;");
+
+        Label titleLabel = new Label("Inscrivez-vous !");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
         TextField nssField = new TextField();
         nssField.setPromptText("Numéro de Sécurité Sociale");
@@ -39,29 +46,19 @@ public class InscriptionView {
         DatePicker dateNaissancePicker = new DatePicker();
         dateNaissancePicker.setPromptText("Date de naissance (jj/MM/aaaa)");
 
-        // Formatter pour le format "dd/MM/yyyy"
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        // Configuration du converter pour afficher et parser la date au bon format
         dateNaissancePicker.setConverter(new StringConverter<LocalDate>() {
             @Override
             public String toString(LocalDate date) {
-                if (date != null) {
-                    return formatter.format(date);
-                } else {
-                    return "";
-                }
+                return date != null ? formatter.format(date) : "";
             }
 
             @Override
             public LocalDate fromString(String string) {
-                if (string == null || string.trim().isEmpty()) {
-                    return null;
-                }
                 try {
                     return LocalDate.parse(string, formatter);
                 } catch (DateTimeParseException e) {
-                    // En cas d’erreur de parsing, on peut afficher un message ou retourner null
                     return null;
                 }
             }
@@ -71,7 +68,7 @@ public class InscriptionView {
         nationaliteField.setPromptText("Nationalité");
 
         TextField carteIdentiteField = new TextField();
-        carteIdentiteField.setPromptText("Carte d'identité (nom du fichier)");
+        carteIdentiteField.setPromptText("Carte d'identité");
 
         ComboBox<Genre> genreBox = new ComboBox<>();
         genreBox.getItems().addAll(Genre.HOMME, Genre.FEMME);
@@ -87,6 +84,14 @@ public class InscriptionView {
         adresseField.setPromptText("Adresse");
 
         Button inscrireBtn = new Button("S'inscrire");
+        inscrireBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-font-weight: bold;");
+
+        Button retourBtn = new Button("Retour");
+        retourBtn.setOnAction(e -> {
+            MainView mainView = new MainView(authService);
+            mainView.start(stage);
+        });
+
         Label message = new Label();
 
         inscrireBtn.setOnAction(e -> {
@@ -102,51 +107,32 @@ public class InscriptionView {
                 String telephone = telephoneField.getText();
                 String adresse = adresseField.getText();
 
-                // Vérifications basiques
-                if (nss.isEmpty() || nom.isEmpty() || prenom.isEmpty() || dateNaissance == null || nationalite.isEmpty()
-                        || carteId.isEmpty() || genre == null || email.isEmpty() || telephone.isEmpty() || adresse.isEmpty()) {
+                if (nss.isEmpty() || nom.isEmpty() || prenom.isEmpty() || dateNaissance == null ||
+                        nationalite.isEmpty() || carteId.isEmpty() || genre == null ||
+                        email.isEmpty() || telephone.isEmpty() || adresse.isEmpty()) {
                     message.setStyle("-fx-text-fill: red;");
                     message.setText("Merci de remplir tous les champs.");
                     return;
                 }
 
-                // Mot de passe initial = prénom
                 String motDePasse = prenom;
-
-                // Génération code privé
                 String codePrive = UUID.randomUUID().toString().substring(0, 8);
-
-                // Création du compte
                 Compte compte = new Compte(prenom, motDePasse, nss, email, telephone, adresse);
-
-                // Création de la personne
                 Personne p = new Personne(nss, prenom, nom, dateNaissance, nationalite,
                         carteId, codePrive, genre, compte, null);
 
-                // Ajout dans le service d'authentification
                 if (authService.existe(email)) {
                     message.setStyle("-fx-text-fill: red;");
                     message.setText("Cet email est déjà utilisé.");
                 } else {
                     authService.ajouterUtilisateur(p);
-
-                    // Simulation d'envoi de mail
                     message.setStyle("-fx-text-fill: green;");
                     message.setText("Inscription réussie ! Code privé envoyé par email : " + codePrive);
 
-                    // Optionnel : reset des champs après inscription réussie
-                    nssField.clear();
-                    nomField.clear();
-                    prenomField.clear();
-                    dateNaissancePicker.setValue(null);
-                    nationaliteField.clear();
-                    carteIdentiteField.clear();
-                    genreBox.setValue(null);
-                    emailField.clear();
-                    telephoneField.clear();
-                    adresseField.clear();
+                    nssField.clear(); nomField.clear(); prenomField.clear(); dateNaissancePicker.setValue(null);
+                    nationaliteField.clear(); carteIdentiteField.clear(); genreBox.setValue(null);
+                    emailField.clear(); telephoneField.clear(); adresseField.clear();
                 }
-
             } catch (Exception ex) {
                 message.setStyle("-fx-text-fill: red;");
                 message.setText("Erreur : " + ex.getMessage());
@@ -155,13 +141,14 @@ public class InscriptionView {
         });
 
         layout.getChildren().addAll(
+                titleLabel,
                 nssField, nomField, prenomField, dateNaissancePicker,
                 nationaliteField, carteIdentiteField, genreBox,
                 emailField, telephoneField, adresseField,
-                inscrireBtn, message
+                inscrireBtn, retourBtn, message
         );
 
-        Scene scene = new Scene(layout, 400, 600);
+        Scene scene = new Scene(layout, 400, 650);
         stage.setScene(scene);
         stage.show();
     }
