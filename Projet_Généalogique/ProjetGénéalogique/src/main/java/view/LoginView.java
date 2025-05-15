@@ -47,6 +47,16 @@ public class LoginView {
                         "-fx-font-weight: bold;"
         );
 
+        Button inscriptionButton = new Button("S'inscrire");
+        inscriptionButton.setOnAction(e -> {
+            InscriptionView inscriptionView = new InscriptionView(authService);
+            inscriptionView.start(primaryStage);
+        });
+
+
+        layout.getChildren().add(inscriptionButton);
+
+
         loginButton.setOnAction(e -> {
             String email = emailField.getText();
             String password = passwordField.getText();
