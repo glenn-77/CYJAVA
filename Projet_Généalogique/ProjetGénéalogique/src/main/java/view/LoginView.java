@@ -7,7 +7,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Personne;
 import javafx.geometry.Pos;
-
+import service.AuthService;
 
 
 public class LoginView {

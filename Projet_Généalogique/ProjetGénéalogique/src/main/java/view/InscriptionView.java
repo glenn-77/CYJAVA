@@ -7,6 +7,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import model.*;
+import service.AuthService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

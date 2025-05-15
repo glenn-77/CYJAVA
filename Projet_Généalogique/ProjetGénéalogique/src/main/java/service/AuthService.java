@@ -1,4 +1,4 @@
-package view;
+package service;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

@@ -2,7 +2,7 @@ package test;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import view.AuthService;
+import service.AuthService;
 import view.MainView;
 
 public class Main extends Application {
