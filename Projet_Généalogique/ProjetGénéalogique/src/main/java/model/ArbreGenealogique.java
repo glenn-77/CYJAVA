@@ -29,6 +29,7 @@ public class ArbreGenealogique {
     public List<Personne> getNoeuds() {
         return noeuds;
     }
+
     /** Returns the owner of the tree. */
     public Personne getProprietaire() {
         return proprietaire;
@@ -56,7 +57,6 @@ public class ArbreGenealogique {
             System.out.println("Demande de lien envoyée");
             LienService.envoyerDemandeLien(demandeur, personne, lien);
             return false;
-
         }
         System.out.println(personne.getPrenom() + personne.getNom() + " est déjà dans l'arbre.");
         return false;
@@ -70,7 +70,7 @@ public class ArbreGenealogique {
     public boolean supprimerNoeud(Personne personne) {
         if (personne.isEstInscrit()) {
             System.out.println("Approbation de la personne inscrite en attente de validation.");
-            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.getLiens().get(personne) );
+            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.getLiens().get(personne));
             return false;
         }
         this.proprietaire.supprimerLien(personne);
@@ -88,29 +88,17 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Placeholder for graphical tree display (JavaFX or Swing).
-     */
-    public void afficherGraphique() {
-        // TODO : implémenter vue graphique
-    }
-
-    /**
      * Checks date-of-birth-based consistency (e.g., parents must be older).
      */
     public void verifierCoherence() {
         Set<LienParente> liensAscendants = Set.of(
                 LienParente.PERE, LienParente.MERE,
                 LienParente.GRAND_PERE, LienParente.GRAND_MERE,
-                LienParente.ARRIERE_GRAND_PERE, LienParente.ARRIERE_GRAND_MERE,
-                LienParente.BEAU_PERE, LienParente.BELLE_MERE
+                LienParente.ARRIERE_GRAND_PERE, LienParente.ARRIERE_GRAND_MERE
         );
-
         Set<LienParente> liensDescendants = Set.of(
                 LienParente.FILS, LienParente.FILLE,
-                LienParente.PETIT_FILS, LienParente.PETITE_FILLE,
-                LienParente.ARRIERE_PETIT_FILS, LienParente.ARRIERE_PETITE_FILLE,
-                LienParente.BEAU_FILS, LienParente.BELLE_FILLE,
-                LienParente.NEVEU, LienParente.NIECE
+                LienParente.PETIT_FILS, LienParente.PETITE_FILLE
         );
 
         for (Personne p : noeuds) {
@@ -120,41 +108,13 @@ public class ArbreGenealogique {
 
                 if (p.getDateNaissance() == null || autre.getDateNaissance() == null) continue;
 
-                if (liensAscendants.contains(lien)) {
-                    if (!autre.getDateNaissance().isBefore(p.getDateNaissance())) {
-                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né après " + p.getNom());
-                    }
-                } else if (liensDescendants.contains(lien)) {
-                    if (autre.getDateNaissance().isBefore(p.getDateNaissance())) {
-                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né avant " + p.getNom());
-                    }
+                if (liensAscendants.contains(lien) && !autre.getDateNaissance().isBefore(p.getDateNaissance())) {
+                    System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né après " + p.getNom());
+                } else if (liensDescendants.contains(lien) && autre.getDateNaissance().isBefore(p.getDateNaissance())) {
+                    System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né avant " + p.getNom());
                 }
             }
         }
-    }
-
-    /**
-     * Searches persons matching a specific set of criteria.
-     * @param critere The criteria to match.
-     * @return A list of matching persons.
-     */
-    public List<Personne> rechercherCriteres(CritereRecherche critere) {
-        List<Personne> resultats = new ArrayList<>();
-        for (Personne p : noeuds) {
-            if (critere.match(p)) {
-                resultats.add(p);
-            }
-        }
-        return resultats;
-    }
-
-    /**
-     * Checks whether a person exists in the tree.
-     * @param p The person to check.
-     * @return true if present, false otherwise.
-     */
-    public boolean contient(Personne p) {
-        return noeuds.contains(p);
     }
 
     /**
@@ -165,7 +125,7 @@ public class ArbreGenealogique {
     public List<Personne> afficherArbrePour(Personne demandeur) {
         List<Personne> visibles = new ArrayList<>();
         for (Personne p : noeuds) {
-            if (p.estVisiblePar(demandeur)) {
+            if (p.estVisiblePar(demandeur) || p == demandeur.getPere() || p == demandeur.getMere()) {
                 visibles.add(p);
             }
         }
@@ -173,68 +133,65 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Finds persons common to two genealogical trees.
-     * @param autre The other genealogical tree.
-     * @return A list of shared persons.
+     * Checks whether a person exists in the tree.
+     * @param personne The person to check.
+     * @return true if present, false otherwise.
      */
-    public List<Personne> trouverMembresCommuns(ArbreGenealogique autre) {
-        List<Personne> communs = new ArrayList<>();
-        for (Personne p1 : this.noeuds) {
-            for (Personne p2 : autre.noeuds) {
-                if (p1.isEstInscrit() && p1.equals(p2)) {
-                    communs.add(p1);
-                } else if (!p1.isEstInscrit() && !p2.isEstInscrit() && p1.infosIdentiques(p2)) {
-                    communs.add(p1);
-                }
-            }
-        }
-        return communs;
+    public boolean contient(Personne personne) {
+        return noeuds.contains(personne);
     }
 
     /**
-     * Edits mutable fields of a person (email, phone, etc.), skipping immutable fields.
-     * @param cible The person to edit.
-     * @param nouvellesInfos Map of fields to update.
-     * @return true if successful, false otherwise.
+     * Builds familial relationships between all persons in the tree.
      */
-    public boolean modifierNoeud(Personne cible, Map<String, String> nouvellesInfos) {
-        if (!noeuds.contains(cible)) {
+    public void construireLiensFamiliaux() {
+        for (Personne p : noeuds) {
+            Personne pere = p.getPere();
+            Personne mere = p.getMere();
+
+            if (pere != null && noeuds.contains(pere)) {
+                pere.addEnfant(p);
+                p.setGeneration(pere.getGeneration() + 1);
+            }
+
+            if (mere != null && noeuds.contains(mere)) {
+                mere.addEnfant(p);
+                if (p.getGeneration() == 0) {
+                    p.setGeneration(mere.getGeneration() + 1);
+                }
+            }
+
+            // Vérifier les parents manquants
+            if (pere == null && mere != null && !noeuds.contains(mere)) {
+                System.out.println("⚠️ Erreur : lien enfant " + p.getNom() + " ignoré faute de parent dans l'arbre.");
+            }
+        }
+    }
+
+    /**
+     * Modifies the information of a given node (Person).
+     * @param personne The person whose information needs to be updated.
+     * @param nouvellesInfos A map of field names and their new values.
+     * @return true if the person exists in the tree and was modified, false otherwise.
+     */
+    public boolean modifierNoeud(Personne personne, Map<String, String> nouvellesInfos) {
+        if (!noeuds.contains(personne)) {
             System.out.println("❌ La personne n'existe pas dans l'arbre.");
             return false;
         }
 
-        for (Map.Entry<String, String> entry : nouvellesInfos.entrySet()) {
-            String champ = entry.getKey().toLowerCase();
-            String valeur = entry.getValue();
-
-            switch (champ) {
-                case "adresse":
-                    cible.getCompte().setAdresse(valeur);
-                    break;
-                case "email":
-                    cible.getCompte().setEmail(valeur);
-                    break;
-                case "telephone":
-                    cible.getCompte().setTelephone(valeur);
-                    break;
-                case "login":
-                    cible.getCompte().setLogin(valeur);
-                    break;
-                case "motdepasse":
-                    cible.getCompte().setMotDePasse(valeur);
-                    break;
-                case "numero":
-                    cible.getCompte().setNumero(valeur);
-                    break;
-                default:
-                    System.out.println("⚠️ Champ immuable ou inconnu ignoré : " + champ);
-
-            }
+        // Modifier les informations selon les clés du map
+        if (nouvellesInfos.containsKey("email")) {
+            personne.getCompte().setEmail(nouvellesInfos.get("email"));
+        }
+        if (nouvellesInfos.containsKey("adresse")) {
+            personne.getCompte().setAdresse(nouvellesInfos.get("adresse"));
+        }
+        if (nouvellesInfos.containsKey("telephone")) {
+            personne.getCompte().setTelephone(nouvellesInfos.get("telephone"));
         }
 
-        System.out.println("✅ Modification effectuée pour " + cible.getPrenom() + cible.getNom());
+        System.out.println("✅ Informations mises à jour pour " + personne.getPrenom() + " " + personne.getNom());
         return true;
     }
-
 }
-
