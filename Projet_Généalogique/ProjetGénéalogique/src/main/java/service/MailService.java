@@ -1,52 +1,37 @@
 package service;
+import io.github.cdimascio.dotenv.Dotenv;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 
-import java.util.Properties;
-import jakarta.mail.*;
-import jakarta.mail.internet.*;
+import java.io.IOException;
 
-/**
- * Email service to send notifications via SMTP (uses Gmail SMTP settings).
- */
 public class MailService {
+    private static final Dotenv dotenv = Dotenv.load();  // charge le .env
+    private static final String SENDGRID_API_KEY = dotenv.get("SENDGRID_API_KEY");
 
-    private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final int SMTP_PORT = 587;
-    private static final String EMAIL_SENDER = "glenndiffo8@gmail.com"; // ← ton email ici
-    private static final String EMAIL_PASSWORD = "Bigboss001+"; // ← mot de passe d'application
+    public static void envoyerEmail(String destinataire, String sujet, String contenu) {
+        Email from = new Email("diffoglenn007@gmail.com");
+        Email to = new Email(destinataire);
+        Content content = new Content("text/plain", contenu);
+        Mail mail = new Mail(from, sujet, to, content);
 
-    /** Sends a plain text email to a specified recipient with subject and body. */
-    public static void envoyerEmail(String destinataire, String sujet, String corps) {
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", String.valueOf(SMTP_PORT));
-
-        Session session = Session.getInstance(props,
-                new jakarta.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(EMAIL_SENDER, EMAIL_PASSWORD);
-                    }
-                }
-        );
+        SendGrid sg = new SendGrid(SENDGRID_API_KEY);
+        Request request = new Request();
 
         try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(EMAIL_SENDER));
-            message.setRecipients(
-                    Message.RecipientType.TO,
-                    InternetAddress.parse(destinataire)
-            );
-            message.setSubject(sujet);
-            message.setText(corps);
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
 
-            Transport.send(message);
-            System.out.println("✅ Email envoyé à " + destinataire);
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            System.out.println("❌ Erreur lors de l'envoi de l'email");
+            Response response = sg.api(request);
+            System.out.println("Statut: " + response.getStatusCode());
+            System.out.println("Body: " + response.getBody());
+            System.out.println("Headers: " + response.getHeaders());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("❌ Erreur lors de l'envoi du mail via SendGrid");
         }
     }
 }
-

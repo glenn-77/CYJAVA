@@ -1,5 +1,6 @@
 package model;
 
+import service.CritereRecherche;
 import service.LienService;
 
 import java.util.*;
@@ -48,7 +49,7 @@ public class ArbreGenealogique {
         if (!noeuds.contains(personne) && !demandeur.isEstInscrit()) {
             noeuds.add(personne);
             demandeur.ajouterLien(personne, lien);
-            System.out.println("Lien ajoutée!");
+            System.out.println("Lien ajouté!");
             return true;
         }
         if (!noeuds.contains(personne) && demandeur.isEstInscrit()) {

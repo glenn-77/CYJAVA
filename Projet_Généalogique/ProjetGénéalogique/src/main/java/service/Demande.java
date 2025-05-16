@@ -1,4 +1,7 @@
-package model;
+package service;
+
+import model.LienParente;
+import model.Personne;
 
 /**
  * Represents a familial link request between two people.

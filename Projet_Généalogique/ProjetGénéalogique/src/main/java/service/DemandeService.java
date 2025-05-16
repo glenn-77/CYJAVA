@@ -1,6 +1,5 @@
 package service;
 
-import model.Demande;
 import model.Personne;
 
 import java.util.*;

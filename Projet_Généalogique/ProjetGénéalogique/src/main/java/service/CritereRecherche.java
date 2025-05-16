@@ -1,4 +1,7 @@
-package model;
+package service;
+import model.LienParente;
+import model.Personne;
+
 import java.util.Optional;
 
 /**
