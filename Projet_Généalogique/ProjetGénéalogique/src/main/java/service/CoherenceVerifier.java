@@ -53,11 +53,43 @@ public class CoherenceVerifier {
         }
     }
 
+    /**
+     * Checks date-of-birth-based consistency (e.g., parents must be older).
+     */
+    public static void verifierCoherence(ArbreGenealogique arbre) {
+        Set<LienParente> liensAscendants = Set.of(
+                LienParente.PERE, LienParente.MERE
+        );
+
+        Set<LienParente> liensDescendants = Set.of(
+                LienParente.FILS, LienParente.FILLE
+        );
+
+        for (Personne p : arbre.getNoeuds()) {
+            for (Map.Entry<Personne, LienParente> entry : p.getLiens().entrySet()) {
+                Personne autre = entry.getKey();
+                LienParente lien = entry.getValue();
+
+                if (p.getDateNaissance() == null || autre.getDateNaissance() == null) continue;
+
+                if (liensAscendants.contains(lien)) {
+                    if (!autre.getDateNaissance().isBefore(p.getDateNaissance())) {
+                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né après " + p.getNom());
+                    }
+                } else if (liensDescendants.contains(lien)) {
+                    if (autre.getDateNaissance().isBefore(p.getDateNaissance())) {
+                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né avant " + p.getNom());
+                    }
+                }
+            }
+        }
+    }
+
     /** Runs all coherence verification methods. */
     public static void verifierToutesLesCoherences(ArbreGenealogique arbre) {
         verifierReciprocite(arbre);
         verifierNbParents(arbre);
         verifierAutoLien(arbre);
-        arbre.verifierCoherence(); // Appelle ta vérification de dates
+        verifierCoherence(arbre); // Appelle ta vérification de dates
     }
 }

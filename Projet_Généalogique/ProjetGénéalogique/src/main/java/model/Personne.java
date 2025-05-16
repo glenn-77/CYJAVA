@@ -1,5 +1,8 @@
 package model;
 
+import service.DemandeAdminService;
+import service.MailService;
+
 import java.time.LocalDate;
 import java.util.*;
 
@@ -165,6 +168,9 @@ public class Personne {
     }
 
     public boolean estVisiblePar(Personne demandeur) {
+        if (this.compte instanceof Admin) {
+            return true;
+        }
         switch (this.niveauVisibilite) {
             case PUBLIQUE:
                 return true;
@@ -217,24 +223,42 @@ public class Personne {
     public LienParente inverseLien(LienParente lien) {
         return switch (lien) {
             case PERE, MERE -> this.genre == Genre.HOMME ? LienParente.FILS : LienParente.FILLE;
-            case ONCLE, TANTE -> this.genre == Genre.HOMME ? LienParente.NEVEU : LienParente.NIECE;
             case FILS, FILLE -> this.genre == Genre.HOMME ? LienParente.PERE : LienParente.MERE;
-            case GRAND_MERE, GRAND_PERE -> this.genre == Genre.HOMME ? LienParente.PETIT_FILS : LienParente.PETITE_FILLE;
-            case FRERE, SOEUR -> this.genre == Genre.HOMME ? LienParente.FRERE : LienParente.SOEUR;
-            case PETIT_FILS, PETITE_FILLE -> this.genre == Genre.FEMME ? LienParente.GRAND_MERE : LienParente.GRAND_PERE;
-            case NEVEU, NIECE -> this.genre == Genre.HOMME ? LienParente.ONCLE : LienParente.TANTE;
-            case DEMI_FRERE, DEMI_SOEUR -> this.genre == Genre.HOMME ? LienParente.DEMI_FRERE : LienParente.DEMI_SOEUR;
-            case BEAU_FILS, BELLE_FILLE -> this.genre == Genre.HOMME ? LienParente.BEAU_PERE : LienParente.BELLE_MERE;
-            case BEAU_PERE, BELLE_MERE -> this.genre == Genre.HOMME ? LienParente.BEAU_FILS : LienParente.BELLE_FILLE;
-            case ARRIERE_GRAND_PERE, ARRIERE_GRAND_MERE -> this.genre == Genre.HOMME ? LienParente.ARRIERE_PETIT_FILS : LienParente.ARRIERE_PETITE_FILLE;
-            case ARRIERE_PETIT_FILS, ARRIERE_PETITE_FILLE -> this.genre == Genre.FEMME ? LienParente.ARRIERE_GRAND_MERE : LienParente.ARRIERE_GRAND_PERE;
-            case COUSIN, COUSINE -> this.genre == Genre.HOMME ? LienParente.COUSIN : LienParente.COUSINE;
+
             default -> {
                 System.out.println("⚠️ Lien inverse non défini pour : " + lien);
                 yield null;
             }
         };
     }
+
+    public void demanderModification(Personne cible, LienParente lien) {
+        // Vérifie que le lien est autorisé
+        Set<LienParente> liensAutorises = Set.of(LienParente.PERE, LienParente.MERE, LienParente.FILS, LienParente.FILLE);
+        if (!liensAutorises.contains(lien)) {
+            System.out.println("❌ Ce type de lien n'est pas autorisé.");
+            return;
+        }
+
+        // Crée une demande pour l’admin
+        DemandeAdminService.DemandeAdmin demande = new DemandeAdminService.DemandeAdmin(this, cible, lien);
+        DemandeAdminService.ajouterDemande(demande);
+
+        // Envoie un mail à l’administrateur
+        String sujet = "📬 Nouvelle demande de lien à valider";
+        String corps = String.format(
+                "Bonjour Admin,\n\n%s %s souhaite ajouter un lien \"%s\" avec %s %s.\n" +
+                        "Merci de traiter cette demande depuis votre interface administrateur.",
+                this.getPrenom(), this.getNom(),
+                lien.name().toLowerCase(),
+                cible.getPrenom(), cible.getNom()
+        );
+
+        MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, corps);
+
+        System.out.println("📨 Votre demande a été transmise à l’administrateur.");
+    }
+
 
 
     @Override

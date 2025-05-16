@@ -11,8 +11,8 @@ public class LienService {
     /** Sends a link request and notifies the recipient by email. */
     public static void envoyerDemandeLien(Personne emetteur, Personne destinataire, LienParente lien) {
         try {
-            Demande demande = new Demande(emetteur, destinataire, lien);
-            DemandeService.ajouterDemande(demande);
+            DemandeAdminService.DemandeAdmin demande = new DemandeAdminService.DemandeAdmin(emetteur, destinataire, lien);
+            DemandeAdminService.ajouterDemande(demande);
 
             String sujet = "Demande de lien de parenté sur Arbre Généalogique Pro++";
             String corps = String.format(
@@ -30,14 +30,14 @@ public class LienService {
     }
 
     /** Accepts a link request and updates both trees. Sends confirmation emails. */
-    public static boolean accepterDemandeLien(Demande demande) {
+    public static boolean accepterDemandeLien(DemandeAdminService.DemandeAdmin demande) {
         try {
-            Personne destinataire = demande.getDestinataire();
-            Personne emetteur = demande.getEmetteur();
+            Personne destinataire = demande.getCible();
+            Personne emetteur = demande.getDemandeur();
             LienParente lien = demande.getLien();
 
             destinataire.ajouterLien(emetteur, lien);
-            DemandeService.supprimerDemande(demande);
+            DemandeAdminService.supprimerDemande(demande);
 
             // Envoi des mails
             String sujet = "✅ Demande acceptée";
@@ -57,13 +57,13 @@ public class LienService {
 
 
     /** Refuses a link request and notifies both parties. */
-    public static boolean refuserDemandeLien(Demande demande) {
+    public static boolean refuserDemandeLien(DemandeAdminService.DemandeAdmin demande) {
         try {
-            Personne destinataire = demande.getDestinataire();
-            Personne emetteur = demande.getEmetteur();
+            Personne destinataire = demande.getCible();
+            Personne emetteur = demande.getDemandeur();
             LienParente lien = demande.getLien();
 
-            DemandeService.supprimerDemande(demande);
+            DemandeAdminService.supprimerDemande(demande);
 
             String sujet = "❌ Demande refusée";
             String corpsEmetteur = String.format("Bonjour %s,\n\n%s a refusé votre demande de lien en tant que %s.",
@@ -84,8 +84,8 @@ public class LienService {
     /** Sends a link removal request and notifies the recipient. */
     public static void demandeSuppressionLien(Personne emetteur, Personne destinataire, LienParente lien) {
         try {
-            Demande demande = new Demande(emetteur, destinataire, lien);
-            DemandeService.ajouterDemande(demande);
+            DemandeAdminService.DemandeAdmin demande = new DemandeAdminService.DemandeAdmin(emetteur, destinataire, lien);
+            DemandeAdminService.ajouterDemande(demande);
 
             String sujet = "Demande de lien de parenté sur Arbre Généalogique Pro++";
             String corps = String.format(
@@ -105,25 +105,25 @@ public class LienService {
     }
 
     /** Accepts a link removal request and updates the tree. */
-    public static boolean accepterDemandeSuppression(Demande demande) {
+    public static boolean accepterDemandeSuppression(DemandeAdminService.DemandeAdmin demande) {
         try {
-            Personne destinataire = demande.getDestinataire();
-            Personne emetteur = demande.getEmetteur();
+            Personne destinataire = demande.getCible();
+            Personne emetteur = demande.getDemandeur();
 
             emetteur.supprimerLien(destinataire);
-            DemandeService.supprimerDemande(demande);
+            DemandeAdminService.supprimerDemande(demande);
 
             String sujet = "✅ Demande acceptée";
             String corpsEmetteur = String.format(
                     "Bonjour %s,\n\n%s a accepté votre demande de suppression de lien en tant que %s.",
-                    demande.getEmetteur().getNom(),
+                    emetteur.getNom(),
                     destinataire.getNom(),
                     demande.getLien()
             );
             String corpsDestinataire = String.format(
                     "Bonjour %s,\n\nVous avez accepté la demande de suppression de %s.",
                     destinataire.getNom(),
-                    demande.getEmetteur().getNom()
+                    emetteur.getNom()
             );
 
             MailService.envoyerEmail(emetteur.getCompte().getEmail(), sujet, corpsEmetteur);
@@ -135,11 +135,11 @@ public class LienService {
     }
 
     /** Refuses a link removal request. */
-    public static boolean refuserDemandeSuppression(Demande demande) {
+    public static boolean refuserDemandeSuppression(DemandeAdminService.DemandeAdmin demande) {
         try {
-            Personne destinataire = demande.getDestinataire();
-            Personne emetteur = demande.getEmetteur();
-            DemandeService.supprimerDemande(demande);
+            Personne destinataire = demande.getCible();
+            Personne emetteur = demande.getDemandeur();
+            DemandeAdminService.supprimerDemande(demande);
 
             String sujet = "❌ Demande refusée";
             String corpsEmetteur = String.format(
@@ -151,7 +151,7 @@ public class LienService {
             String corpsDestinataire = String.format(
                     "Bonjour %s,\n\nVous avez refusé la demande de suppression de %s.",
                     destinataire.getNom(),
-                    demande.getEmetteur().getNom()
+                    emetteur.getNom()
             );
 
             MailService.envoyerEmail(emetteur.getCompte().getEmail(), sujet, corpsEmetteur);

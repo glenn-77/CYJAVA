@@ -48,7 +48,8 @@ public class InitialisationCSV {
 
                     // Création de l'objet Personne avec le compte
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite, 
-                                                      codePrive, genre, compte, null );
+                                                      codePrive, genre, compte, null);
+                    personne.setArbre(new ArbreGenealogique(personne));
 
                     utilisateurs.add(personne);
 

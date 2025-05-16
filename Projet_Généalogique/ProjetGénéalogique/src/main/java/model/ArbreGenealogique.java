@@ -1,6 +1,5 @@
 package model;
 
-import service.CritereRecherche;
 import service.LienService;
 
 import java.util.*;
@@ -12,7 +11,7 @@ import java.util.*;
 public class ArbreGenealogique {
 
     /** List of all persons (nodes) in the tree */
-    private List<Personne> noeuds;
+    private Set<Personne> noeuds;
     /** The owner of the genealogical tree */
     private Personne proprietaire;
 
@@ -22,44 +21,16 @@ public class ArbreGenealogique {
      */
     public ArbreGenealogique(Personne proprietaire) {
         this.proprietaire = proprietaire;
-        this.noeuds = new ArrayList<>();
+        this.noeuds = new HashSet<>();
     }
 
     /** Returns the list of people in the tree. */
-    public List<Personne> getNoeuds() {
+    public Set<Personne> getNoeuds() {
         return noeuds;
     }
     /** Returns the owner of the tree. */
     public Personne getProprietaire() {
         return proprietaire;
-    }
-
-    /**
-     * Attempts to add a family link between two people.
-     * @param demandeur The person requesting the link.
-     * @param personne The target person.
-     * @param lien The type of familial link.
-     * @return true if the link is added or the request is sent.
-     */
-    public boolean ajouterLien(Personne demandeur, Personne personne, LienParente lien) {
-        if (!noeuds.contains(demandeur)) {
-            System.out.println("Le demandeur ne fait pas partie de l'arbre.");
-            return false;
-        }
-        if (!noeuds.contains(personne) && !demandeur.isEstInscrit()) {
-            noeuds.add(personne);
-            demandeur.ajouterLien(personne, lien);
-            System.out.println("Lien ajouté!");
-            return true;
-        }
-        if (!noeuds.contains(personne) && demandeur.isEstInscrit()) {
-            System.out.println("Demande de lien envoyée");
-            LienService.envoyerDemandeLien(demandeur, personne, lien);
-            return false;
-
-        }
-        System.out.println(personne.getPrenom() + personne.getNom() + " est déjà dans l'arbre.");
-        return false;
     }
 
     /**
@@ -95,60 +66,6 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Checks date-of-birth-based consistency (e.g., parents must be older).
-     */
-    public void verifierCoherence() {
-        Set<LienParente> liensAscendants = Set.of(
-                LienParente.PERE, LienParente.MERE,
-                LienParente.GRAND_PERE, LienParente.GRAND_MERE,
-                LienParente.ARRIERE_GRAND_PERE, LienParente.ARRIERE_GRAND_MERE,
-                LienParente.BEAU_PERE, LienParente.BELLE_MERE
-        );
-
-        Set<LienParente> liensDescendants = Set.of(
-                LienParente.FILS, LienParente.FILLE,
-                LienParente.PETIT_FILS, LienParente.PETITE_FILLE,
-                LienParente.ARRIERE_PETIT_FILS, LienParente.ARRIERE_PETITE_FILLE,
-                LienParente.BEAU_FILS, LienParente.BELLE_FILLE,
-                LienParente.NEVEU, LienParente.NIECE
-        );
-
-        for (Personne p : noeuds) {
-            for (Map.Entry<Personne, LienParente> entry : p.getLiens().entrySet()) {
-                Personne autre = entry.getKey();
-                LienParente lien = entry.getValue();
-
-                if (p.getDateNaissance() == null || autre.getDateNaissance() == null) continue;
-
-                if (liensAscendants.contains(lien)) {
-                    if (!autre.getDateNaissance().isBefore(p.getDateNaissance())) {
-                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né après " + p.getNom());
-                    }
-                } else if (liensDescendants.contains(lien)) {
-                    if (autre.getDateNaissance().isBefore(p.getDateNaissance())) {
-                        System.out.println("❌ Incohérence : " + autre.getNom() + " (" + lien + ") ne peut pas être né avant " + p.getNom());
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Searches persons matching a specific set of criteria.
-     * @param critere The criteria to match.
-     * @return A list of matching persons.
-     */
-    public List<Personne> rechercherCriteres(CritereRecherche critere) {
-        List<Personne> resultats = new ArrayList<>();
-        for (Personne p : noeuds) {
-            if (critere.match(p)) {
-                resultats.add(p);
-            }
-        }
-        return resultats;
-    }
-
-    /**
      * Checks whether a person exists in the tree.
      * @param p The person to check.
      * @return true if present, false otherwise.
@@ -162,8 +79,8 @@ public class ArbreGenealogique {
      * @param demandeur The person requesting the view.
      * @return A list of visible persons.
      */
-    public List<Personne> afficherArbrePour(Personne demandeur) {
-        List<Personne> visibles = new ArrayList<>();
+    public Set<Personne> afficherArbrePour(Personne demandeur) {
+        Set<Personne> visibles = new HashSet<>();
         for (Personne p : noeuds) {
             if (p.estVisiblePar(demandeur)) {
                 visibles.add(p);
@@ -177,8 +94,8 @@ public class ArbreGenealogique {
      * @param autre The other genealogical tree.
      * @return A list of shared persons.
      */
-    public List<Personne> trouverMembresCommuns(ArbreGenealogique autre) {
-        List<Personne> communs = new ArrayList<>();
+    public Set<Personne> trouverMembresCommuns(ArbreGenealogique autre) {
+        Set<Personne> communs = new HashSet<>();
         for (Personne p1 : this.noeuds) {
             for (Personne p2 : autre.noeuds) {
                 if (p1.isEstInscrit() && p1.equals(p2)) {
