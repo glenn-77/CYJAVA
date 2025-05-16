@@ -1,5 +1,6 @@
 package model;
 
+import javafx.scene.control.TreeItem;
 import service.DemandeAdminService;
 import service.MailService;
 
@@ -257,6 +258,102 @@ public class Personne {
         MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, corps);
 
         System.out.println("📨 Votre demande a été transmise à l’administrateur.");
+    }
+
+    public void afficherFamille() {
+        System.out.println("=== Famille de " + prenom + " " + nom + " ===");
+
+        // Parents
+        System.out.print("Père : ");
+        if (pere != null) {
+            System.out.println(pere.getPrenom() + " " + pere.getNom());
+        } else {
+            System.out.println("Inconnu");
+        }
+
+        System.out.print("Mère : ");
+        if (mere != null) {
+            System.out.println(mere.getPrenom() + " " + mere.getNom());
+        } else {
+            System.out.println("Inconnue");
+        }
+
+        // Frères et sœurs (au moins un parent en commun)
+        Set<Personne> freresSoeurs = new HashSet<>();
+        if (pere != null) {
+            for (Personne enfantPere : pere.getEnfants()) {
+                if (!enfantPere.equals(this)) freresSoeurs.add(enfantPere);
+            }
+        }
+        if (mere != null) {
+            for (Personne enfantMere : mere.getEnfants()) {
+                if (!enfantMere.equals(this)) freresSoeurs.add(enfantMere);
+            }
+        }
+
+        System.out.print("Frères/Sœurs : ");
+        if (freresSoeurs.isEmpty()) {
+            System.out.println("Aucun");
+        } else {
+            for (Personne frereSoeur : freresSoeurs) {
+                System.out.print(frereSoeur.getPrenom() + " " + frereSoeur.getNom() + "; ");
+            }
+            System.out.println();
+        }
+
+        // Enfants
+        System.out.print("Enfants : ");
+        if (enfants.isEmpty()) {
+            System.out.println("Aucun");
+        } else {
+            for (Personne enfant : enfants) {
+                System.out.print(enfant.getPrenom() + " " + enfant.getNom() + "; ");
+            }
+            System.out.println();
+        }
+    }
+
+    public TreeItem<String> genererArbreFamilial() {
+        return genererArbreFamilial(new HashSet<>());
+    }
+
+    private TreeItem<String> genererArbreFamilial(Set<Personne> dejaVisites) {
+        // Si cette personne a déjà été visitée, on arrête la récursion
+        if (dejaVisites.contains(this)) {
+            return null;
+        }
+
+        // Marquer cette personne comme visitée
+        dejaVisites.add(this);
+
+        // Créer le noeud racine pour cette personne
+        TreeItem<String> racine = new TreeItem<>(
+                prenom + " " + nom + " (" + (genre != null ? genre : "Genre inconnu") + ")"
+        );
+
+        // Ajouter les parents
+        if (pere != null) {
+            TreeItem<String> arbrePere = pere.genererArbreFamilial(dejaVisites);
+            if (arbrePere != null) {
+                racine.getChildren().add(arbrePere);
+            }
+        }
+        if (mere != null) {
+            TreeItem<String> arbreMere = mere.genererArbreFamilial(dejaVisites);
+            if (arbreMere != null) {
+                racine.getChildren().add(arbreMere);
+            }
+        }
+
+        // Ajouter chaque enfant
+        for (Personne enfant : enfants) {
+            TreeItem<String> arbreEnfant = enfant.genererArbreFamilial(dejaVisites);
+            if (arbreEnfant != null) {
+                racine.getChildren().add(arbreEnfant);
+            }
+        }
+
+        return racine;
     }
 
 

@@ -109,6 +109,33 @@ public class ArbreGenealogique {
     }
 
     /**
+     * Builds familial relationships between all persons in the tree.
+     */
+    public void construireLiensFamiliaux() {
+        for (Personne p : noeuds) {
+            Personne pere = p.getPere();
+            Personne mere = p.getMere();
+
+            if (pere != null && noeuds.contains(pere)) {
+                pere.addEnfant(p);
+                p.setGeneration(pere.getGeneration() + 1);
+            }
+
+            if (mere != null && noeuds.contains(mere)) {
+                mere.addEnfant(p);
+                if (p.getGeneration() == 0) {
+                    p.setGeneration(mere.getGeneration() + 1);
+                }
+            }
+
+            // Vérifier les parents manquants
+            if (pere == null && mere != null && !noeuds.contains(mere)) {
+                System.out.println("⚠️ Erreur : lien enfant " + p.getNom() + " ignoré faute de parent dans l'arbre.");
+            }
+        }
+    }
+
+    /**
      * Edits mutable fields of a person (email, phone, etc.), skipping immutable fields.
      * @param cible The person to edit.
      * @param nouvellesInfos Map of fields to update.

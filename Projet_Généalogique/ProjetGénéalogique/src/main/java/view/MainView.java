@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import model.Personne;
 import service.AuthService;
 
+
 public class MainView {
 
     private final AuthService authService;
@@ -29,32 +30,44 @@ public class MainView {
         layout.setPadding(new Insets(40));
         layout.setAlignment(Pos.CENTER);
 
-
-        // Message de bienvenue si connecté
         if (utilisateur != null) {
-            Label welcome = new Label("Bienvenue " + utilisateur.getPrenom() + " !");
-            welcome.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-            layout.getChildren().add(welcome);
+            Button voirMonArbreBtn = new Button("Voir mon arbre familial");
+            Button voirTousArbresBtn = new Button("Voir tous les arbres");
+
+            // Lorsqu'on clique sur "Voir mon arbre familial"
+            voirMonArbreBtn.setOnAction(e -> {
+                AffichageArbre affichageArbre = new AffichageArbre(utilisateur, stage, layout);
+                affichageArbre.afficher();
+            });
+
+            // "Voir tous les arbres" reste inchangé
+            voirTousArbresBtn.setOnAction(e -> {
+                AllTreesView allTreesView = new AllTreesView(authService, utilisateur);
+                allTreesView.start(stage);
+            });
+
+            layout.getChildren().addAll(voirMonArbreBtn, voirTousArbresBtn);
         }
 
-        Label titleLabel = new Label("Bienvenue !");
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        if (utilisateur == null) {
+            Label titleLabel = new Label("Bienvenue !");
+            titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
+            Button loginButton = new Button("Se connecter");
+            Button registerButton = new Button("S'inscrire");
 
-        Button loginButton = new Button("Se connecter");
-        Button registerButton = new Button("S'inscrire");
+            loginButton.setOnAction(e -> {
+                LoginView loginView = new LoginView(authService);
+                loginView.start(stage);
+            });
 
-        loginButton.setOnAction(e -> {
-            LoginView loginView = new LoginView(authService);
-            loginView.start(stage);
-        });
+            registerButton.setOnAction(e -> {
+                InscriptionView inscriptionView = new InscriptionView(authService);
+                inscriptionView.start(stage);
+            });
 
-        registerButton.setOnAction(e -> {
-            InscriptionView inscriptionView = new InscriptionView(authService);
-            inscriptionView.start(stage);
-        });
-
-        layout.getChildren().addAll(titleLabel, loginButton, registerButton);
+            layout.getChildren().addAll(titleLabel, loginButton, registerButton);
+        }
 
         Scene scene = new Scene(layout, 400, 300);
         stage.setScene(scene);
