@@ -97,8 +97,6 @@ public class InscriptionView {
             if (selectedFile != null) {
                 imageFile[0] = selectedFile;
                 imageView.setImage(new Image(selectedFile.toURI().toString()));
-                String carteIdentite = selectedFile.toURI().toString();
-                System.out.println("Image URL: " + carteIdentite);
             }
         });
 

@@ -15,6 +15,7 @@ public class Compte {
         this.login = login;
         this.motDePasse = motDePasse;
         this.numero = String.format("%03d", compteur);
+        compteur++;
         this.email = email;
         this.telephone = telephone;
         this.adresse = adresse;
