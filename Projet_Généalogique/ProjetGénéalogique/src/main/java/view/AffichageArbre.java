@@ -146,6 +146,8 @@ public class AffichageArbre {
         }
     }
 
+
+
     private void dessinerNoeud(Group group, String nom, double x, double y) {
         double largeurNoeud = 130;
         double hauteurNoeud = 40;

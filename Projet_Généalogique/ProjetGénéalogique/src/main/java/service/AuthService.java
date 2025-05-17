@@ -12,20 +12,22 @@ import model.Compte;
 import model.Personne;
 import initialisation.InitialisationCSV;
 
+/**
+ * Service d'authentification et gestion des utilisateurs et arbres généalogiques.
+ */
 public class AuthService {
 
-    private final Map<String, Personne> utilisateurs;
+    private final Map<String, Personne> utilisateurs; // Email -> Personne
     private final List<ArbreGenealogique> arbres; // Liste des arbres généalogiques
 
-    // Chemin vers le fichier CSV
     private static final String UTILISATEURS_FILE_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/utilisateurs.csv";
 
     public AuthService() {
         this.utilisateurs = new HashMap<>();
-        this.arbres = new ArrayList<>(); // Initialisation de la liste des arbres
+        this.arbres = new ArrayList<>();
         try {
             chargerUtilisateursDepuisCSV();
-            chargerArbres(); // Initialiser les arbres généalogiques
+            chargerArbres();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,28 +54,18 @@ public class AuthService {
      */
     private void chargerArbres() {
         for (Personne utilisateur : utilisateurs.values()) {
-            ArbreGenealogique arbre = utilisateur.getArbre();
-            if (arbre != null && !arbres.contains(arbre)) {
-                arbres.add(arbre);
+            if (utilisateur.getArbre() == null) {
+                // Si aucun arbre n'est associé, on en crée un pour l'utilisateur
+                ArbreGenealogique nouvelArbre = new ArbreGenealogique(utilisateur);
+                utilisateur.setArbre(nouvelArbre);
+                arbres.add(nouvelArbre);
+                GlobalTreesManager.ajouterArbre(nouvelArbre);
+            } else {
+                // Ajouter l'arbre existant à la liste globale
+                arbres.add(utilisateur.getArbre());
+                GlobalTreesManager.ajouterArbre(utilisateur.getArbre());
             }
         }
-    }
-
-    /**
-     * Authentifie un utilisateur via son email et mot de passe.
-     *
-     * @param email       L'email de l'utilisateur.
-     * @param motDePasse  Le mot de passe de l'utilisateur.
-     * @return La personne correspondante si la connexion est réussie, sinon null.
-     */
-    public Personne authentifier(String email, String motDePasse) {
-        if (utilisateurs.containsKey(email)) {
-            Personne p = utilisateurs.get(email);
-            if (p.getCompte().getMotDePasse().equals(motDePasse)) {
-                return p;
-            }
-        }
-        return null;
     }
 
     /**
@@ -87,6 +79,32 @@ public class AuthService {
     }
 
     /**
+     * Authentifie un utilisateur via son email et mot de passe.
+     *
+     * @param email       L'email de l'utilisateur.
+     * @param motDePasse  Le mot de passe de l'utilisateur.
+     * @return L'objet Personne correspondant, ou null si l'authentification échoue.
+     */
+    public Personne authentifier(String email, String motDePasse) {
+        if (utilisateurs.containsKey(email)) {
+            Personne utilisateur = utilisateurs.get(email);
+            if (utilisateur.getCompte().getMotDePasse().equals(motDePasse)) {
+                return utilisateur;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Récupère la liste des arbres généalogiques.
+     *
+     * @return Liste des arbres généalogiques disponibles.
+     */
+    public List<ArbreGenealogique> getArbres() {
+        return arbres;
+    }
+
+    /**
      * Ajoute un utilisateur et met à jour le fichier CSV.
      *
      * @param personne La personne à ajouter.
@@ -95,8 +113,10 @@ public class AuthService {
         utilisateurs.put(personne.getCompte().getEmail(), personne);
         try {
             sauvegarderNouvelUtilisateur(personne);
+
             if (personne.getArbre() != null) {
                 arbres.add(personne.getArbre());
+                GlobalTreesManager.ajouterArbre(personne.getArbre());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,16 +124,7 @@ public class AuthService {
     }
 
     /**
-     * Retourne la liste de tous les arbres généalogiques disponibles.
-     *
-     * @return Liste des arbres généalogiques.
-     */
-    public List<ArbreGenealogique> getArbres() {
-        return arbres; // Fournit la liste des arbres au besoin.
-    }
-
-    /**
-     * Sauvegarde uniquement un nouvel utilisateur dans le fichier, sans réécrire tout le contenu.
+     * Sauvegarde uniquement un nouvel utilisateur dans le fichier CSV.
      *
      * @param personne La personne à enregistrer.
      * @throws IOException Si une erreur d'écriture se produit.
@@ -121,7 +132,6 @@ public class AuthService {
     public void sauvegarderNouvelUtilisateur(Personne personne) throws IOException {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
 
-        // Création des dossiers si besoin
         if (!Files.exists(path.getParent())) {
             Files.createDirectories(path.getParent());
         }
@@ -130,14 +140,12 @@ public class AuthService {
         boolean fichierVide = !fichierExiste || Files.size(path) == 0;
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
-            // Écrire l'en-tête uniquement si le fichier est vide
             if (fichierVide) {
                 writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,genre,login,motDePasse,numero");
                 writer.newLine();
             }
 
             Compte c = personne.getCompte();
-
             String ligne = String.join(",",
                     personne.getNss(),
                     personne.getPrenom(),
@@ -152,8 +160,7 @@ public class AuthService {
                     personne.getGenre().toString(),
                     c.getLogin(),
                     c.getMotDePasse(),
-                    ""); // champ "numero" vide
-
+                    "");
             writer.write(ligne);
             writer.newLine();
         }

@@ -1,14 +1,16 @@
 package service;
 
 import model.ArbreGenealogique;
-import java.time.LocalDate;
+import service.CoherenceVerifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Gestionnaire global des arbres généalogiques dans l'application.
+ */
 public class GlobalTreesManager {
 
-    // Liste contenant tous les arbres généalogiques de toutes les familles
     private static final List<ArbreGenealogique> arbres = new ArrayList<>();
 
     /**
@@ -17,27 +19,38 @@ public class GlobalTreesManager {
      * @return Une liste d'arbres généalogiques.
      */
     public static List<ArbreGenealogique> getArbres() {
+        System.out.println("Nombre total d'arbres chargés : " + arbres.size());
+        for (ArbreGenealogique arbre : arbres) {
+            System.out.println("Arbre du propriétaire : " + (arbre.getProprietaire() != null ?
+                    arbre.getProprietaire().getNom() : "Inconnu"));
+        }
         return arbres;
     }
 
     /**
-     * Ajoute un nouvel arbre généalogique.
+     * Ajoute un nouvel arbre généalogique. Ne l'ajoute que s'il n'existe pas déjà pour le même propriétaire.
      *
      * @param arbre L'arbre généalogique à ajouter.
      */
     public static void ajouterArbre(ArbreGenealogique arbre) {
-        if (!arbres.contains(arbre)) {
-            arbres.add(arbre);
+        if (arbre == null || arbre.getProprietaire() == null || arbre.getNoeuds().isEmpty()) {
+            System.out.println("⚠️ Arbre non valide ou sans propriétaire. Il ne sera pas ajouté.");
+            return;
         }
-    }
 
-    /**
-     * Supprime un arbre généalogique existant.
-     *
-     * @param arbre L'arbre généalogique à supprimer.
-     */
-    public static void supprimerArbre(ArbreGenealogique arbre) {
-        arbres.remove(arbre);
+        // Vérifier la cohérence de l'arbre (avec CoherenceVerifier)
+        CoherenceVerifier.verifierCoherence(arbre);
+
+        // Vérifier si un arbre avec le même propriétaire existe déjà
+        for (ArbreGenealogique existant : arbres) {
+            if (existant.getProprietaire().equals(arbre.getProprietaire())) {
+                System.out.println("⚠️ Un arbre pour ce propriétaire (" + arbre.getProprietaire().getNom() + ") existe déjà.");
+                return;
+            }
+        }
+
+        arbres.add(arbre);
+        System.out.println("✅ Arbre ajouté pour le propriétaire : " + arbre.getProprietaire().getNom());
     }
 
     /**
@@ -46,6 +59,4 @@ public class GlobalTreesManager {
     public static void effacerTousLesArbres() {
         arbres.clear();
     }
-
-
 }

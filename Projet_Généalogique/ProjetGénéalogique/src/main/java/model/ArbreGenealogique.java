@@ -20,32 +20,37 @@ public class ArbreGenealogique {
      * @param proprietaire The owner of the tree.
      */
     public ArbreGenealogique(Personne proprietaire) {
+        if (proprietaire == null) {
+            throw new IllegalArgumentException("Le propriétaire de l'arbre ne peut pas être null.");
+        }
         this.proprietaire = proprietaire;
         this.noeuds = new HashSet<>();
+        this.noeuds.add(proprietaire); // Ajouter le propriétaire comme premier noeud
     }
 
     /** Returns the list of people in the tree. */
     public Set<Personne> getNoeuds() {
         return noeuds;
     }
+
     /** Returns the owner of the tree. */
     public Personne getProprietaire() {
         return proprietaire;
     }
 
     /**
-     * Removes a person from the tree. If the person is registered, a request must be approved.
+     * Removes a person from the tree.
+     * If the person is registered, a request must be approved.
      * @param personne The person to remove.
      * @return true if removed, false otherwise.
      */
     public boolean supprimerNoeud(Personne personne) {
         if (personne.isEstInscrit()) {
             System.out.println("Approbation de la personne inscrite en attente de validation.");
-            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.getLiens().get(personne) );
+            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.getLiens().get(personne));
             return false;
         }
         this.proprietaire.supprimerLien(personne);
-        System.out.println("Suppression validée");
         return noeuds.remove(personne);
     }
 
@@ -56,13 +61,6 @@ public class ArbreGenealogique {
         for (Personne p : noeuds) {
             System.out.println(p.getNom() + " (" + p.getLien() + ")");
         }
-    }
-
-    /**
-     * Placeholder for graphical tree display (JavaFX or Swing).
-     */
-    public void afficherGraphique() {
-        // TODO : implémenter vue graphique
     }
 
     /**
@@ -172,13 +170,10 @@ public class ArbreGenealogique {
                     break;
                 default:
                     System.out.println("⚠️ Champ immuable ou inconnu ignoré : " + champ);
-
             }
         }
 
-        System.out.println("✅ Modification effectuée pour " + cible.getPrenom() + cible.getNom());
+        System.out.println("✅ Modification effectuée pour " + cible.getPrenom() + " " + cible.getNom());
         return true;
     }
-
 }
-
