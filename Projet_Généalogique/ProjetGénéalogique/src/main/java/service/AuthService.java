@@ -155,7 +155,7 @@ public class AuthService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
             if (fichierVide) {
-                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,genre,login,motDePasse,numero");
+                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion");
                 writer.newLine();
             }
 
@@ -176,10 +176,54 @@ public class AuthService {
                     personne.getGenre().toString(),
                     c.getLogin(),
                     c.getMotDePasse(),
-                    c.getNumero());
+                    c.getNumero(),
+                    c.isPremiereConnexion() ? "true" : "false");
             writer.write(ligne);
             writer.newLine();
         }
 
     }
+
+    public void mettreAJourUtilisateur(Personne personne) {
+        Path path = Paths.get(UTILISATEURS_FILE_PATH);
+        List<String> lignes = new ArrayList<>();
+
+        try {
+            lignes = Files.readAllLines(path);
+            String nss = personne.getNss();
+
+            for (int i = 1; i < lignes.size(); i++) {
+                String[] champs = lignes.get(i).split(",");
+                if (champs.length > 12 && champs[0].equals(nss)) {
+                    Compte c = personne.getCompte();
+                    String nouvelleLigne = String.join(",",
+                            personne.getNss(),
+                            personne.getPrenom(),
+                            personne.getNom(),
+                            personne.getDateNaissance().toString(),
+                            personne.getNationalite(),
+                            personne.getCarteIdentite(),
+                            c.getEmail(),
+                            c.getTelephone(),
+                            c.getAdresse(),
+                            personne.getCodePrive(),
+                            personne.getPere() != null ? personne.getPere().getNss() : "",
+                            personne.getMere() != null ? personne.getMere().getNss() : "",
+                            personne.getGenre().toString(),
+                            c.getLogin(),
+                            c.getMotDePasse(),
+                            c.getNumero(),
+                            c.isPremiereConnexion() ? "true" : "false");
+
+                    lignes.set(i, nouvelleLigne);
+                    break;
+                }
+            }
+
+            Files.write(path, lignes);
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la mise à jour de l'utilisateur : " + e.getMessage());
+        }
+    }
+
 }

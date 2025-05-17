@@ -42,8 +42,14 @@ public class ChangerMotDePasseView {
                 return;
             }
 
-            personne.getCompte().setMotDePasse(mdp);
-            personne.getCompte().setPremiereConnexion(false);
+            if (mdp.equals(personne.getCompte().getMotDePasse())) {
+                message.setText("Le mot de passe est identique au précédent. Veuillez en choisir un autre.");
+                return;
+            }
+
+            this.personne.getCompte().setMotDePasse(mdp);
+            this.personne.getCompte().setPremiereConnexion(false);
+            authService.mettreAJourUtilisateur(personne);
             message.setText("✅ Mot de passe modifié avec succès. Redirection...");
 
             PauseTransition pause = new PauseTransition(Duration.seconds(3));

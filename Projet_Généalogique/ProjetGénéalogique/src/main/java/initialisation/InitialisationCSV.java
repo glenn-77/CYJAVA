@@ -28,8 +28,8 @@ public class InitialisationCSV {
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 16) {
-                    System.err.println("Ligne mal formatée (moins de 16 colonnes), ignorée : " + line);
+                if (values.length < 17) {
+                    System.err.println("Ligne mal formatée (moins de 17 colonnes), ignorée : " + line);
                     continue;
                 }
 
@@ -49,12 +49,15 @@ public class InitialisationCSV {
                     String genreStr = values[12].trim().toUpperCase();
                     String login = values[13].trim();
                     String motDePasse = values[14].trim();
+                    String premiereConnexion = values[16].trim();
 
+                    boolean premiereConnexionBool = premiereConnexion.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
 
                     // Création de l'objet Compte et Personne
                     Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
+                    compte.setPremiereConnexion(premiereConnexionBool);
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
                             codePrive, genre, compte, null);
                     personne.setArbre(new ArbreGenealogique(personne));
