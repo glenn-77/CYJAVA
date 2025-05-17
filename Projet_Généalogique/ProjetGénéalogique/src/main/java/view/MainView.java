@@ -9,7 +9,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Personne;
 import service.AuthService;
-
+import javafx.scene.layout.BorderPane;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.Group;
 
 public class MainView {
 
@@ -36,11 +38,35 @@ public class MainView {
 
             // Lorsqu'on clique sur "Voir mon arbre familial"
             voirMonArbreBtn.setOnAction(e -> {
-                AffichageArbre affichageArbre = new AffichageArbre(utilisateur, stage, layout);
-                affichageArbre.afficher();
+                BorderPane arbreView = new BorderPane();
+
+                // Utiliser un Group comme conteneur pour le dessin
+                Group arbreGroup = new Group(); 
+
+                // Ajouter un ScrollPane comme parent (pour le défilement)
+                ScrollPane scrollPane = new ScrollPane();
+                scrollPane.setContent(arbreGroup);
+                scrollPane.setFitToWidth(true);
+                scrollPane.setFitToHeight(true);
+                scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+                scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+
+                arbreView.setCenter(scrollPane);
+
+                // Dessiner l'arbre dans le Group
+                AffichageArbre affichageArbre = new AffichageArbre(utilisateur, stage);
+                affichageArbre.afficher(arbreGroup);
+
+                // Bouton de retour
+                Button retourBtn = new Button("Retour");
+                retourBtn.setOnAction(event -> start(stage));
+                arbreView.setBottom(retourBtn);
+                BorderPane.setMargin(retourBtn, new Insets(10));
+
+                Scene arbreScene = new Scene(arbreView, 1400, 900);
+                stage.setScene(arbreScene);
             });
 
-            // "Voir tous les arbres" reste inchangé
             voirTousArbresBtn.setOnAction(e -> {
                 AllTreesView allTreesView = new AllTreesView(authService, utilisateur);
                 allTreesView.start(stage);
