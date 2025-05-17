@@ -104,7 +104,7 @@ public class MainView {
         }
 
         // Créer et afficher la scène principale
-        Scene scene = new Scene(layout, 400, 300);
+        Scene scene = new Scene(layout, 800, 900);
         stage.setScene(scene);
         stage.setTitle("Accueil");
         stage.show();

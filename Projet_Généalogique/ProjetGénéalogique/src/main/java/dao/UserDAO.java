@@ -139,8 +139,7 @@ public class UserDAO {
             String adresse = fields[8].trim();
             String login = fields[11].trim();
             String motDePasse = fields[12].trim();
-            String numero = fields[13].trim();
-            Compte compte = new Compte(login, motDePasse, numero, email, telephone, adresse);
+            Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
 
             Personne personne = new Personne (nss, prenom, nom, date, nationalite, carteIdentite,
                     codePrive, genre, compte, null);

@@ -28,9 +28,9 @@ public class LoginView {
         Label titleLabel = new Label("Connectez-vous !");
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
-        TextField emailField = new TextField();
-        emailField.setPromptText("Email");
-        emailField.setMaxWidth(250);
+        TextField identifiantField = new TextField();
+        identifiantField.setPromptText("Email, login ou code privée");
+        identifiantField.setMaxWidth(250);
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Mot de passe");
@@ -56,10 +56,17 @@ public class LoginView {
         });
 
         loginButton.setOnAction(e -> {
-            String email = emailField.getText();
+            String identifiant = identifiantField.getText();
             String password = passwordField.getText();
-            Personne personne = authService.authentifier(email, password);
+            Personne personne = authService.authentifier(identifiant, password);
             if (personne != null) {
+                if (personne.getCompte().isPremiereConnexion()) {
+                    // Redirige vers une vue de changement de mot de passe
+                    ChangerMotDePasseView changerView = new ChangerMotDePasseView(authService, personne);
+                    changerView.start(primaryStage);
+                    return;
+                }
+
                 MainView accueil = new MainView(authService, personne);
                 accueil.start(primaryStage);
             } else {
@@ -68,12 +75,12 @@ public class LoginView {
         });
 
         layout.getChildren().addAll(
-                titleLabel, emailField, passwordField,
+                titleLabel, identifiantField, passwordField,
                 loginButton, inscriptionButton, retourButton,
                 messageLabel
         );
 
-        Scene scene = new Scene(layout, 350, 350);
+        Scene scene = new Scene(layout, 850, 850);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

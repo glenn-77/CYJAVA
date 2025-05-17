@@ -96,10 +96,6 @@ public class Personne {
         return codePrive;
     }
 
-    public void setCodePrive(String codePrive) {
-        this.codePrive = codePrive;
-    }
-
     public Personne getPere() {
         return pere;
     }
@@ -248,7 +244,7 @@ public class Personne {
         // Envoie un mail à l’administrateur
         String sujet = "📬 Nouvelle demande de lien à valider";
         String corps = String.format(
-                "Bonjour Admin,\n\n%s %s souhaite ajouter un lien \"%s\" avec %s %s.\n" +
+                "Bonjour Admin,\n\n%s %s souhaite modifier un lien \"%s\" avec %s %s.\n" +
                         "Merci de traiter cette demande depuis votre interface administrateur.",
                 this.getPrenom(), this.getNom(),
                 lien.name().toLowerCase(),

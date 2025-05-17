@@ -1,6 +1,5 @@
 package model;
 
-import service.LienService;
 
 import java.util.*;
 
@@ -45,9 +44,13 @@ public class ArbreGenealogique {
      * @return true if removed, false otherwise.
      */
     public boolean supprimerNoeud(Personne personne) {
+        if (this.proprietaire.getCompte() instanceof Admin) {
+            this.proprietaire.supprimerLien(personne);
+            return noeuds.remove(personne);
+        }
         if (personne.isEstInscrit()) {
-            System.out.println("Approbation de la personne inscrite en attente de validation.");
-            LienService.demandeSuppressionLien(this.proprietaire, personne, this.proprietaire.getLiens().get(personne));
+            System.out.println("Approbation de l'admin en attente de validation.");
+            this.proprietaire.demanderModification(personne, this.proprietaire.getLiens().get(personne));
             return false;
         }
         this.proprietaire.supprimerLien(personne);
@@ -131,49 +134,5 @@ public class ArbreGenealogique {
                 System.out.println("⚠️ Erreur : lien enfant " + p.getNom() + " ignoré faute de parent dans l'arbre.");
             }
         }
-    }
-
-    /**
-     * Edits mutable fields of a person (email, phone, etc.), skipping immutable fields.
-     * @param cible The person to edit.
-     * @param nouvellesInfos Map of fields to update.
-     * @return true if successful, false otherwise.
-     */
-    public boolean modifierNoeud(Personne cible, Map<String, String> nouvellesInfos) {
-        if (!noeuds.contains(cible)) {
-            System.out.println("❌ La personne n'existe pas dans l'arbre.");
-            return false;
-        }
-
-        for (Map.Entry<String, String> entry : nouvellesInfos.entrySet()) {
-            String champ = entry.getKey().toLowerCase();
-            String valeur = entry.getValue();
-
-            switch (champ) {
-                case "adresse":
-                    cible.getCompte().setAdresse(valeur);
-                    break;
-                case "email":
-                    cible.getCompte().setEmail(valeur);
-                    break;
-                case "telephone":
-                    cible.getCompte().setTelephone(valeur);
-                    break;
-                case "login":
-                    cible.getCompte().setLogin(valeur);
-                    break;
-                case "motdepasse":
-                    cible.getCompte().setMotDePasse(valeur);
-                    break;
-                case "numero":
-                    cible.getCompte().setNumero(valeur);
-                    break;
-                default:
-                    System.out.println("⚠️ Champ immuable ou inconnu ignoré : " + champ);
-            }
-        }
-
-        System.out.println("✅ Modification effectuée pour " + cible.getPrenom() + " " + cible.getNom());
-        return true;
     }
 }

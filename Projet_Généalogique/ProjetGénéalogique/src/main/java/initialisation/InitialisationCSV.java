@@ -49,13 +49,12 @@ public class InitialisationCSV {
                     String genreStr = values[12].trim().toUpperCase();
                     String login = values[13].trim();
                     String motDePasse = values[14].trim();
-                    String numero = values[15].trim();
 
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
 
                     // Création de l'objet Compte et Personne
-                    Compte compte = new Compte(login, motDePasse, numero, email, telephone, adresse);
+                    Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
                             codePrive, genre, compte, null);
                     personne.setArbre(new ArbreGenealogique(personne));

@@ -1,17 +1,19 @@
 package model;
 
+import service.CoherenceVerifier;
 import service.MailService;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 public class Admin extends Compte {
 
     private String role;
 
-    public Admin(String login, String motDePasse, String numero,
+    public Admin(String login, String motDePasse,
                  String email, String telephone, String adresse,
                  Personne proprietaire, String role) {
-        super(login, motDePasse, numero, email, telephone, adresse);
+        super(login, motDePasse, email, telephone, adresse);
         this.role = role;
     }
 
@@ -36,6 +38,10 @@ public class Admin extends Compte {
         ArbreGenealogique arbreDemandeur = demandeur.getArbre();
         if (!arbreDemandeur.contient(cible)) {
             arbreDemandeur.getNoeuds().add(cible);
+            if (!CoherenceVerifier.verifierToutesLesCoherences(arbreDemandeur)) {
+                arbreDemandeur.getNoeuds().remove(cible);
+                return false;
+            }
         }
         demandeur.ajouterLien(cible, lien);
 
@@ -67,6 +73,31 @@ public class Admin extends Compte {
     }
 
     /**
+     * Accepte une demande de suppression de lien entre deux personnes
+     */
+    public void validerSuppressionLien(Personne p1, Personne p2) {
+        p1.supprimerLien(p2);
+        p2.supprimerLien(p1);
+
+        MailService.envoyerEmail(p1.getCompte().getEmail(),
+                "✅ Suppression de lien acceptée",
+                "Le lien entre vous et " + p2.getNom() + " a été supprimé par l'administrateur.");
+
+        MailService.envoyerEmail(p2.getCompte().getEmail(),
+                "✅ Suppression de lien acceptée",
+                "Le lien entre vous et " + p1.getNom() + " a été supprimé par l'administrateur.");
+    }
+
+    /**
+     * Refuse une demande de suppression de lien
+     */
+    public void refuserSuppressionLien(Personne demandeur, Personne cible) {
+        MailService.envoyerEmail(demandeur.getCompte().getEmail(),
+                "❌ Suppression refusée",
+                "Votre demande de suppression du lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
+    }
+
+    /**
      * Vérifie si le lien proposé fait partie des liens autorisés
      */
     private boolean isLienAutorise(LienParente lien) {
@@ -75,7 +106,10 @@ public class Admin extends Compte {
     }
 
     /**
-     * Modifie les champs autorisés d'une personne
+     * Edits mutable fields of a person (email, phone, etc.), skipping immutable fields.
+     * @param cible The person to edit.
+     * @param nouvellesInfos Map of fields to update.
+     * @return true if successful, false otherwise.
      */
     public boolean modifierChamps(Personne cible, Map<String, String> nouvellesInfos) {
         for (Map.Entry<String, String> entry : nouvellesInfos.entrySet()) {
@@ -111,5 +145,14 @@ public class Admin extends Compte {
                 "Votre profil a été mis à jour par l'administrateur.");
 
         return true;
+    }
+
+    /**
+     * Crée une nouvelle personne non inscrite à partir d'un formulaire rempli par un utilisateur
+     */
+    public Personne creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) {
+        Personne nouvelle = new Personne(null, prenom, nom, dateNaissance, nationalite, null, null, genre, null, null);
+        System.out.println("✅ Nouvelle personne créée : " + prenom + " " + nom);
+        return nouvelle;
     }
 }

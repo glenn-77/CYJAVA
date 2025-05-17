@@ -1,8 +1,6 @@
 package service;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,6 +25,15 @@ public class AuthService {
         this.arbres = new ArrayList<>();
         try {
             chargerUtilisateursDepuisCSV();
+            try (BufferedReader reader = new BufferedReader(new FileReader("ressources/compteur.txt"))) {
+                String ligne = reader.readLine();
+                if (ligne != null) {
+                    int valeur = Integer.parseInt(ligne.trim());
+                    Compte.setCompteur(valeur);
+                }
+            } catch (IOException e) {
+                System.out.println("Aucun fichier de compteur trouvé, valeur par défaut utilisée.");
+            }
             chargerArbres();
         } catch (IOException e) {
             e.printStackTrace();
@@ -81,19 +88,21 @@ public class AuthService {
     /**
      * Authentifie un utilisateur via son email et mot de passe.
      *
-     * @param email       L'email de l'utilisateur.
+     * @param identifiant       L'email ou login de l'utilisateur.
      * @param motDePasse  Le mot de passe de l'utilisateur.
      * @return L'objet Personne correspondant, ou null si l'authentification échoue.
      */
-    public Personne authentifier(String email, String motDePasse) {
-        if (utilisateurs.containsKey(email)) {
-            Personne utilisateur = utilisateurs.get(email);
-            if (utilisateur.getCompte().getMotDePasse().equals(motDePasse)) {
+    public Personne authentifier(String identifiant, String motDePasse) {
+        for (Personne utilisateur : utilisateurs.values()) {
+            Compte compte = utilisateur.getCompte();
+            if ((compte.getEmail().equals(identifiant) || compte.getLogin().equals(identifiant) || utilisateur.getCodePrive().equals(identifiant))
+                    && compte.getMotDePasse().equals(motDePasse)) {
                 return utilisateur;
             }
         }
         return null;
     }
+
 
     /**
      * Récupère la liste des arbres généalogiques.
@@ -120,6 +129,11 @@ public class AuthService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("ressources/compteur.txt"))) {
+            writer.write(String.valueOf(Compte.getCompteur()));
+        } catch (IOException e) {
+            System.out.println("Erreur lors de l'enregistrement du compteur.");
         }
     }
 
@@ -157,12 +171,15 @@ public class AuthService {
                     c.getTelephone(),
                     c.getAdresse(),
                     personne.getCodePrive(),
+                    personne.getPere() != null ? personne.getPere().getNss() : "",
+                    personne.getMere() != null ? personne.getMere().getNss() : "",
                     personne.getGenre().toString(),
                     c.getLogin(),
                     c.getMotDePasse(),
-                    "");
+                    c.getNumero());
             writer.write(ligne);
             writer.newLine();
         }
+
     }
 }

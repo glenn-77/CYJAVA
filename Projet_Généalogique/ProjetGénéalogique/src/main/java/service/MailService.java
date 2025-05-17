@@ -8,7 +8,12 @@ import com.sendgrid.helpers.mail.objects.Email;
 import java.io.IOException;
 
 public class MailService {
-    private static final Dotenv dotenv = Dotenv.load();  // charge le .env
+    private static final Dotenv dotenv = Dotenv.configure()
+            .directory("Projet_Généalogique/ProjetGénéalogique")
+            .filename(".env")
+            .load();
+
+    ;  // charge le .env
     private static final String SENDGRID_API_KEY = dotenv.get("SENDGRID_API_KEY");
 
     public static void envoyerEmail(String destinataire, String sujet, String contenu) {

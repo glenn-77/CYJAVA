@@ -7,15 +7,26 @@ public class Compte {
     private String email;
     private String telephone;
     private String adresse;
+    private boolean isPremiereConnexion;
+    private static int compteur = 17;
 
 
-    public Compte(String login, String motDePasse, String numero, String email, String telephone, String adresse) {
+    public Compte(String login, String motDePasse, String email, String telephone, String adresse) {
         this.login = login;
         this.motDePasse = motDePasse;
-        this.numero = numero;
+        this.numero = String.format("%03d", compteur);
         this.email = email;
         this.telephone = telephone;
         this.adresse = adresse;
+        this.isPremiereConnexion = true;
+    }
+
+    public static int getCompteur() {
+        return compteur;
+    }
+
+    public static void setCompteur(int nvcompteur) {
+        Compte.compteur = nvcompteur;
     }
 
     public String getLogin() {
@@ -66,6 +77,13 @@ public class Compte {
         this.adresse = adresse;
     }
 
+    public boolean isPremiereConnexion() {
+        return this.isPremiereConnexion;
+    }
+
+    public void setPremiereConnexion(boolean premiereConnexion) {
+        isPremiereConnexion = premiereConnexion;
+    }
 }
 
    
