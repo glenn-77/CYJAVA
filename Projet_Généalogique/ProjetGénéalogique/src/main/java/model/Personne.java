@@ -54,14 +54,14 @@ public class Personne {
         this.arbre = arbre;
     }
 
-    public Personne(String nom, Genre genre){
+    public Personne(String nom,String prenom, String nationalite, Genre genre){
         this.nom = nom;
         this.genre = genre;
         this.dateNaissance = LocalDate.now();
         this.nss = null;
         this.carteIdentite = null;
-        this.prenom = null;
-        this.nationalite = null;
+        this.prenom = prenom;
+        this.nationalite = nationalite;
     }
     
     public String getNss() {

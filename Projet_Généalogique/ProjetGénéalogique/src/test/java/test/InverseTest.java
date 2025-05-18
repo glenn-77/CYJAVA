@@ -6,8 +6,8 @@ import java.util.*;
 public class InverseTest {
 
     public static void main(String[] args) {
-        Personne homme = new Personne("Jean", Genre.HOMME);
-        Personne femme = new Personne("Marie", Genre.FEMME);
+        Personne homme = new Personne("Jean", "Dio", "français", Genre.HOMME);
+        Personne femme = new Personne("Marie", "Dia", "espagnole", Genre.FEMME);
 
         Map<LienParente, LienParente> attentesHomme = new HashMap<>();
         attentesHomme.put(LienParente.PERE, LienParente.FILS);

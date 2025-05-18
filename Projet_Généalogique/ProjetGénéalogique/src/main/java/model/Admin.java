@@ -8,21 +8,17 @@ import java.util.Map;
 
 public class Admin extends Compte {
 
-    private String role;
+    private final String role;
 
     public Admin(String login, String motDePasse,
                  String email, String telephone, String adresse,
-                 Personne proprietaire, String role) {
+                 Personne proprietaire) {
         super(login, motDePasse, email, telephone, adresse);
-        this.role = role;
+        this.role = "admin";
     }
 
     public String getRole() {
         return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 
     /**
