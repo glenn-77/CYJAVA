@@ -69,6 +69,7 @@ public class ChangerMotDePasseView {
         VBox layout = new VBox(15, titre, nouveauMotDePasse, confirmation, valider, message, retourButton);
         layout.setAlignment(Pos.CENTER);
         Scene scene = new Scene(layout, 800, 850);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Changement de mot de passe");
         stage.show();

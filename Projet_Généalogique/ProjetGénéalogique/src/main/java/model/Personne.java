@@ -17,7 +17,7 @@ public class Personne {
     private final String carteIdentite;
     private final Genre genre;
     private boolean estVivant;
-
+    private String familleId;
     private String codePrive;
 
     private Personne pere;
@@ -45,6 +45,7 @@ public class Personne {
         this.codePrive = codePrive;
         this.genre = genre;
         this.compte = compte;
+        this.setFamilleId("FAM_" + nom.toUpperCase());
 
         this.enfants = new HashSet<>();
         this.liensParente = new HashMap<>();
@@ -375,5 +376,13 @@ public class Personne {
         return nss != null ?
                 Objects.hash(nss) :
                 Objects.hash(nom, prenom, dateNaissance);
+    }
+
+    public String getFamilleId() {
+        return familleId;
+    }
+
+    public void setFamilleId(String familleId) {
+        this.familleId = familleId;
     }
 }

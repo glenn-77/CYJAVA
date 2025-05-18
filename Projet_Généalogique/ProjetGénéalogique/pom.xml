@@ -229,6 +229,12 @@
                     <include>**/*.txt</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.css</include>
+                </includes>
+            </resource>
         </resources>
 
     </build>

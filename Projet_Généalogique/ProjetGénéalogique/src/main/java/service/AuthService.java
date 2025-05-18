@@ -60,19 +60,34 @@ public class AuthService {
      * Initialise les arbres généalogiques en fonction des utilisateurs.
      */
     private void chargerArbres() {
+        Map<String, ArbreGenealogique> arbresParFamille = new HashMap<>();
+
         for (Personne utilisateur : utilisateurs.values()) {
-            if (utilisateur.getArbre() == null) {
-                // Si aucun arbre n'est associé, on en crée un pour l'utilisateur
-                ArbreGenealogique nouvelArbre = new ArbreGenealogique(utilisateur);
-                utilisateur.setArbre(nouvelArbre);
-                arbres.add(nouvelArbre);
-                GlobalTreesManager.ajouterArbre(nouvelArbre);
-            } else {
-                // Ajouter l'arbre existant à la liste globale
-                arbres.add(utilisateur.getArbre());
-                GlobalTreesManager.ajouterArbre(utilisateur.getArbre());
+            if (utilisateur.getArbre() != null) continue;
+
+            Personne racine = trouverAncetre(utilisateur);
+            String cleFamille = racine.getNss();
+
+            if (!arbresParFamille.containsKey(cleFamille)) {
+                ArbreGenealogique arbre = new ArbreGenealogique(racine);
+                arbresParFamille.put(cleFamille, arbre);
+                GlobalTreesManager.ajouterArbre(arbre);
+                arbres.add(arbre);
             }
+
+            ArbreGenealogique arbreFamille = arbresParFamille.get(cleFamille);
+            utilisateur.setArbre(arbreFamille);
         }
+    }
+
+    private Personne trouverAncetre(Personne p) {
+        Set<Personne> visites = new HashSet<>();
+        while ((p.getPere() != null || p.getMere() != null) && !visites.contains(p)) {
+            visites.add(p);
+            if (p.getPere() != null) p = p.getPere();
+            else if (p.getMere() != null) p = p.getMere();
+        }
+        return p;
     }
 
     /**
@@ -155,7 +170,7 @@ public class AuthService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
             if (fichierVide) {
-                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion");
+                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId");
                 writer.newLine();
             }
 
@@ -177,7 +192,8 @@ public class AuthService {
                     c.getLogin(),
                     c.getMotDePasse(),
                     c.getNumero(),
-                    c.isPremiereConnexion() ? "true" : "false");
+                    c.isPremiereConnexion() ? "true" : "false",
+                    personne.getFamilleId() != null ? personne.getFamilleId() : "");
             writer.write(ligne);
             writer.newLine();
         }
@@ -213,7 +229,8 @@ public class AuthService {
                             c.getLogin(),
                             c.getMotDePasse(),
                             c.getNumero(),
-                            c.isPremiereConnexion() ? "true" : "false");
+                            c.isPremiereConnexion() ? "true" : "false",
+                            personne.getFamilleId() != null ? personne.getFamilleId() : "");
 
                     lignes.set(i, nouvelleLigne);
                     break;

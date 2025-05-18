@@ -28,8 +28,8 @@ public class InitialisationCSV {
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 17) {
-                    System.err.println("Ligne mal formatée (moins de 17 colonnes), ignorée : " + line);
+                if (values.length < 18) {
+                    System.err.println("Ligne mal formatée (moins de 18 colonnes), ignorée : " + line);
                     continue;
                 }
 

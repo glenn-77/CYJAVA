@@ -191,6 +191,7 @@ public class InscriptionView {
         );
 
         Scene scene = new Scene(layout, 800, 1200);
+        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
     }

@@ -2,12 +2,15 @@ package view;
 
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.Personne;
 import model.ArbreGenealogique;
+
 
 import java.util.*;
 
@@ -107,14 +110,11 @@ public class AffichageArbre {
             // Position de départ à gauche
             double xStart = centreX - (largeurTotale / 2);
 
-            int index = 0;
-            for (Personne personne : personnesNiveau) {
-                double xPosition = xStart + (index * HORIZONTAL_SPACING);
+            for (int i = 0; i < personnesNiveau.size(); i++) {
+                Personne personne = personnesNiveau.get(i);
+                double xPosition = xStart + (i * HORIZONTAL_SPACING);
                 double yPosition = niveau * VERTICAL_SPACING;
-
-                // Stocker la position dans la map
                 positions.put(personne, new double[]{xPosition, yPosition});
-                index++;
             }
         }
     }
@@ -126,7 +126,7 @@ public class AffichageArbre {
 
         // Dessiner le nœud actuel
         double[] position = positions.get(personne);
-        dessinerNoeud(group, personne.getPrenom() + " " + personne.getNom(), position[0], position[1]);
+        dessinerNoeud(group, personne, position[0], position[1]);
 
         // Dessiner les liens vers les parents
         if (personne.getPere() != null) {
@@ -148,23 +148,30 @@ public class AffichageArbre {
 
 
 
-    private void dessinerNoeud(Group group, String nom, double x, double y) {
-        double largeurNoeud = 130;
-        double hauteurNoeud = 40;
+    private void dessinerNoeud(Group group, Personne personne, double x, double y) {
+        double largeurNoeud = 150;
+        double hauteurNoeud = 50;
 
         // Rectangle représentant le nœud
         Rectangle cadre = new Rectangle(x - largeurNoeud / 2, y - hauteurNoeud / 2, largeurNoeud, hauteurNoeud);
-        cadre.setFill(Color.LIGHTYELLOW);
+        cadre.setFill(personne.isEstInscrit() ? Color.LIGHTBLUE : Color.LIGHTGRAY);
         cadre.setStroke(Color.BLACK);
-        cadre.setArcWidth(10);
-        cadre.setArcHeight(10);
+        cadre.setArcWidth(15);
+        cadre.setArcHeight(15);
 
         // Texte limité avec wrapping pour éviter toute surcharge
-        Text texte = new Text(nom);
-        texte.setWrappingWidth(largeurNoeud - 10); // Largeur limitée pour éviter les débordements
-        texte.setX(cadre.getX() + 10); // Petit décalage horizontal
-        texte.setY(cadre.getY() + hauteurNoeud / 1.5); // Centré verticalement
-        texte.setFill(Color.BLACK);
+        Text texte = new Text(personne.getPrenom() + " " + personne.getNom());
+        texte.setFont(Font.font("Arial", 14));
+        texte.setX(cadre.getX() + 10);
+        texte.setY(cadre.getY() + 30);
+        texte.setFill(Color.DARKBLUE);
+
+        cadre.setOnMouseEntered(e -> cadre.setStroke(Color.DARKRED));
+        cadre.setOnMouseExited(e -> cadre.setStroke(Color.BLACK));
+
+        cadre.setOnMouseClicked((MouseEvent e) -> {
+            PersonneDetailView.showPopup(personne);
+        });
 
         group.getChildren().addAll(cadre, texte);
     }
@@ -178,10 +185,10 @@ public class AffichageArbre {
         double[] positionParent = positions.get(parent);
 
         // Ligne reliant parent et enfant
-        Line ligne = new Line(positionParent[0], positionParent[1] + 20,
-                positionEnfant[0], positionEnfant[1] - 20);
+        Line ligne = new Line(positionParent[0], positionParent[1] + 25,
+                positionEnfant[0], positionEnfant[1] - 25);
         ligne.setStroke(Color.GRAY);
-        ligne.setStrokeWidth(1.5);
+        ligne.setStrokeWidth(2);
 
         group.getChildren().add(ligne);
     }
