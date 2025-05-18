@@ -17,6 +17,7 @@ public class Personne {
     private final String carteIdentite;
     private final Genre genre;
     private boolean estVivant;
+    private String familleId;
 
     private String codePrive;
 
@@ -45,6 +46,7 @@ public class Personne {
         this.codePrive = codePrive;
         this.genre = genre;
         this.compte = compte;
+        this.familleId = familleId;
 
         this.enfants = new HashSet<>();
         this.liensParente = new HashMap<>();
@@ -158,6 +160,14 @@ public class Personne {
 
     public void setLien(LienParente lien) {
         this.lien = lien;
+    }
+
+    public String getFamilleId() {
+        return familleId;
+    }
+
+    public void setFamilleId(String familleId) {
+        this.familleId = familleId;
     }
 
     public boolean infosIdentiques(Personne autre) {

@@ -32,6 +32,7 @@ public class AllTreesView {
             layout.getChildren().addAll(label, retour);
 
             Scene scene = new Scene(layout, 400, 300);
+            scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
             stage.setScene(scene);
             stage.setTitle("Tous les arbres");
             stage.show();

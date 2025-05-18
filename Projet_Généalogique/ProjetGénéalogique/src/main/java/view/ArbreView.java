@@ -44,6 +44,7 @@ public class ArbreView {
         layout.getChildren().add(retour);
 
         Scene scene = new Scene(layout, 400, 500);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Mon Arbre");
         stage.show();

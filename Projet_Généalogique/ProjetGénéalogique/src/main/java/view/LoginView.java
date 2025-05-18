@@ -81,6 +81,7 @@ public class LoginView {
         );
 
         Scene scene = new Scene(layout, 850, 850);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

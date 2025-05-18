@@ -40,9 +40,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Charge les utilisateurs depuis un fichier CSV.
-     */
     private void chargerUtilisateursDepuisCSV() throws IOException {
         InitialisationCSV loader = new InitialisationCSV();
         try (var inputStream = getClass().getClassLoader().getResourceAsStream("utilisateurs.csv")) {
@@ -56,42 +53,41 @@ public class AuthService {
         }
     }
 
-    /**
-     * Initialise les arbres généalogiques en fonction des utilisateurs.
-     */
     private void chargerArbres() {
+        Map<String, ArbreGenealogique> arbresParFamille = new HashMap<>();
+
         for (Personne utilisateur : utilisateurs.values()) {
-            if (utilisateur.getArbre() == null) {
-                // Si aucun arbre n'est associé, on en crée un pour l'utilisateur
-                ArbreGenealogique nouvelArbre = new ArbreGenealogique(utilisateur);
-                utilisateur.setArbre(nouvelArbre);
-                arbres.add(nouvelArbre);
-                GlobalTreesManager.ajouterArbre(nouvelArbre);
-            } else {
-                // Ajouter l'arbre existant à la liste globale
-                arbres.add(utilisateur.getArbre());
-                GlobalTreesManager.ajouterArbre(utilisateur.getArbre());
+            if (utilisateur.getArbre() != null) continue;
+
+            Personne racine = trouverAncetre(utilisateur);
+            String cleFamille = racine.getNss();
+
+            if (!arbresParFamille.containsKey(cleFamille)) {
+                ArbreGenealogique arbre = new ArbreGenealogique(racine);
+                arbresParFamille.put(cleFamille, arbre);
+                GlobalTreesManager.ajouterArbre(arbre);
+                arbres.add(arbre);
             }
+
+            ArbreGenealogique arbreFamille = arbresParFamille.get(cleFamille);
+            utilisateur.setArbre(arbreFamille);
         }
     }
 
-    /**
-     * Vérifie si un utilisateur existe via son email.
-     *
-     * @param email L'email de l'utilisateur.
-     * @return true s'il existe, sinon false.
-     */
+    private Personne trouverAncetre(Personne p) {
+        Set<Personne> visites = new HashSet<>();
+        while ((p.getPere() != null || p.getMere() != null) && !visites.contains(p)) {
+            visites.add(p);
+            if (p.getPere() != null) p = p.getPere();
+            else if (p.getMere() != null) p = p.getMere();
+        }
+        return p;
+    }
+
     public boolean existe(String email) {
         return utilisateurs.containsKey(email);
     }
 
-    /**
-     * Authentifie un utilisateur via son email et mot de passe.
-     *
-     * @param identifiant       L'email ou login de l'utilisateur.
-     * @param motDePasse  Le mot de passe de l'utilisateur.
-     * @return L'objet Personne correspondant, ou null si l'authentification échoue.
-     */
     public Personne authentifier(String identifiant, String motDePasse) {
         for (Personne utilisateur : utilisateurs.values()) {
             Compte compte = utilisateur.getCompte();
@@ -103,21 +99,10 @@ public class AuthService {
         return null;
     }
 
-
-    /**
-     * Récupère la liste des arbres généalogiques.
-     *
-     * @return Liste des arbres généalogiques disponibles.
-     */
     public List<ArbreGenealogique> getArbres() {
         return arbres;
     }
 
-    /**
-     * Ajoute un utilisateur et met à jour le fichier CSV.
-     *
-     * @param personne La personne à ajouter.
-     */
     public void ajouterUtilisateur(Personne personne) {
         utilisateurs.put(personne.getCompte().getEmail(), personne);
         try {
@@ -137,12 +122,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Sauvegarde uniquement un nouvel utilisateur dans le fichier CSV.
-     *
-     * @param personne La personne à enregistrer.
-     * @throws IOException Si une erreur d'écriture se produit.
-     */
     public void sauvegarderNouvelUtilisateur(Personne personne) throws IOException {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
 
@@ -181,7 +160,6 @@ public class AuthService {
             writer.write(ligne);
             writer.newLine();
         }
-
     }
 
     public void mettreAJourUtilisateur(Personne personne) {

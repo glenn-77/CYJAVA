@@ -6,7 +6,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -28,8 +27,8 @@ public class InitialisationCSV {
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 17) {
-                    System.err.println("Ligne mal formatée (moins de 17 colonnes), ignorée : " + line);
+                if (values.length < 18) {  // ← colonne familleId attendue à l'index 17
+                    System.err.println("Ligne mal formatée (moins de 18 colonnes), ignorée : " + line);
                     continue;
                 }
 
@@ -49,7 +48,9 @@ public class InitialisationCSV {
                     String genreStr = values[12].trim().toUpperCase();
                     String login = values[13].trim();
                     String motDePasse = values[14].trim();
+                    String numero = values[15].trim();
                     String premiereConnexion = values[16].trim();
+                    String familleId = values[17].trim();
 
                     boolean premiereConnexionBool = premiereConnexion.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
@@ -57,9 +58,11 @@ public class InitialisationCSV {
 
                     // Création de l'objet Compte et Personne
                     Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
+                    compte.setNumero(numero);
                     compte.setPremiereConnexion(premiereConnexionBool);
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
                             codePrive, genre, compte, null);
+                    personne.setFamilleId(familleId);  // ← ajout du familleId
                     personne.setArbre(new ArbreGenealogique(personne));
 
                     utilisateurs.add(personne);
@@ -90,8 +93,6 @@ public class InitialisationCSV {
                 if (pere != null) {
                     enfant.setPere(pere);
                     pere.addEnfant(enfant);
-
-                    // Assurez-vous que le père est dans la liste des utilisateurs
                     if (!utilisateurs.contains(pere)) {
                         utilisateurs.add(pere);
                     }
@@ -105,8 +106,6 @@ public class InitialisationCSV {
                 if (mere != null) {
                     enfant.setMere(mere);
                     mere.addEnfant(enfant);
-
-                    // Assurez-vous que la mère est dans la liste des utilisateurs
                     if (!utilisateurs.contains(mere)) {
                         utilisateurs.add(mere);
                     }
