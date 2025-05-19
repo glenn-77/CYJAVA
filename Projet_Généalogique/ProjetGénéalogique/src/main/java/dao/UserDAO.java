@@ -42,18 +42,61 @@ public class UserDAO {
 
     /**
      * Searches for persons by name.
-     * @param nom The last name.
-     * @param prenom The first name.
+     * @param fragment The fragment to look for in the name.
      * @return Set of matching persons.
      */
-    public static Set<Personne> chercherParNomEtPrenom(String nom, String prenom) {
+    public static Set<Personne> chercherParNomContient(String fragment) {
         Set<Personne> results = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
             String line;
             reader.readLine();
             while ((line = reader.readLine()) != null) {
                 Personne p = construireDepuisLigne(line);
-                if (p != null && p.getNom().equalsIgnoreCase(nom) && p.getPrenom().equalsIgnoreCase(prenom)) {
+                if (p != null && p.getNom().toLowerCase().contains(fragment.toLowerCase())) {
+                    results.add(p);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    /**
+     * Searches for persons by the first name.
+     * @param fragment The fragment to look for in the name.
+     * @return Set of matching persons.
+     */
+    public static Set<Personne> chercherParPrenomContient(String fragment) {
+        Set<Personne> results = new HashSet<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
+            String line;
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                Personne p = construireDepuisLigne(line);
+                if (p != null && p.getPrenom().toLowerCase().contains(fragment.toLowerCase())) {
+                    results.add(p);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    /**
+     * Searches for persons by NSS.
+     * @param fragment The fragment to look for in the NSS.
+     * @return Set of matching persons.
+     */
+    public static Set<Personne> chercherParNSSContient(String fragment) {
+        Set<Personne> results = new HashSet<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
+            String line;
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                Personne p = construireDepuisLigne(line);
+                if (p != null && p.getNss().toLowerCase().contains(fragment.toLowerCase())) {
                     results.add(p);
                 }
             }

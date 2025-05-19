@@ -109,7 +109,7 @@ public class MainView {
             });
 
             rechercheBtn.setOnAction(e -> {
-                RechercheView rechercheView = new RechercheView();
+                RechercheView rechercheView = new RechercheView(authService, utilisateur);
                 rechercheView.start(stage);
             });
 
