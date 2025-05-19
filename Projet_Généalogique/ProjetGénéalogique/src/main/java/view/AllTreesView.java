@@ -9,7 +9,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import model.ArbreGenealogique;
+import entites.ArbreGenealogique;
 import service.GlobalTreesManager;
 
 import java.util.List;
@@ -56,10 +56,10 @@ public class AllTreesView {
 
         // Bouton de retour
         Button retour = new Button("Retour");
-        retour.setOnAction(e -> stage.close());
+        retour.setOnAction(e -> start(stage));
         layout.getChildren().add(retour);
 
-        Scene scene = new Scene(layout, 400, 500);
+        Scene scene = new Scene(layout, 800, 900);
         stage.setScene(scene);
         stage.setTitle("Liste des arbres");
         stage.show();

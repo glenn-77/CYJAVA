@@ -1,7 +1,7 @@
 package service;
 
-import model.Personne;
-import model.LienParente;
+import entites.Personne;
+import entites.LienParente;
 
 import java.util.ArrayList;
 import java.util.List;

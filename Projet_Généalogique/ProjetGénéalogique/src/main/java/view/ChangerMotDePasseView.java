@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import model.Personne;
+import entites.Personne;
 import service.AuthService;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;

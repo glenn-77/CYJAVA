@@ -14,6 +14,6 @@ module ProjetGénéalogique {
     exports test;
     exports view;
     exports service;
-    exports model;
+    exports entites;
 }
 

@@ -1,4 +1,4 @@
-package model;
+package entites;
 
 public class Compte {
     private String login;

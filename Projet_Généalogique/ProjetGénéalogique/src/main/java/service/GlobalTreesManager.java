@@ -1,7 +1,6 @@
 package service;
 
-import model.ArbreGenealogique;
-import service.CoherenceVerifier;
+import entites.ArbreGenealogique;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ public class GlobalTreesManager {
         }
 
         // Vérifier la cohérence de l'arbre (avec CoherenceVerifier)
-        CoherenceVerifier.verifierCoherence(arbre);
+        CoherenceVerifier.verifierToutesLesCoherences(arbre);
 
         // Vérifier si un arbre avec le même propriétaire existe déjà
         for (ArbreGenealogique existant : arbres) {

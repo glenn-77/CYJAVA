@@ -1,4 +1,4 @@
-package model;
+package entites;
 
 import service.CoherenceVerifier;
 import service.MailService;

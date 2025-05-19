@@ -1,13 +1,13 @@
 
 package test;
-import model.*;
+import entites.*;
 import java.util.*;
 
 public class InverseTest {
 
     public static void main(String[] args) {
-        Personne homme = new Personne("Jean", "Dio", "français", Genre.HOMME);
-        Personne femme = new Personne("Marie", "Dia", "espagnole", Genre.FEMME);
+        Personne homme = new Personne("Jean", "Dio", java.time.LocalDate.of(2004, 12, 2), "français", Genre.HOMME);
+        Personne femme = new Personne("Marie", "Dia", java.time.LocalDate.parse("2000-11-03"),"espagnole", Genre.FEMME);
 
         Map<LienParente, LienParente> attentesHomme = new HashMap<>();
         attentesHomme.put(LienParente.PERE, LienParente.FILS);

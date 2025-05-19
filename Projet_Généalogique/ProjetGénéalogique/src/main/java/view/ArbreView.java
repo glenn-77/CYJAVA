@@ -7,9 +7,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import model.Personne;
+import entites.Personne;
 import service.AuthService;
-import model.ArbreGenealogique;
+import entites.ArbreGenealogique;
 import java.util.Set;
 
 

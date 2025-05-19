@@ -1,4 +1,4 @@
-package model;
+package entites;
 
 import javafx.scene.control.TreeItem;
 import service.DemandeAdminService;
@@ -53,12 +53,13 @@ public class Personne {
         this.niveauVisibilite = NiveauVisibilite.PUBLIQUE; 
         this.generation = 0;
         this.arbre = arbre;
+        this.estVivant = true;
     }
 
-    public Personne(String nom,String prenom, String nationalite, Genre genre){
+    public Personne(String nom,String prenom, LocalDate dateNaissance, String nationalite, Genre genre){
         this.nom = nom;
         this.genre = genre;
-        this.dateNaissance = LocalDate.now();
+        this.dateNaissance = dateNaissance;
         this.nss = null;
         this.carteIdentite = null;
         this.prenom = prenom;
@@ -384,5 +385,10 @@ public class Personne {
 
     public void setFamilleId(String familleId) {
         this.familleId = familleId;
+    }
+
+    @Override
+    public String toString() {
+        return nom + " " + prenom;
     }
 }

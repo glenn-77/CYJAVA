@@ -9,7 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import model.Personne;
+import entites.Personne;
 import service.AuthService;
 
 import java.io.File;

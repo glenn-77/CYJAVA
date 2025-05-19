@@ -1,5 +1,7 @@
 package view;
 
+import entites.Genre;
+import entites.LienParente;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
@@ -8,8 +10,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import model.Personne;
-import model.ArbreGenealogique;
+import entites.Personne;
+import entites.ArbreGenealogique;
 
 
 import java.util.*;
@@ -88,14 +90,20 @@ public class AffichageArbre {
         // Explorer les parents (niveau supérieur)
         if (personne.getPere() != null) {
             construireNiveaux(personne.getPere(), niveaux, niveau - 1);
+            personne.ajouterLien(personne.getPere(), LienParente.PERE);
         }
         if (personne.getMere() != null) {
             construireNiveaux(personne.getMere(), niveaux, niveau - 1);
+            personne.ajouterLien(personne.getMere(), LienParente.MERE);
         }
 
         // Explorer les enfants (niveau inférieur)
         for (Personne enfant : personne.getEnfants()) {
             construireNiveaux(enfant, niveaux, niveau + 1);
+            if (enfant.getGenre() == Genre.HOMME) personne.ajouterLien(enfant, LienParente.FILS);
+            else if (enfant.getGenre() == Genre.FEMME) personne.ajouterLien(enfant, LienParente.FILLE);
+            else personne.ajouterLien(enfant, null);
+
         }
     }
 
@@ -170,7 +178,7 @@ public class AffichageArbre {
         cadre.setOnMouseExited(e -> cadre.setStroke(Color.BLACK));
 
         cadre.setOnMouseClicked((MouseEvent e) -> {
-            PersonneDetailView.showPopup(personne);
+            PersonneDetailView.showPopup(personne, utilisateurConnecte);
         });
 
         group.getChildren().addAll(cadre, texte);
@@ -191,5 +199,12 @@ public class AffichageArbre {
         ligne.setStrokeWidth(2);
 
         group.getChildren().add(ligne);
+    }
+
+    public void supprimerPersonneGraphiquement(Personne cible, Group group) {
+        utilisateurConnecte.getArbre().getNoeuds().remove(cible);
+        positions.clear();
+        dejaTraites.clear();
+        afficher(group);
     }
 }

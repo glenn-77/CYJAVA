@@ -1,9 +1,9 @@
 package dao;
 
-import model.ArbreGenealogique;
-import model.Compte;
-import model.Genre;
-import model.Personne;
+import entites.ArbreGenealogique;
+import entites.Compte;
+import entites.Genre;
+import entites.Personne;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

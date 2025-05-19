@@ -1,8 +1,8 @@
 package service;
 
-import model.ArbreGenealogique;
-import model.LienParente;
-import model.Personne;
+import entites.ArbreGenealogique;
+import entites.LienParente;
+import entites.Personne;
 
 import java.util.*;
 

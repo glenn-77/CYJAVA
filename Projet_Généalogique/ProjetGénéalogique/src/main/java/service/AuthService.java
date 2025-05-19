@@ -4,11 +4,14 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import model.ArbreGenealogique;
-import model.Compte;
-import model.Personne;
+import entites.ArbreGenealogique;
+import entites.Compte;
+import entites.Personne;
 import initialisation.InitialisationCSV;
+import java.time.LocalDate;
+import entites.Genre;
 
 /**
  * Service d'authentification et gestion des utilisateurs et arbres généalogiques.
@@ -25,7 +28,7 @@ public class AuthService {
         this.arbres = new ArrayList<>();
         try {
             chargerUtilisateursDepuisCSV();
-            try (BufferedReader reader = new BufferedReader(new FileReader("ressources/compteur.txt"))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader("Projet_Généalogique/ProjetGénéalogique/ressources/compteur.txt"))) {
                 String ligne = reader.readLine();
                 if (ligne != null) {
                     int valeur = Integer.parseInt(ligne.trim());
@@ -145,7 +148,7 @@ public class AuthService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("ressources/compteur.txt"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Projet_Généalogique/ProjetGénéalogique/ressources/compteur.txt"))) {
             writer.write(String.valueOf(Compte.getCompteur()));
         } catch (IOException e) {
             System.out.println("Erreur lors de l'enregistrement du compteur.");
@@ -242,5 +245,84 @@ public class AuthService {
             System.err.println("Erreur lors de la mise à jour de l'utilisateur : " + e.getMessage());
         }
     }
+
+    // Ajoute une nouvelle personne dans le CSV (ajout d'une ligne)
+    public static void ajouterPersonne(String nom, String prenom, LocalDate dateNaissance,
+                                       String nationalite, Genre genre) throws IOException {
+        // Générer un NSS unique pour la nouvelle personne (par ex. incrémental ou UUID)
+        String nouveauNss = "ID" + System.currentTimeMillis();  // Ex. simple: à améliorer selon besoins
+        // Préparer la nouvelle ligne CSV avec 18 colonnes
+        String dateStr = dateNaissance.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String[] champs = new String[18];
+        champs[0]  = nouveauNss;
+        champs[1]  = prenom;
+        champs[2]  = nom;
+        champs[3]  = dateStr;
+        champs[4]  = nationalite;
+        champs[5]  = "";  // carteIdentite non fournie
+        champs[6]  = "";  // email non fourni
+        champs[7]  = "";  // telephone non fourni
+        champs[8]  = "";  // adresse non fournie
+        champs[9]  = "";  // codePrive non fourni
+        champs[10] = "";  // nssPere inconnu
+        champs[11] = "";  // nssMere inconnu
+        champs[12] = genre.toString();
+        champs[13] = "";  // login non applicable
+        champs[14] = "";  // motDePasse non applicable
+        champs[15] = "";  // numéro (compteur) non applicable
+        champs[16] = "false";  // premiereConnexion par défaut
+        champs[17] = "";  // familleId non déterminé
+        String nouvelleLigne = String.join(",", champs);
+        // Écriture en fin de fichier CSV
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(UTILISATEURS_FILE_PATH, true))) {
+            writer.newLine();
+            writer.write(nouvelleLigne);
+        }
+    }
+
+    // Modifie la nationalité et le genre d'une personne existante identifiée par son NSS
+    public static void modifierPersonne(String nomCible, String prenomCible, String nouvelleNat, Genre nouveauGenre) throws IOException {
+        Path path = Paths.get(UTILISATEURS_FILE_PATH);
+        List<String> lignes = Files.readAllLines(path);
+        for (int i = 1; i < lignes.size(); i++) {  // i=1 pour sauter l'en-tête
+            String[] champs = lignes.get(i).split(",");
+            if (champs.length >= 18 && champs[1].equals(prenomCible) && champs[2].equals(nomCible)) {
+                // Mise à jour des champs Nationalité (index 4) et Genre (index 12)
+                champs[4]  = nouvelleNat;
+                champs[12] = nouveauGenre.toString();
+                lignes.set(i, String.join(",", champs));
+                break;
+            }
+        }
+        Files.write(path, lignes);
+    }
+
+    public List<Personne> chargerToutesPersonnes() throws IOException {
+        List<Personne> personnes = new ArrayList<>();
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(UTILISATEURS_FILE_PATH))) {
+            String header = reader.readLine();  // sauter la ligne d'en-tête
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split(",");
+                if (values.length < 18) continue;  // ligne invalide si pas assez de colonnes
+                // Extraction des champs principaux d'après l'ordre du CSV
+                String prenom     = values[1].trim();
+                String nom        = values[2].trim();
+                String dateStr    = values[3].trim();
+                String nationalite= values[4].trim();
+                String genreStr   = values[12].trim().toUpperCase();
+                LocalDate dateNaissance;
+                try {
+                    dateNaissance = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } catch (Exception e) {
+                    continue; // date invalide, on ignore cette entrée
+                }
+                Genre genre = Genre.valueOf(genreStr);
+                personnes.add(new Personne(nom, prenom, dateNaissance, nationalite, genre));
+            }
+        }
+        return personnes;
+    }
+
 
 }

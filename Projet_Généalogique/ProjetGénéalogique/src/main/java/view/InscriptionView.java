@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import model.*;
+import entites.*;
 import service.AuthService;
 import service.MailService;
 

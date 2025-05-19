@@ -1,4 +1,4 @@
-package model;
+package entites;
 
 /**
  * Enum listing all possible family relationships between people in the tree.
