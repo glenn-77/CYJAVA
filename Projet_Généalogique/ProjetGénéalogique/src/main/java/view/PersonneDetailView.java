@@ -25,15 +25,22 @@ public class PersonneDetailView {
         String lienTexte = lien != null ? lien.name().toLowerCase() : "aucun";
 
 
-        Text info = new Text("Détails de la personne :\n" +
-                "Nom : " + personne.getNom() + "\n" +
-                "Prénom : " + personne.getPrenom() + "\n" +
-                "Genre : " + personne.getGenre() + "\n" +
-                "Date de naissance : " + personne.getDateNaissance() + "\n" +
-                "Nationalité : " + personne.getNationalite() + "\n" +
-                "Lien :" + lienTexte + "\n" +
-                "Vivant :" + (personne.isEstVivant() ? "oui" : "non") + "\n" +
-                "Inscrit : " + (personne.isEstInscrit() ? "oui" : "non"));
+        StringBuilder details = new StringBuilder();
+        details.append("Détails de la personne :\n")
+                .append("Nom : ").append(personne.getNom()).append("\n")
+                .append("Prénom : ").append(personne.getPrenom()).append("\n")
+                .append("Genre : ").append(personne.getGenre()).append("\n")
+                .append("Date de naissance : ").append(personne.getDateNaissance()).append("\n")
+                .append("Nationalité : ").append(personne.getNationalite()).append("\n");
+
+        if (lien != null) {
+            details.append("Lien : ").append(lien.name().toLowerCase()).append("\n");
+        }
+
+        details.append("Vivant : ").append(personne.isEstVivant() ? "oui" : "non").append("\n")
+                .append("Inscrit : ").append(personne.isEstInscrit() ? "oui" : "non");
+
+        Text info = new Text(details.toString());
 
         Set<Personne> personnesDeMonArbre = utilisateurCourant.getEnfants();
         personnesDeMonArbre.add(utilisateurCourant.getMere());

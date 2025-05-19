@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class UserDAO {
 
-    private static final String CSV_PATH = "ressources/utilisateurs.csv";
+    private static final String CSV_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/utilisateurs.csv";
 
     /**
      * Searches for a person by their social security number.
@@ -27,6 +27,7 @@ public class UserDAO {
     public static Personne chercherParNSS(String nss) {
         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
             String line;
+            reader.readLine();
             while ((line = reader.readLine()) != null) {
                 Personne p = construireDepuisLigne(line);
                 if (p != null && nss.equals(p.getNss())) {
@@ -40,7 +41,7 @@ public class UserDAO {
     }
 
     /**
-     * Searches for persons by name and birthdate.
+     * Searches for persons by name.
      * @param nom The last name.
      * @param prenom The first name.
      * @return Set of matching persons.
@@ -49,9 +50,54 @@ public class UserDAO {
         Set<Personne> results = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
             String line;
+            reader.readLine();
             while ((line = reader.readLine()) != null) {
                 Personne p = construireDepuisLigne(line);
-                if (p != null && p.getNom().equalsIgnoreCase(nom) && p.getPrenom().equals(prenom)) {
+                if (p != null && p.getNom().equalsIgnoreCase(nom) && p.getPrenom().equalsIgnoreCase(prenom)) {
+                    results.add(p);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    /**
+     * Searches for persons by first name.
+     * @param prenom The first name.
+     * @return Set of matching persons.
+     */
+    public static Set<Personne> chercherParPrenom(String prenom) {
+        Set<Personne> results = new HashSet<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
+            String line;
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                Personne p = construireDepuisLigne(line);
+                if (p != null && p.getPrenom().equalsIgnoreCase(prenom)) {
+                    results.add(p);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    /**
+     * Searches for persons by name.
+     * @param nom The last name.
+     * @return Set of matching persons.
+     */
+    public static Set<Personne> chercherParNom(String nom) {
+        Set<Personne> results = new HashSet<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
+            String line;
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                Personne p = construireDepuisLigne(line);
+                if (p != null && p.getNom().trim().equalsIgnoreCase(nom.trim())) {
                     results.add(p);
                 }
             }
@@ -73,6 +119,7 @@ public class UserDAO {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
             String line;
+            reader.readLine();
             while ((line = reader.readLine()) != null) {
                 Personne p = construireDepuisLigne(line);
                 if (p != null && !p.equals(target)) {
@@ -126,10 +173,10 @@ public class UserDAO {
             String[] fields = line.split(",");
             if (fields.length < 14) return null;
             String nss = fields[0];
-            String nom = fields[1];
-            String prenom = fields[2];
+            String prenom = fields[1];
+            String nom = fields[2];
             LocalDate date = LocalDate.parse(fields[3]);
-            Genre genre = Genre.valueOf(fields[10].toUpperCase());
+            Genre genre = Genre.valueOf(fields[12].toUpperCase());
             String nationalite = fields[4];
             String carteIdentite = fields[5];
             String codePrive = fields[9];
@@ -137,8 +184,8 @@ public class UserDAO {
             String email = fields[6].trim();
             String telephone = fields[7].trim();
             String adresse = fields[8].trim();
-            String login = fields[11].trim();
-            String motDePasse = fields[12].trim();
+            String login = fields[13].trim();
+            String motDePasse = fields[14].trim();
             Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
 
             Personne personne = new Personne (nss, prenom, nom, date, nationalite, carteIdentite,

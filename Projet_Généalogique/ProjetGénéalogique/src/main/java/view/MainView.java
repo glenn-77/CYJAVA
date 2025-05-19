@@ -49,6 +49,7 @@ public class MainView {
             Button voirMonArbreBtn = new Button("🌳 Voir mon arbre familial");
             Button voirTousArbresBtn = new Button("👥 Voir tous les arbres");
             Button souvenirsBtn = new Button("📸 Souvenirs");
+            Button rechercheBtn = new Button("🔍 Rechercher une personne");
             Button logoutButton = new Button("🔴 Se déconnecter");
 
             // Lorsqu'on clique sur "Voir mon arbre familial"
@@ -107,6 +108,11 @@ public class MainView {
                 souvenirsView.start(stage);
             });
 
+            rechercheBtn.setOnAction(e -> {
+                RechercheView rechercheView = new RechercheView();
+                rechercheView.start(stage);
+            });
+
             logoutButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
             logoutButton.setOnAction(e -> {
                 MainView mainView = new MainView(authService);
@@ -118,6 +124,7 @@ public class MainView {
                     voirMonArbreBtn,
                     voirTousArbresBtn,
                     souvenirsBtn,
+                    rechercheBtn,
                     logoutButton
             );
         }
