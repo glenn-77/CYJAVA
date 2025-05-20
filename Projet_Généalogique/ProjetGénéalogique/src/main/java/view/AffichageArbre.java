@@ -40,6 +40,10 @@ public class AffichageArbre {
     public void afficher(Group group) {
         group.getChildren().clear();
 
+        // Réinitialisation des structures d'état
+        dejaTraites.clear();
+        positions.clear();
+
         // Vérifications initiales
         if (utilisateurConnecte == null) {
             System.out.println("Erreur : Aucun utilisateur connecté pour afficher l'arbre.");
@@ -77,8 +81,17 @@ public class AffichageArbre {
 
     private void construireNiveaux(Personne personne, Map<Integer, List<Personne>> niveaux, int niveau) {
         // Vérifiez si la personne est null, déjà visitée ou que la profondeur est atteinte
-        if (personne == null || dejaTraites.contains(personne) || niveau > MAX_PROFONDEUR) {
+        if (personne == null) {
+            System.err.println("⚠️ Tentative de construction avec une personne null.");
             return; // Stopper la récursion
+        }
+        if (dejaTraites.contains(personne)) {
+            System.out.println("➖ Personne déjà traitée : " + personne.getPrenom() + " " + personne.getNom());
+            return; // Éviter les cycles
+        }
+        if (niveau > MAX_PROFONDEUR) {
+            System.out.println("⛔ Profondeur maximale atteinte pour : " + personne.getPrenom() + " " + personne.getNom());
+            return;
         }
 
         // Marquer la personne comme visitée
@@ -91,19 +104,37 @@ public class AffichageArbre {
         if (personne.getPere() != null) {
             construireNiveaux(personne.getPere(), niveaux, niveau - 1);
             personne.ajouterLien(personne.getPere(), LienParente.PERE);
+        } else {
+            System.out.println("ℹ️ Aucun père défini pour " + personne.getPrenom() + " " + personne.getNom());
         }
+
         if (personne.getMere() != null) {
             construireNiveaux(personne.getMere(), niveaux, niveau - 1);
             personne.ajouterLien(personne.getMere(), LienParente.MERE);
+        } else {
+            System.out.println("ℹ️ Aucun mère définie pour " + personne.getPrenom() + " " + personne.getNom());
         }
 
         // Explorer les enfants (niveau inférieur)
         for (Personne enfant : personne.getEnfants()) {
-            construireNiveaux(enfant, niveaux, niveau + 1);
-            if (enfant.getGenre() == Genre.HOMME) personne.ajouterLien(enfant, LienParente.FILS);
-            else if (enfant.getGenre() == Genre.FEMME) personne.ajouterLien(enfant, LienParente.FILLE);
-            else personne.ajouterLien(enfant, null);
+            if (enfant == null) {
+                System.err.println("⚠️ Enfant null détecté pour : " + personne.getPrenom() + " " + personne.getNom());
+                continue; // Ignorer les enfants null
+            }
 
+            construireNiveaux(enfant, niveaux, niveau + 1);
+
+            // Ajouter des liens basés sur le genre
+            if (enfant.getGenre() != null) {
+                if (enfant.getGenre() == Genre.HOMME) {
+                    personne.ajouterLien(enfant, LienParente.FILS);
+                } else if (enfant.getGenre() == Genre.FEMME) {
+                    personne.ajouterLien(enfant, LienParente.FILLE);
+                }
+            } else {
+                System.err.println("⚠️ Genre non défini pour : " + enfant.getPrenom() + " " + enfant.getNom());
+                personne.ajouterLien(enfant, null); // Lien est null si le genre est absent
+            }
         }
     }
 
@@ -137,18 +168,22 @@ public class AffichageArbre {
         dessinerNoeud(group, personne, position[0], position[1]);
 
         // Dessiner les liens vers les parents
-        if (personne.getPere() != null) {
+        if (personne.getPere() != null && positions.containsKey(personne.getPere())) {
             dessinerLien(group, personne, personne.getPere());
             dessinerArbreEtLiens(group, personne.getPere(), profondeur + 1);
         }
 
-        if (personne.getMere() != null) {
+        if (personne.getMere() != null && positions.containsKey(personne.getMere())) {
             dessinerLien(group, personne, personne.getMere());
             dessinerArbreEtLiens(group, personne.getMere(), profondeur + 1);
         }
 
         // Dessiner les liens vers les enfants
         for (Personne enfant : personne.getEnfants()) {
+            if (enfant == null || !positions.containsKey(enfant)) {
+                System.err.println("⚠️ Impossible de dessiner un lien : enfant manquant ou non positionné.");
+                continue;
+            }
             dessinerLien(group, enfant, personne);
             dessinerArbreEtLiens(group, enfant, profondeur + 1);
         }

@@ -103,7 +103,7 @@ public class MainView {
                 stage.setScene(arbreScene);
             });
 
-            voirTousArbresBtn.setOnAction(e -> new AllTreesView().start(stage));
+            voirTousArbresBtn.setOnAction(e -> new AllTreesView(utilisateur, stage).afficher());
             souvenirsBtn.setOnAction(e -> new SouvenirsView(authService, utilisateur).start(stage));
             rechercheBtn.setOnAction(e -> new RechercheView(authService, utilisateur).start(stage));
 
