@@ -214,7 +214,7 @@ public class UserDAO {
     private static Personne construireDepuisLigne(String line) {
         try {
             String[] fields = line.split(",");
-            if (fields.length < 14) return null;
+            if (fields.length < 18) return null;
             String nss = fields[0];
             String prenom = fields[1];
             String nom = fields[2];
@@ -229,11 +229,17 @@ public class UserDAO {
             String adresse = fields[8].trim();
             String login = fields[13].trim();
             String motDePasse = fields[14].trim();
+            String urlPhoto = fields[18].trim();
+
+            if (urlPhoto.isEmpty()) {
+                urlPhoto = "images/default.png";
+            }
             Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
 
             Personne personne = new Personne (nss, prenom, nom, date, nationalite, carteIdentite,
                     codePrive, genre, compte, null);
             personne.setArbre(new ArbreGenealogique(personne));
+            personne.setUrlPhoto(urlPhoto);
             return personne;
         } catch (Exception e) {
             return null;

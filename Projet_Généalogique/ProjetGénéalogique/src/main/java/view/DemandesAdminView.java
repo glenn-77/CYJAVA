@@ -43,14 +43,25 @@ public class DemandesAdminView {
             ligne.setAlignment(Pos.CENTER);
 
             validerBtn.setOnAction(e -> {
-                demande.getDemandeur().ajouterLien(demande.getCible(), demande.getLien());
-                DemandeAdminService.supprimerDemande(demande);
-                this.start(stage); // rafraîchir la vue
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                        "Confirmer la demande ?", ButtonType.YES, ButtonType.NO);
+                        confirm.showAndWait().ifPresent(response -> {
+                            if (response == ButtonType.YES) {
+                                demande.getDemandeur().ajouterLien(demande.getCible(), demande.getLien());
+                                DemandeAdminService.supprimerDemande(demande);
+                                this.start(stage); // rafraîchir la vue
+                            }
+                        });
             });
 
             refuserBtn.setOnAction(e -> {
-                DemandeAdminService.supprimerDemande(demande);
-                this.start(stage); // rafraîchir la vue
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Refuser la demande ?", ButtonType.YES, ButtonType.NO);
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.YES) {
+                        DemandeAdminService.supprimerDemande(demande);
+                        this.start(stage); // rafraîchir la vue
+                    }
+                });
             });
 
             root.getChildren().add(ligne);

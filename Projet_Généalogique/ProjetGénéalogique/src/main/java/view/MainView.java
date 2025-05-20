@@ -6,10 +6,14 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.Group;
+import javafx.scene.shape.Path;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import entites.Genre;
@@ -19,6 +23,8 @@ import service.MailService;
 import service.DemandeAdminService;
 import service.DemandeAdminService.DemandeAdmin;
 
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 public class MainView {
@@ -47,6 +53,66 @@ public class MainView {
             Label bienvenue = new Label("Bienvenue " + utilisateur.getPrenom() + " !");
             bienvenue.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
+            // 📸 Photo de profil
+            ImageView imageView = new ImageView();
+            imageView.setFitHeight(150);
+            imageView.setFitWidth(150);
+            imageView.setPreserveRatio(true);
+
+            try {
+                File file = new File("Projet_Généalogique/ProjetGénéalogique/ressources/" + utilisateur.getUrlPhoto());
+                if (file.exists()) {
+                    Image image = new Image(file.toURI().toString());
+                    imageView.setImage(image);
+                } else {
+                    System.out.println("Fichier image non trouvé : " + file.getPath());
+                    imageView.setImage(new Image(new File("Projet_Généalogique/ProjetGénéalogique/ressources/images/default.png").toURI().toString()));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // 🖼 Modifier la photo
+            Button modifierPhotoBtn = new Button("🖼 Modifier ma photo");
+            modifierPhotoBtn.setOnAction(e -> {
+                        FileChooser fileChooser = new FileChooser();
+                        fileChooser.setTitle("Choisir une nouvelle photo");
+                        fileChooser.getExtensionFilters().add(
+                                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
+                        );
+
+                        File fichier = fileChooser.showOpenDialog(stage);
+                        if (fichier != null) {
+                            String nomFichier = fichier.getName();
+                            String cheminRelatif = "images/" + nomFichier;
+
+                            try {
+                                File dossierImages = new File("Projet_Généalogique/ProjetGénéalogique/ressources/images/");
+                                if (!dossierImages.exists()) {
+                                    dossierImages.mkdirs(); // crée le dossier si nécessaire
+                                }
+
+                                File destination = new File("Projet_Généalogique/ProjetGénéalogique/ressources/" + cheminRelatif);
+                                Files.copy(fichier.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                System.out.println("✅ Fichier copié dans : " + destination.getAbsolutePath());
+
+                                // ✅ Met à jour l’objet
+                                utilisateur.setUrlPhoto(cheminRelatif);
+
+                                // ✅ Met à jour le CSV
+                                authService.mettreAJourUtilisateur(utilisateur);
+
+                                // ✅ Rafraîchit l'image affichée
+                                Image nouvelleImage = new Image(new FileInputStream("Projet_Généalogique/ProjetGénéalogique/ressources/" + cheminRelatif));
+                                imageView.setImage(nouvelleImage);
+
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                                new Alert(Alert.AlertType.ERROR, "Erreur lors de la mise à jour de la photo.").show();
+                            }
+                        }
+                    });
+
             Button voirMonArbreBtn = new Button("🌳 Voir mon arbre familial");
             Button voirTousArbresBtn = new Button("👥 Voir tous les arbres");
             Button souvenirsBtn = new Button("📸 Souvenirs");
@@ -55,6 +121,8 @@ public class MainView {
 
             layout.getChildren().addAll(
                     bienvenue,
+                    imageView,
+                    modifierPhotoBtn,
                     voirMonArbreBtn,
                     voirTousArbresBtn,
                     souvenirsBtn,
@@ -176,25 +244,46 @@ public class MainView {
 
         Button envoyerBtn = new Button("Envoyer");
         envoyerBtn.setOnAction(event -> {
-            if (actionChoice.getValue().equals("Ajout")) {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Confirmer l’ajout de cette personne ?", ButtonType.YES, ButtonType.NO);
-                confirm.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.YES) {
-                        Alert info = new Alert(Alert.AlertType.INFORMATION, "Demande envoyée à l’admin.");
-                        info.show();
-                    }
-                });
-            } else {
-                Personne cible = personCombo.getValue();
-                LienParente lien = lienCombo.getValue();
-                if (cible != null && lien != null) {
-                    DemandeAdminService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien));
-                    new Alert(Alert.AlertType.INFORMATION, "✅ Demande envoyée à l'admin.").show();
-                    formStage.close();
+            try {
+                if (actionChoice.getValue().equals("Ajout")) {
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                            "Confirmer l’ajout de cette personne ?", ButtonType.YES, ButtonType.NO);
+                    confirm.showAndWait().ifPresent(response -> {
+                        if (response == ButtonType.YES) {
+                            String sujet = "Demande d'ajout d'une nouvelle personne";
+                            String contenu = "Veuillez ajouter la personne suivante : " +
+                                    prenomField.getText() + " " + nomField.getText() +
+                                    ", née le " + datePicker.getValue() +
+                                    ", " + natField.getText() + ", " + genreCombo.getValue() + ", " + lienCombo.getValue() + ".";
+                            MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, contenu);
+                            Alert info = new Alert(Alert.AlertType.INFORMATION, "Demande envoyée à l’admin.");
+                            info.show();
+                            formStage.close();
+                        }
+                    });
                 } else {
-                    new Alert(Alert.AlertType.WARNING, "Veuillez remplir tous les champs.").show();
+                    Personne cible = personCombo.getValue();
+                    LienParente lien = lienCombo.getValue();
+                    if (cible != null && lien != null) {
+                        DemandeAdminService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien));
+                        String sujet = "Demande de modification de profil";
+                        String contenu = "Veuillez modifier la personne " + cible.getPrenom() + " " +
+                                cible.getNom() + " (ID " + cible.getNss() + ") : " +
+                                "nouvelle nationalité = " + natField.getText() +
+                                ", nouveau genre = " + genreCombo.getValue() + ", nouveau lien = " + lienCombo.getValue() + ".";
+                        MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, contenu);
+                        new Alert(Alert.AlertType.INFORMATION, "✅ Demande envoyée à l'admin.").show();
+                        formStage.close();
+                    } else {
+                        new Alert(Alert.AlertType.WARNING, "Veuillez remplir tous les champs.").show();
+                    }
                 }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Alert error = new Alert(Alert.AlertType.ERROR,
+                        "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+                error.setHeaderText("Erreur d'envoi");
+                error.showAndWait();
             }
         });
 
