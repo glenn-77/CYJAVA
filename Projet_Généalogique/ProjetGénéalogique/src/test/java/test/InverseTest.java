@@ -1,6 +1,9 @@
 
 package test;
 import entites.*;
+import entites.enums.Genre;
+import entites.enums.LienParente;
+
 import java.util.*;
 
 public class InverseTest {

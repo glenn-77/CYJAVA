@@ -1,7 +1,7 @@
 package service;
 
 import entites.ArbreGenealogique;
-import entites.LienParente;
+import entites.enums.LienParente;
 import entites.Personne;
 
 import java.util.*;

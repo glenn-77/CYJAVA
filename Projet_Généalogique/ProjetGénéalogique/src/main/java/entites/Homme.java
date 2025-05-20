@@ -1,5 +1,7 @@
 package entites;
 
+import entites.enums.Genre;
+
 import java.time.LocalDate;
 
 public class Homme extends Personne {

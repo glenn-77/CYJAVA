@@ -1,5 +1,6 @@
 package view;
 
+import entites.enums.Genre;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -155,8 +156,8 @@ public class InscriptionView {
                     message.setStyle("-fx-text-fill: red;");
                     message.setText("Cet email est déjà utilisé.");
                 } else {
-                    authService.ajouterUtilisateur(p);
                     p.setEstInscrit(true);
+                    authService.ajouterUtilisateur(p);
                     message.setStyle("-fx-text-fill: green;");
                     message.setText("Inscription réussie ! Code privé envoyé par email : " + codePrive + "\nRedirection vers la page de connexion...");
                     MailService.envoyerEmail(email,

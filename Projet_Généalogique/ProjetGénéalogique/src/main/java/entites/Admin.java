@@ -1,8 +1,13 @@
 package entites;
 
+import entites.enums.*;
 import service.CoherenceVerifier;
 import service.MailService;
+import service.DemandeAdminService;
+import service.DemandeAdminService.DemandeAdmin;
+import service.AuthService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -11,8 +16,7 @@ public class Admin extends Compte {
     private final String role;
 
     public Admin(String login, String motDePasse,
-                 String email, String telephone, String adresse,
-                 Personne proprietaire) {
+                 String email, String telephone, String adresse) {
         super(login, motDePasse, email, telephone, adresse);
         this.role = "admin";
     }
@@ -20,6 +24,57 @@ public class Admin extends Compte {
     public String getRole() {
         return role;
     }
+
+    public void traiterDemande(DemandeAdmin demande, boolean accepter) throws IOException {
+        Personne demandeur = demande.getDemandeur();
+        Personne cible = demande.getCible();
+        LienParente lien = demande.getLien();
+        TypeDemande type = demande.getType();
+
+        if (accepter) {
+            switch (type) {
+                case AJOUT_LIEN:
+                    validerAjoutLien(demandeur, cible, lien);
+                    break;
+                case SUPPRESSION_LIEN:
+                    validerSuppressionLien(demandeur, cible);
+                    break;
+                case AJOUT_PERSONNE:
+                    creerPersonneSansCompte(cible.getNom(), cible.getPrenom(), cible.getDateNaissance(), cible.getNationalite(), cible.getGenre());
+                    break;
+                case MODIFICATION_INFO:
+                    try {
+                        AuthService.modifierPersonne(cible.getNom(), cible.getPrenom(), cible.getNationalite(), cible.getGenre());
+                        if (cible.getCompte().getEmail() != null) MailService.envoyerEmail(cible.getCompte().getEmail(),
+                                "✅ Informations modifiées",
+                                "Votre demande de modification de vos informations a été acceptée.");
+                    } catch (IOException e) {
+                        System.out.println("Erreur lors de la modification des informations : " + e.getMessage());
+                    }
+                    break;
+            }
+            demande.setStatut(Statut.ACCEPTEE);
+        } else {
+            switch (type) {
+                case AJOUT_LIEN:
+                    refuserAjoutLien(demandeur, cible, lien);
+                    break;
+                case SUPPRESSION_LIEN:
+                    refuserSuppressionLien(demandeur, cible);
+                    break;
+                case AJOUT_PERSONNE:
+                    MailService.envoyerEmail(demandeur.getCompte().getEmail(), "Demande refusée ", "Votre demande d'ajout de " + cible.getNom() + cible.getPrenom() + " a été refusé.");
+                    break;
+                case MODIFICATION_INFO:
+                    MailService.envoyerEmail(demandeur.getCompte().getEmail(), "Demande refusée ", "Votre demande de modification de " + cible.getNom() + cible.getPrenom() + " a été refusé.");
+                    break;
+            }
+            demande.setStatut(Statut.REFUSEE);
+        }
+
+        DemandeAdminService.supprimerDemande(demande);
+    }
+
 
     /**
      * Valide une demande d'ajout de lien faite par un utilisateur
@@ -38,8 +93,8 @@ public class Admin extends Compte {
                 arbreDemandeur.getNoeuds().remove(cible);
                 return false;
             }
+            demandeur.ajouterLien(cible, lien);
         }
-        demandeur.ajouterLien(cible, lien);
 
         // Ajout du lien inverse dans l'arbre de la cible (si elle est inscrite)
         if (cible.isEstInscrit()) {
@@ -62,16 +117,17 @@ public class Admin extends Compte {
     /**
      * Refuse une demande d'ajout de lien faite par un utilisateur
      */
-    public void refuserAjoutLien(Personne demandeur, Personne cible, LienParente lien) {
+    public boolean refuserAjoutLien(Personne demandeur, Personne cible, LienParente lien) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "❌ Demande refusée",
                 "Votre demande de lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
+        return true;
     }
 
     /**
      * Accepte une demande de suppression de lien entre deux personnes
      */
-    public void validerSuppressionLien(Personne p1, Personne p2) {
+    public boolean validerSuppressionLien(Personne p1, Personne p2) {
         p1.supprimerLien(p2);
         p2.supprimerLien(p1);
 
@@ -82,15 +138,17 @@ public class Admin extends Compte {
         MailService.envoyerEmail(p2.getCompte().getEmail(),
                 "✅ Suppression de lien acceptée",
                 "Le lien entre vous et " + p1.getNom() + " a été supprimé par l'administrateur.");
+        return true;
     }
 
     /**
      * Refuse une demande de suppression de lien
      */
-    public void refuserSuppressionLien(Personne demandeur, Personne cible) {
+    public boolean refuserSuppressionLien(Personne demandeur, Personne cible) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "❌ Suppression refusée",
                 "Votre demande de suppression du lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
+        return true;
     }
 
     /**
@@ -146,7 +204,7 @@ public class Admin extends Compte {
     /**
      * Crée une nouvelle personne non inscrite à partir d'un formulaire rempli par un utilisateur
      */
-    public Personne creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) {
+    public Personne creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) throws IOException {
         Personne nouvelle = new Personne(null, prenom, nom, dateNaissance, nationalite, null, null, genre, null, null);
         System.out.println("✅ Nouvelle personne créée : " + prenom + " " + nom);
         return nouvelle;

@@ -1,6 +1,7 @@
 package view;
 
-import entites.LienParente;
+import entites.enums.LienParente;
+import entites.enums.TypeDemande;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,7 +16,7 @@ import javafx.scene.Group;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import entites.Genre;
+import entites.enums.Genre;
 import service.AuthService;
 import entites.Personne;
 import service.MailService;
@@ -249,6 +250,9 @@ public class MainView {
                             "Confirmer l’ajout de cette personne ?", ButtonType.YES, ButtonType.NO);
                     confirm.showAndWait().ifPresent(response -> {
                         if (response == ButtonType.YES) {
+                            Personne cible = new Personne(nomField.getText(), prenomField.getText(), datePicker.getValue(), natField.getText(), genreCombo.getValue());
+                            LienParente lien = lienCombo.getValue();
+                            authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.AJOUT_PERSONNE));
                             String sujet = "Demande d'ajout d'une nouvelle personne";
                             String contenu = "Veuillez ajouter la personne suivante : " +
                                     prenomField.getText() + " " + nomField.getText() +
@@ -264,7 +268,7 @@ public class MainView {
                     Personne cible = personCombo.getValue();
                     LienParente lien = lienCombo.getValue();
                     if (cible != null && lien != null) {
-                        DemandeAdminService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien));
+                        authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.MODIFICATION_INFO));
                         String sujet = "Demande de modification de profil";
                         String contenu = "Veuillez modifier la personne " + cible.getPrenom() + " " +
                                 cible.getNom() + " (ID " + cible.getNss() + ") : " +

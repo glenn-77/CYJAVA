@@ -1,4 +1,4 @@
-package entites;
+package entites.enums;
 
 public enum NiveauVisibilite {
 	PUBLIQUE,

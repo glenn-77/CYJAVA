@@ -2,7 +2,7 @@ package dao;
 
 import entites.ArbreGenealogique;
 import entites.Compte;
-import entites.Genre;
+import entites.enums.Genre;
 import entites.Personne;
 
 import java.io.BufferedReader;

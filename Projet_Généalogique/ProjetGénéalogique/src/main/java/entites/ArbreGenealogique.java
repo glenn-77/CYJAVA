@@ -38,26 +38,6 @@ public class ArbreGenealogique {
     }
 
     /**
-     * Removes a person from the tree.
-     * If the person is registered, a request must be approved.
-     * @param personne The person to remove.
-     * @return true if removed, false otherwise.
-     */
-    public boolean supprimerNoeud(Personne personne) {
-        if (this.proprietaire.getCompte() instanceof Admin) {
-            this.proprietaire.supprimerLien(personne);
-            return noeuds.remove(personne);
-        }
-        if (personne.isEstInscrit()) {
-            System.out.println("Approbation de l'admin en attente de validation.");
-            this.proprietaire.demanderModification(personne, this.proprietaire.getLiens().get(personne));
-            return false;
-        }
-        this.proprietaire.supprimerLien(personne);
-        return noeuds.remove(personne);
-    }
-
-    /**
      * Displays the tree in a textual form.
      */
     public void afficherTexte() {

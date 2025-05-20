@@ -1,6 +1,6 @@
 package view;
 
-import entites.LienParente;
+import entites.enums.LienParente;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;

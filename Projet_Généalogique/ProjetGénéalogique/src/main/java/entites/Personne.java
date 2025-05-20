@@ -1,5 +1,8 @@
 package entites;
 
+import entites.enums.Genre;
+import entites.enums.LienParente;
+import entites.enums.NiveauVisibilite;
 import javafx.scene.control.TreeItem;
 import service.DemandeAdminService;
 import service.MailService;
@@ -27,7 +30,7 @@ public class Personne {
 
     private boolean estInscrit;
 
-    private NiveauVisibilite niveauVisibilite; 
+    private NiveauVisibilite niveauVisibilite;
     private int generation;
     private LienParente lien;
     private Map<Personne, LienParente> liensParente;
@@ -232,33 +235,6 @@ public class Personne {
         };
     }
 
-    public void demanderModification(Personne cible, LienParente lien) {
-        // Vérifie que le lien est autorisé
-        Set<LienParente> liensAutorises = Set.of(LienParente.PERE, LienParente.MERE, LienParente.FILS, LienParente.FILLE);
-        if (!liensAutorises.contains(lien)) {
-            System.out.println("❌ Ce type de lien n'est pas autorisé.");
-            return;
-        }
-
-        // Crée une demande pour l’admin
-        DemandeAdminService.DemandeAdmin demande = new DemandeAdminService.DemandeAdmin(this, cible, lien);
-        DemandeAdminService.ajouterDemande(demande);
-
-        // Envoie un mail à l’administrateur
-        String sujet = "📬 Nouvelle demande de lien à valider";
-        String corps = String.format(
-                "Bonjour Admin,\n\n%s %s souhaite modifier un lien \"%s\" avec %s %s.\n" +
-                        "Merci de traiter cette demande depuis votre interface administrateur.",
-                this.getPrenom(), this.getNom(),
-                lien.name().toLowerCase(),
-                cible.getPrenom(), cible.getNom()
-        );
-
-        MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, corps);
-
-        System.out.println("📨 Votre demande a été transmise à l’administrateur.");
-    }
-
     public void afficherFamille() {
         System.out.println("=== Famille de " + prenom + " " + nom + " ===");
 
@@ -394,6 +370,7 @@ public class Personne {
     }
 
     public String getUrlPhoto() {
+        if (urlPhoto == null) return "images/default.png";
         return urlPhoto;
     }
 

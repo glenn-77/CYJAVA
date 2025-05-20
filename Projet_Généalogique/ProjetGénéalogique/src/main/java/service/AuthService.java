@@ -4,14 +4,13 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import entites.ArbreGenealogique;
 import entites.Compte;
 import entites.Personne;
 import initialisation.InitialisationCSV;
-import java.time.LocalDate;
-import entites.Genre;
+import entites.enums.Genre;
+import service.DemandeAdminService.DemandeAdmin;
 
 /**
  * Service d'authentification et gestion des utilisateurs et arbres généalogiques.
@@ -19,16 +18,29 @@ import entites.Genre;
 public class AuthService {
 
     private final Map<String, Personne> utilisateurs; // Email -> Personne
-    private final List<ArbreGenealogique> arbres; // Liste des arbres généalogiques
+    private final List<ArbreGenealogique> arbres;// Liste des arbres généalogiques
+    private final Set<DemandeAdmin> demandesAdmins;
 
     private static final String UTILISATEURS_FILE_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/utilisateurs.csv";
+    private static final String DEMANDE_FILE_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/demandes.csv";
 
     public AuthService() {
         this.utilisateurs = new HashMap<>();
         this.arbres = new ArrayList<>();
+        this.demandesAdmins = new HashSet<>();
         try {
             chargerUtilisateursDepuisCSV();
             try (BufferedReader reader = new BufferedReader(new FileReader("Projet_Généalogique/ProjetGénéalogique/ressources/compteur.txt"))) {
+                String ligne = reader.readLine();
+                if (ligne != null) {
+                    int valeur = Integer.parseInt(ligne.trim());
+                    Compte.setCompteur(valeur);
+                }
+            } catch (IOException e) {
+                System.out.println("Aucun fichier de compteur trouvé, valeur par défaut utilisée.");
+            }
+            chargerDemandesDepuisCSV();
+            try (BufferedReader reader = new BufferedReader(new FileReader("Projet_Généalogique/ProjetGénéalogique/ressources/compteurD.txt"))) {
                 String ligne = reader.readLine();
                 if (ligne != null) {
                     int valeur = Integer.parseInt(ligne.trim());
@@ -55,6 +67,22 @@ public class AuthService {
             List<Personne> utilisateursList = loader.chargerUtilisateurs(inputStream);
             for (Personne personne : utilisateursList) {
                 utilisateurs.put(personne.getCompte().getEmail(), personne);
+            }
+        }
+    }
+
+    /**
+     * Initialise les demandes administrateur.
+     */
+    private void chargerDemandesDepuisCSV() throws IOException {
+        InitialisationCSV loader = new InitialisationCSV();
+        try (var inputStream = getClass().getClassLoader().getResourceAsStream("demandes.csv")) {
+            if (inputStream == null) {
+                throw new IOException("Fichier utilisateurs.csv introuvable dans les ressources.");
+            }
+            Set<DemandeAdmin> demandes = loader.chargerDemandes(inputStream);
+            for (DemandeAdmin demande : demandes) {
+                demandesAdmins.add(demande);
             }
         }
     }
@@ -121,16 +149,6 @@ public class AuthService {
         return null;
     }
 
-
-    /**
-     * Récupère la liste des arbres généalogiques.
-     *
-     * @return Liste des arbres généalogiques disponibles.
-     */
-    public List<ArbreGenealogique> getArbres() {
-        return arbres;
-    }
-
     /**
      * Ajoute un utilisateur et met à jour le fichier CSV.
      *
@@ -155,6 +173,21 @@ public class AuthService {
         }
     }
 
+    public void ajouterDemande(DemandeAdmin demande){
+        demandesAdmins.add(demande);
+        DemandeAdminService.ajouterDemande(demande);
+        try {
+            sauvegarderDemande(demande);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Projet_Généalogique/ProjetGénéalogique/ressources/compteurD.txt"))) {
+            writer.write(String.valueOf(DemandeAdmin.getCompteur()));
+        } catch (IOException e) {
+            System.out.println("Erreur lors de l'enregistrement du compteur.");
+        }
+    }
+
     /**
      * Sauvegarde uniquement un nouvel utilisateur dans le fichier CSV.
      *
@@ -173,40 +206,94 @@ public class AuthService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
             if (fichierVide) {
-                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId,photo");
+                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId,photo,inscrit");
                 writer.newLine();
             }
+            String ligne;
 
-            Compte c = personne.getCompte();
-            String ligne = String.join(",",
-                    personne.getNss(),
-                    personne.getPrenom(),
-                    personne.getNom(),
-                    personne.getDateNaissance().toString(),
-                    personne.getNationalite(),
-                    personne.getCarteIdentite(),
-                    c.getEmail(),
-                    c.getTelephone(),
-                    c.getAdresse(),
-                    personne.getCodePrive(),
-                    personne.getPere() != null ? personne.getPere().getNss() : "",
-                    personne.getMere() != null ? personne.getMere().getNss() : "",
-                    personne.getGenre().toString(),
-                    c.getLogin(),
-                    c.getMotDePasse(),
-                    c.getNumero(),
-                    c.isPremiereConnexion() ? "true" : "false",
-                    personne.getFamilleId() != null ? personne.getFamilleId() : "",
-                    personne.getUrlPhoto() != null ? personne.getUrlPhoto() : "");
+            if (!personne.isEstInscrit()) {
+                ligne = String.join(",",
+                        "",
+                        personne.getPrenom(),
+                        personne.getNom(),
+                        personne.getDateNaissance().toString(),
+                        personne.getNationalite(),
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        personne.getMere() != null ? personne.getMere().getNss() : "",
+                        personne.getPere() != null ? personne.getPere().getNss() : "",
+                        personne.getGenre().toString(),
+                        "",
+                        "",
+                        "",
+                        "",
+                        personne.getFamilleId(),
+                        "",
+                        "false");
+            } else {
+                Compte c = personne.getCompte();
+                ligne = String.join(",",
+                        personne.getNss(),
+                        personne.getPrenom(),
+                        personne.getNom(),
+                        personne.getDateNaissance().toString(),
+                        personne.getNationalite(),
+                        personne.getCarteIdentite(),
+                        c.getEmail(),
+                        c.getTelephone(),
+                        c.getAdresse(),
+                        personne.getCodePrive(),
+                        personne.getPere() != null ? personne.getPere().getNss() : "",
+                        personne.getMere() != null ? personne.getMere().getNss() : "",
+                        personne.getGenre().toString(),
+                        c.getLogin(),
+                        c.getMotDePasse(),
+                        c.getNumero(),
+                        c.isPremiereConnexion() ? "true" : "false",
+                        personne.getFamilleId(),
+                        personne.getUrlPhoto(),
+                        personne.isEstInscrit() ? "true" : "false");
+            }
             writer.write(ligne);
             writer.newLine();
         }
 
     }
 
+    public void sauvegarderDemande(DemandeAdmin demande) throws IOException {
+        Path path = Paths.get(DEMANDE_FILE_PATH);
+
+        if (!Files.exists(path.getParent())) {
+            Files.createDirectories(path.getParent());
+        }
+
+        boolean fichierExiste = Files.exists(path);
+        boolean fichierVide = !fichierExiste || Files.size(path) == 0;
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
+            if (fichierVide) {
+                writer.write("id,demandeurNSS,cibleNSS,dateCreation,lien,statut");
+                writer.newLine();
+            }
+            String line = String.join(",",
+                    demande.getId(),
+                    demande.getType().toString(),
+                    demande.getDemandeur().getNss(),
+                    demande.getCible().getNss(),
+                    demande.getDateCreation().toString(),
+                    demande.getLien().toString(),
+                    demande.getStatut().toString());
+            writer.write(line);
+            writer.newLine();
+        }
+    }
+
     public void mettreAJourUtilisateur(Personne personne) {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
-        List<String> lignes = new ArrayList<>();
+        List<String> lignes;
 
         try {
             lignes = Files.readAllLines(path);
@@ -214,7 +301,7 @@ public class AuthService {
 
             for (int i = 1; i < lignes.size(); i++) {
                 String[] champs = lignes.get(i).split(",");
-                if (champs.length > 12 && champs[0].equals(nss)) {
+                if (champs.length > 18 && champs[0].equals(nss)) {
                     Compte c = personne.getCompte();
                     String nouvelleLigne = String.join(",",
                             personne.getNss(),
@@ -234,8 +321,9 @@ public class AuthService {
                             c.getMotDePasse(),
                             c.getNumero(),
                             c.isPremiereConnexion() ? "true" : "false",
-                            personne.getFamilleId() != null ? personne.getFamilleId() : "",
-                            personne.getUrlPhoto() != null ? personne.getUrlPhoto() : "");
+                            personne.getFamilleId(),
+                            personne.getUrlPhoto(),
+                            personne.isEstInscrit() ? "true" : "false");
 
                     lignes.set(i, nouvelleLigne);
                     break;
@@ -248,42 +336,7 @@ public class AuthService {
         }
     }
 
-    // Ajoute une nouvelle personne dans le CSV (ajout d'une ligne)
-    public static void ajouterPersonne(String nom, String prenom, LocalDate dateNaissance,
-                                       String nationalite, Genre genre) throws IOException {
-        // Générer un NSS unique pour la nouvelle personne (par ex. incrémental ou UUID)
-        String nouveauNss = "ID" + System.currentTimeMillis();  // Ex. simple: à améliorer selon besoins
-        // Préparer la nouvelle ligne CSV avec 18 colonnes
-        String dateStr = dateNaissance.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String[] champs = new String[18];
-        champs[0]  = nouveauNss;
-        champs[1]  = prenom;
-        champs[2]  = nom;
-        champs[3]  = dateStr;
-        champs[4]  = nationalite;
-        champs[5]  = "";  // carteIdentite non fournie
-        champs[6]  = "";  // email non fourni
-        champs[7]  = "";  // telephone non fourni
-        champs[8]  = "";  // adresse non fournie
-        champs[9]  = "";  // codePrive non fourni
-        champs[10] = "";  // nssPere inconnu
-        champs[11] = "";  // nssMere inconnu
-        champs[12] = genre.toString();
-        champs[13] = "";  // login non applicable
-        champs[14] = "";  // motDePasse non applicable
-        champs[15] = "";  // numéro (compteur) non applicable
-        champs[16] = "false";  // premiereConnexion par défaut
-        champs[17] = "";  // familleId non déterminé
-        champs[18] = "";
-        String nouvelleLigne = String.join(",", champs);
-        // Écriture en fin de fichier CSV
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(UTILISATEURS_FILE_PATH, true))) {
-            writer.newLine();
-            writer.write(nouvelleLigne);
-        }
-    }
-
-    // Modifie la nationalité et le genre d'une personne existante identifiée par son NSS
+    // Modifie la nationalité et le genre d'une personne existante non inscrite identifiée par son NSS
     public static void modifierPersonne(String nomCible, String prenomCible, String nouvelleNat, Genre nouveauGenre) throws IOException {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
         List<String> lignes = Files.readAllLines(path);
@@ -299,33 +352,4 @@ public class AuthService {
         }
         Files.write(path, lignes);
     }
-
-    public List<Personne> chargerToutesPersonnes() throws IOException {
-        List<Personne> personnes = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(UTILISATEURS_FILE_PATH))) {
-            String header = reader.readLine();  // sauter la ligne d'en-tête
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",");
-                if (values.length < 18) continue;  // ligne invalide si pas assez de colonnes
-                // Extraction des champs principaux d'après l'ordre du CSV
-                String prenom     = values[1].trim();
-                String nom        = values[2].trim();
-                String dateStr    = values[3].trim();
-                String nationalite= values[4].trim();
-                String genreStr   = values[12].trim().toUpperCase();
-                LocalDate dateNaissance;
-                try {
-                    dateNaissance = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                } catch (Exception e) {
-                    continue; // date invalide, on ignore cette entrée
-                }
-                Genre genre = Genre.valueOf(genreStr);
-                personnes.add(new Personne(nom, prenom, dateNaissance, nationalite, genre));
-            }
-        }
-        return personnes;
-    }
-
-
 }

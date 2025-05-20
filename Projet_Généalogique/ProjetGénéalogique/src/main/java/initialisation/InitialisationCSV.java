@@ -1,6 +1,11 @@
 package initialisation;
 
+import dao.UserDAO;
 import entites.*;
+import entites.enums.Genre;
+import entites.enums.LienParente;
+import entites.enums.TypeDemande;
+import service.DemandeAdminService.DemandeAdmin;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -27,8 +32,8 @@ public class InitialisationCSV {
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 19) {
-                    System.err.println("Ligne mal formatée (moins de 19 colonnes), ignorée : " + line);
+                if (values.length < 20) {
+                    System.err.println("Ligne mal formatée (moins de 20 colonnes), ignorée : " + line);
                     continue;
                 }
 
@@ -50,8 +55,10 @@ public class InitialisationCSV {
                     String motDePasse = values[14].trim();
                     String premiereConnexion = values[16].trim();
                     String urlPhoto = values[18].trim();
+                    String inscrit = values[19].trim();
 
                     boolean premiereConnexionBool = premiereConnexion.equals("true");
+                    boolean inscritBool = inscrit.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
 
@@ -64,6 +71,7 @@ public class InitialisationCSV {
                     compte.setPremiereConnexion(premiereConnexionBool);
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
                             codePrive, genre, compte, null);
+                    personne.setEstInscrit(inscritBool);
                     personne.setArbre(new ArbreGenealogique(personne));
                     personne.setUrlPhoto(urlPhoto);
 
@@ -122,5 +130,36 @@ public class InitialisationCSV {
         }
 
         return utilisateurs;
+    }
+
+    public Set<DemandeAdmin> chargerDemandes(InputStream in) throws IOException {
+        Set<DemandeAdmin> demandes = new HashSet<>();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            String line;
+            br.readLine(); // Ignorer la ligne d'en-tête
+
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                if (values.length < 7) {
+                    System.err.println("Ligne mal formatée (moins de 7 colonnes), ignorée : " + line);
+                    continue;
+                }
+                try {
+                    TypeDemande type = TypeDemande.valueOf(values[1].trim().toUpperCase());
+                    String DemandeurNSS = values[2].trim();
+                    String CibleNSS = values[3].trim();
+                    LienParente lien = LienParente.valueOf(values[5].trim().toUpperCase());
+
+                    Personne demandeur = UserDAO.chercherParNSS(DemandeurNSS);
+                    Personne cible = UserDAO.chercherParNSS(CibleNSS);
+                    DemandeAdmin d = new DemandeAdmin(demandeur, cible, lien, type);
+                    demandes.add(d);
+                } catch (Exception e) {
+                    System.err.println("Erreur sur la ligne : " + line + " -> " + e.getMessage());
+                }
+            }
+        }
+        return demandes;
     }
 }

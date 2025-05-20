@@ -1,7 +1,7 @@
 package view;
 
-import entites.Genre;
-import entites.LienParente;
+import entites.enums.Genre;
+import entites.enums.LienParente;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
@@ -197,7 +197,7 @@ public class AffichageArbre {
 
         // Rectangle représentant le nœud
         Rectangle cadre = new Rectangle(x - largeurNoeud / 2, y - hauteurNoeud / 2, largeurNoeud, hauteurNoeud);
-        cadre.setFill(personne.isEstInscrit() ? Color.LIGHTBLUE : Color.LIGHTGRAY);
+        cadre.setFill(personne.isEstInscrit() ? Color.LIGHTBLUE : Color.LIGHTGREEN);
         cadre.setStroke(Color.BLACK);
         cadre.setArcWidth(15);
         cadre.setArcHeight(15);
