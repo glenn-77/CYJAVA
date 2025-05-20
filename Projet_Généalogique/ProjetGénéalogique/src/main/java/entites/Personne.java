@@ -19,6 +19,7 @@ public class Personne {
     private boolean estVivant;
     private String familleId;
     private String codePrive;
+    private String urlPhoto;
 
     private Personne pere;
     private Personne mere;
@@ -390,5 +391,13 @@ public class Personne {
     @Override
     public String toString() {
         return nom + " " + prenom;
+    }
+
+    public String getUrlPhoto() {
+        return urlPhoto;
+    }
+
+    public void setUrlPhoto(String urlPhoto) {
+        this.urlPhoto = urlPhoto;
     }
 }

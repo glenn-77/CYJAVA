@@ -174,7 +174,7 @@ public class AuthService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
             if (fichierVide) {
-                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId");
+                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId,photo");
                 writer.newLine();
             }
 
@@ -197,7 +197,8 @@ public class AuthService {
                     c.getMotDePasse(),
                     c.getNumero(),
                     c.isPremiereConnexion() ? "true" : "false",
-                    personne.getFamilleId() != null ? personne.getFamilleId() : "");
+                    personne.getFamilleId() != null ? personne.getFamilleId() : "",
+                    personne.getUrlPhoto() != null ? personne.getUrlPhoto() : "");
             writer.write(ligne);
             writer.newLine();
         }
@@ -234,7 +235,8 @@ public class AuthService {
                             c.getMotDePasse(),
                             c.getNumero(),
                             c.isPremiereConnexion() ? "true" : "false",
-                            personne.getFamilleId() != null ? personne.getFamilleId() : "");
+                            personne.getFamilleId() != null ? personne.getFamilleId() : "",
+                            personne.getUrlPhoto() != null ? personne.getUrlPhoto() : "");
 
                     lignes.set(i, nouvelleLigne);
                     break;
@@ -273,6 +275,7 @@ public class AuthService {
         champs[15] = "";  // numéro (compteur) non applicable
         champs[16] = "false";  // premiereConnexion par défaut
         champs[17] = "";  // familleId non déterminé
+        champs[18] = "";
         String nouvelleLigne = String.join(",", champs);
         // Écriture en fin de fichier CSV
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(UTILISATEURS_FILE_PATH, true))) {

@@ -235,6 +235,12 @@
                     <include>**/*.css</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>ressources/images</directory>
+                <includes>
+                    <include>**/*.png</include>
+                </includes>
+            </resource>
         </resources>
 
     </build>

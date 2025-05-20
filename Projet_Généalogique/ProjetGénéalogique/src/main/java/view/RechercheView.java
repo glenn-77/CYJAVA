@@ -2,6 +2,8 @@ package view;
 
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -10,6 +12,7 @@ import service.AuthService;
 import dao.UserDAO;
 import entites.Personne;
 
+import java.io.*;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -17,6 +20,7 @@ public class RechercheView {
 
     private final AuthService authService;
     private final Personne utilisateur;
+    final Personne[] personneCourante = {null};
 
     public RechercheView(AuthService authService, Personne utilisateur) {
         this.authService = authService;
@@ -31,12 +35,19 @@ public class RechercheView {
         filtre.getItems().addAll("Nom", "Prénom", "NSS");
         filtre.setValue("Nom");
 
-        Button boutonRechercher = new Button("Rechercher");
+        Button boutonPhoto = new Button("📷 Afficher la photo");
         ListView<Label> listeResultats = new ListView<>();
+
+        // Zone d'affichage de la photo
+        ImageView imageView = new ImageView();
+        imageView.setFitHeight(150);
+        imageView.setFitWidth(150);
+        imageView.setPreserveRatio(true);
 
         champRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
             String critere = filtre.getValue();
             listeResultats.getItems().clear();
+            imageView.setImage(null);
 
             if (newValue.isEmpty()) return;
 
@@ -58,7 +69,46 @@ public class RechercheView {
                         default -> "";
                     };
                     Label label = formatterLigneAvecSurlignage(ligne);
+                    label.setOnMouseClicked(event -> personneCourante[0] = p);
                     listeResultats.getItems().add(label);
+                }
+            }
+        });
+
+        // Action bouton Afficher la photo
+        boutonPhoto.setOnAction(e -> {
+            Personne p = personneCourante[0];
+            if (p == null) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Aucune personne sélectionnée.");
+                alert.show();
+                return;
+            }
+
+            try {
+                String chemin = "Projet_Généalogique/ProjetGénéalogique/ressources/" + p.getUrlPhoto();
+                System.out.println("📸 Chargement image depuis : " + chemin);
+                Image image = new Image(new FileInputStream(chemin));
+                imageView.setImage(image);
+
+                if (image.isError()) {
+                    System.err.println("❌ Erreur de chargement de l'image !");
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Erreur lors du chargement de l'image.");
+                    alert.show();
+                }
+
+                if (imageView.getImage() == null) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING, "Image non chargée.");
+                    alert.show();
+                }
+
+            } catch (FileNotFoundException ex) {
+                try {
+                    System.out.println("Fichier par défaut utilisé");
+                    Image defaultImg = new Image(new FileInputStream("Projet_Généalogique/ProjetGénéalogique/ressources/images/default.png"));
+                    imageView.setImage(defaultImg);
+                } catch (Exception ignore) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Impossible de charger l'image par défaut.");
+                    alert.show();
                 }
             }
         });
@@ -69,7 +119,7 @@ public class RechercheView {
             retourAccueil.start(stage);
         });
 
-        VBox layout = new VBox(10, champRecherche, filtre, boutonRechercher, listeResultats, retourBtn);
+        VBox layout = new VBox(10, champRecherche, filtre, boutonPhoto, listeResultats, imageView, retourBtn);
         Scene scene = new Scene(layout, 800, 800);
         stage.setScene(scene);
         stage.setTitle("Recherche unifiée");
