@@ -66,7 +66,7 @@ public class AuthService {
             }
             List<Personne> utilisateursList = loader.chargerUtilisateurs(inputStream);
             for (Personne personne : utilisateursList) {
-                utilisateurs.put(personne.getCompte().getEmail(), personne);
+                utilisateurs.put(personne.getNss(), personne); // Indexation par NSS
             }
         }
     }
@@ -351,5 +351,15 @@ public class AuthService {
             }
         }
         Files.write(path, lignes);
+    }
+
+    public Personne getPersonneParNSS(String nss) {
+        if (utilisateurs.containsKey(nss)) {
+            System.out.println("✅ Personne trouvée pour NSS : " + nss); // DEBUG
+            return utilisateurs.get(nss);
+        } else {
+            System.out.println("❌ Personne introuvable pour NSS : " + nss); // DEBUG
+            return null;
+        }
     }
 }

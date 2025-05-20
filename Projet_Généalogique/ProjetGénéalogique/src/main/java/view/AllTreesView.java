@@ -12,7 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import service.GlobalTreesManager;
-
+import javafx.geometry.Pos; // Ajout de cet import spécifique pour gérer Pos
 import java.util.List;
 
 /**
@@ -31,6 +31,9 @@ public class AllTreesView {
     /**
      * Affiche la liste de tous les arbres généalogiques disponibles.
      */
+    /**
+     * Affiche la liste de tous les arbres généalogiques disponibles.
+     */
     public void afficher() {
         // Charger les arbres depuis le fichier CSV (si nécessaire)
         if (GlobalTreesManager.getArbres().isEmpty()) {
@@ -45,45 +48,53 @@ public class AllTreesView {
 
         List<ArbreGenealogique> arbres = GlobalTreesManager.getArbres();
 
-        // Si aucun arbre n'est disponible, afficher un message.
+        // Layout principal avec style similaire à MainView
+        VBox layout = new VBox(20);
+        layout.setPadding(new Insets(40));
+        layout.setAlignment(Pos.CENTER);
+
+        // Ajouter un titre principal
+        Label titre = new Label("👥 Liste des arbres généalogiques disponibles");
+        titre.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        layout.getChildren().add(titre);
+
+        // Ajouter la liste des arbres ou un message si aucun n'est disponible
         if (arbres.isEmpty()) {
-            VBox layout = new VBox(10);
-            layout.setPadding(new Insets(20));
-            Label message = new Label("Aucun arbre généalogique disponible.");
-            Button retour = new Button("Retour");
-            retour.setOnAction(e -> revenirAuMenuPrincipal());
-            layout.getChildren().addAll(message, retour);
+            Label aucunArbre = new Label("⛔ Aucun arbre généalogique disponible.");
+            aucunArbre.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 14px;");
+            layout.getChildren().add(aucunArbre);
+        } else {
+            // Ajouter les arbres dans un ScrollPane
+            ScrollPane scrollPane = new ScrollPane();
+            VBox arbresBox = new VBox(10);
+            arbresBox.setAlignment(Pos.CENTER);
 
-            Scene scene = new Scene(layout, 400, 300);
-            stage.setScene(scene);
-            stage.setTitle("Tous les arbres généalogiques");
-            stage.show();
-            return;
+            for (ArbreGenealogique arbre : arbres) {
+                String nomProprietaire = (arbre.getProprietaire() != null)
+                        ? arbre.getProprietaire().getPrenom() + " " + arbre.getProprietaire().getNom()
+                        : "Inconnu";
+
+                Button arbreButton = new Button("Voir l'arbre de " + nomProprietaire);
+                arbreButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
+                arbreButton.setOnAction(e -> afficherArbre(arbre));
+                arbresBox.getChildren().add(arbreButton);
+            }
+
+            scrollPane.setContent(arbresBox);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setPrefViewportHeight(500); // Taille de la zone défilable
+            layout.getChildren().add(scrollPane);
         }
 
-        // Layout principal pour afficher les arbres
-        VBox layout = new VBox(10);
-        layout.setPadding(new Insets(20));
-        layout.getChildren().add(new Label("Liste des arbres généalogiques disponibles :"));
-
-        // Ajouter un bouton pour chaque arbre
-        for (ArbreGenealogique arbre : arbres) {
-            String nomProprietaire = (arbre.getProprietaire() != null)
-                    ? arbre.getProprietaire().getPrenom() + " " + arbre.getProprietaire().getNom()
-                    : "Inconnu";
-
-            Button arbreButton = new Button("Voir l'arbre de " + nomProprietaire);
-            arbreButton.setOnAction(e -> afficherArbre(arbre));
-            layout.getChildren().add(arbreButton);
-        }
-
-        // Bouton pour revenir au menu principal
-        Button retour = new Button("Retour");
+        // Ajouter un bouton de retour
+        Button retour = new Button("🔙 Retour au menu principal");
+        retour.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
         retour.setOnAction(e -> revenirAuMenuPrincipal());
         layout.getChildren().add(retour);
 
-        // Créer la scène
+        // Créer et afficher la scène
         Scene scene = new Scene(layout, 800, 900);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Tous les arbres généalogiques");
         stage.show();
@@ -94,7 +105,17 @@ public class AllTreesView {
      *
      * @param arbre L'arbre généalogique à afficher.
      */
+    /**
+     * Affiche un arbre spécifique.
+     *
+     * @param arbre L'arbre généalogique à afficher.
+     */
     private void afficherArbre(ArbreGenealogique arbre) {
+        // Enregistrer la consultation de l'arbre
+        if (arbre != null) {
+            arbre.consulterArbre(utilisateurConnecte.getNss());
+        }
+
         BorderPane arbreView = new BorderPane();
 
         // Création de la vue de l'arbre

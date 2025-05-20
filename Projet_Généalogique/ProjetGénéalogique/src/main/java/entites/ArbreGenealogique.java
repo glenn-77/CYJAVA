@@ -2,7 +2,7 @@ package entites;
 
 
 import java.util.*;
-
+import service.ConsultationStatsService;
 /**
  * Represents a genealogical tree containing people and their familial relationships.
  * Each tree has a single owner and supports adding, deleting, and querying persons.
@@ -115,4 +115,11 @@ public class ArbreGenealogique {
             }
         }
     }
+
+    public void consulterArbre(String nssConsultant) {
+        ConsultationStatsService statsService = new ConsultationStatsService();
+        statsService.ajouterConsultation(this.proprietaire.getNss(), nssConsultant);
+        System.out.println("✅ Consultation enregistrée pour l'arbre de " + proprietaire.getPrenom() + " " + proprietaire.getNom());
+    }
+
 }

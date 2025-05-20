@@ -116,6 +116,7 @@ public class MainView {
             Button voirMonArbreBtn = new Button("🌳 Voir mon arbre familial");
             Button voirTousArbresBtn = new Button("👥 Voir tous les arbres");
             Button souvenirsBtn = new Button("📸 Souvenirs");
+            Button statistiquesButton = new Button("📊 Voir les statistiques de mon arbre");
             Button rechercheBtn = new Button("🔍 Rechercher une personne");
             Button logoutButton = new Button("🔴 Se déconnecter");
 
@@ -126,7 +127,8 @@ public class MainView {
                     voirMonArbreBtn,
                     voirTousArbresBtn,
                     souvenirsBtn,
-                    rechercheBtn
+                    rechercheBtn,
+                    statistiquesButton
             );
 
             if (utilisateur.getCompte().getEmail().equalsIgnoreCase("diffoglenn007@gmail.com")) {
@@ -136,6 +138,12 @@ public class MainView {
                 });
                 layout.getChildren().add(voirDemandesBtn);
             }
+
+            statistiquesButton.setOnAction(e -> {
+                AffichageConsultations affichageConsultations = new AffichageConsultations(authService);
+                affichageConsultations.afficherStatistiques(utilisateur.getNss());
+            });
+
 
             logoutButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
             logoutButton.setOnAction(e -> new MainView(authService).start(stage));
