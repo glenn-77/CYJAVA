@@ -1,6 +1,8 @@
 package view;
 
 import entites.enums.Genre;
+import entites.enums.LienParente;
+import entites.enums.TypeDemande;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,6 +13,7 @@ import javafx.util.StringConverter;
 import entites.*;
 import service.AuthService;
 import service.MailService;
+import service.DemandeAdminService.DemandeAdmin;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -158,12 +161,13 @@ public class InscriptionView {
                 } else {
                     p.setEstInscrit(true);
                     authService.ajouterUtilisateur(p);
+                    authService.ajouterDemande(new DemandeAdmin(p, p, LienParente.INSCRIPTION, TypeDemande.AJOUT_PERSONNE));
                     message.setStyle("-fx-text-fill: green;");
-                    message.setText("Inscription réussie ! Code privé envoyé par email : " + codePrive + "\nRedirection vers la page de connexion...");
+                    message.setText("Demande d'inscription envoyée à l'admin. Code privé envoyé par email : " + codePrive + "\nRedirection vers la page de connexion...");
                     MailService.envoyerEmail(email,
                             "Bienvenue sur Arbre Généalogique Pro++",
-                            "Bonjour " + prenom + ",\n\nVotre inscription est confirmée.\n\nVoici votre code privé : " + codePrive +
-                                    "\n\nVotre mot de passe temporaire est votre prénom. Merci de le modifier lors de votre première connexion.");
+                            "Bonjour " + prenom + ",\n\nVotre inscription est en attente de confirmation .\n\nVoici votre code privé : " + codePrive +
+                                    "\n\nVotre mot de passe temporaire est votre prénom. Merci de le modifier lors de votre première connexion lorsque votre inscription sera confirmée.");
 
 
                     nssField.clear(); nomField.clear(); prenomField.clear(); dateNaissancePicker.setValue(null);

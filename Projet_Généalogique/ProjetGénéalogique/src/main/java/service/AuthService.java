@@ -83,6 +83,7 @@ public class AuthService {
             Set<DemandeAdmin> demandes = loader.chargerDemandes(inputStream);
             for (DemandeAdmin demande : demandes) {
                 demandesAdmins.add(demande);
+                DemandeAdminService.ajouterDemande(demande);
             }
         }
     }
@@ -155,7 +156,7 @@ public class AuthService {
      * @param personne La personne à ajouter.
      */
     public void ajouterUtilisateur(Personne personne) {
-        utilisateurs.put(personne.getCompte().getEmail(), personne);
+        utilisateurs.put(personne.getNss(), personne);
         try {
             sauvegarderNouvelUtilisateur(personne);
 
@@ -213,7 +214,7 @@ public class AuthService {
 
             if (!personne.isEstInscrit()) {
                 ligne = String.join(",",
-                        "",
+                        personne.getNss(),
                         personne.getPrenom(),
                         personne.getNom(),
                         personne.getDateNaissance().toString(),
@@ -222,7 +223,7 @@ public class AuthService {
                         "",
                         "",
                         "",
-                        "",
+                        personne.getCodePrive(),
                         personne.getMere() != null ? personne.getMere().getNss() : "",
                         personne.getPere() != null ? personne.getPere().getNss() : "",
                         personne.getGenre().toString(),
@@ -232,6 +233,7 @@ public class AuthService {
                         "",
                         personne.getFamilleId(),
                         "",
+                        "false",
                         "false");
             } else {
                 Compte c = personne.getCompte();
@@ -255,7 +257,8 @@ public class AuthService {
                         c.isPremiereConnexion() ? "true" : "false",
                         personne.getFamilleId(),
                         personne.getUrlPhoto(),
-                        personne.isEstInscrit() ? "true" : "false");
+                        personne.isEstInscrit() ? "true" : "false",
+                        personne.isValideParAdmin() ? "true" : "false");
             }
             writer.write(ligne);
             writer.newLine();
@@ -275,7 +278,7 @@ public class AuthService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
             if (fichierVide) {
-                writer.write("id,demandeurNSS,cibleNSS,dateCreation,lien,statut");
+                writer.write("id,type,demandeurNSS,cibleNSS,dateCreation,lien,statut");
                 writer.newLine();
             }
             String line = String.join(",",
@@ -284,7 +287,7 @@ public class AuthService {
                     demande.getDemandeur().getNss(),
                     demande.getCible().getNss(),
                     demande.getDateCreation().toString(),
-                    demande.getLien().toString(),
+                    demande.getLien().toString() != null ? demande.getLien().toString() : "",
                     demande.getStatut().toString());
             writer.write(line);
             writer.newLine();
@@ -323,7 +326,8 @@ public class AuthService {
                             c.isPremiereConnexion() ? "true" : "false",
                             personne.getFamilleId(),
                             personne.getUrlPhoto(),
-                            personne.isEstInscrit() ? "true" : "false");
+                            personne.isEstInscrit() ? "true" : "false",
+                            personne.isValideParAdmin() ? "true" : "false");
 
                     lignes.set(i, nouvelleLigne);
                     break;
@@ -333,6 +337,36 @@ public class AuthService {
             Files.write(path, lignes);
         } catch (IOException e) {
             System.err.println("Erreur lors de la mise à jour de l'utilisateur : " + e.getMessage());
+        }
+    }
+
+    public void mettreAJourDemande(DemandeAdmin demande) {
+        Path path = Paths.get(DEMANDE_FILE_PATH);
+        List<String> lignes;
+        try {
+            lignes = Files.readAllLines(path);
+            String id = demande.getId();
+
+            for (int i = 1; i < lignes.size(); i++) {
+                String[] champs = lignes.get(i).split(",");
+                if (champs.length > 6 && champs[0].equals(id)) {
+                    String nouvelleLigne = String.join(",",
+                            demande.getId(),
+                            demande.getType().toString(),
+                            demande.getDemandeur().getNss(),
+                            demande.getCible().getNss(),
+                            demande.getDateCreation().toString(),
+                            demande.getLien().toString(),
+                            demande.getStatut().toString()
+                    );
+
+                    lignes.set(i, nouvelleLigne);
+                    break;
+                }
+            }
+            Files.write(path, lignes);
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la mise à jour de la demande : " + e.getMessage());
         }
     }
 
@@ -362,4 +396,45 @@ public class AuthService {
             return null;
         }
     }
+
+    public boolean supprimerUtilisateurParNSS(String nss) {
+        File inputFile = new File("ressources/utilisateurs.csv");
+        File tempFile = new File("ressources/temp_utilisateurs.csv");
+
+        boolean supprime = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                String[] fields = ligne.split(",");
+                if (fields.length == 0) continue;
+
+                String nssCourant = fields[0];
+
+                if (nssCourant.equals(nss)) {
+                    supprime = true; // ligne ignorée
+                    continue;
+                }
+
+                writer.write(ligne);
+                writer.newLine();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Remplacer l'ancien fichier par le nouveau
+        if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+            System.out.println("❌ Erreur lors de la mise à jour du fichier.");
+            return false;
+        }
+
+        return supprime;
+    }
+
+
 }

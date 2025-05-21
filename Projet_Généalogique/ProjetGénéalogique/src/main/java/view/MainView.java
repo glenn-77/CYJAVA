@@ -258,9 +258,11 @@ public class MainView {
                             "Confirmer l’ajout de cette personne ?", ButtonType.YES, ButtonType.NO);
                     confirm.showAndWait().ifPresent(response -> {
                         if (response == ButtonType.YES) {
-                            Personne cible = new Personne(nomField.getText(), prenomField.getText(), datePicker.getValue(), natField.getText(), genreCombo.getValue());
+                            final String nss = UUID.randomUUID().toString().substring(0, 8);
+                            Personne cible = new Personne(nss, prenomField.getText(), nomField.getText(), datePicker.getValue(), natField.getText(), null, null, genreCombo.getValue(), null, null);
                             LienParente lien = lienCombo.getValue();
                             authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.AJOUT_PERSONNE));
+                            authService.ajouterUtilisateur(cible);
                             String sujet = "Demande d'ajout d'une nouvelle personne";
                             String contenu = "Veuillez ajouter la personne suivante : " +
                                     prenomField.getText() + " " + nomField.getText() +

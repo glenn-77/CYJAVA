@@ -7,5 +7,6 @@ public enum LienParente {
     PERE,
     MERE,
     FILS,
-    FILLE
+    FILLE,
+    INSCRIPTION
 }

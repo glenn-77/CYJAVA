@@ -10,6 +10,7 @@ import service.AuthService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
 public class Admin extends Compte {
 
@@ -40,7 +41,11 @@ public class Admin extends Compte {
                     validerSuppressionLien(demandeur, cible);
                     break;
                 case AJOUT_PERSONNE:
-                    creerPersonneSansCompte(cible.getNom(), cible.getPrenom(), cible.getDateNaissance(), cible.getNationalite(), cible.getGenre());
+                    if (demandeur.equals(cible)) validerInscription(demandeur);
+                    else {
+                        creerPersonneSansCompte(cible.getNom(), cible.getPrenom(), cible.getDateNaissance(), cible.getNationalite(), cible.getGenre());
+                        validerAjoutLien(demandeur, cible, lien);
+                    }
                     break;
                 case MODIFICATION_INFO:
                     try {
@@ -57,12 +62,13 @@ public class Admin extends Compte {
         } else {
             switch (type) {
                 case AJOUT_LIEN:
-                    refuserAjoutLien(demandeur, cible, lien);
+                    refuserAjoutLien(demandeur, cible);
                     break;
                 case SUPPRESSION_LIEN:
                     refuserSuppressionLien(demandeur, cible);
                     break;
                 case AJOUT_PERSONNE:
+                    new AuthService().supprimerUtilisateurParNSS(cible.getNss());
                     MailService.envoyerEmail(demandeur.getCompte().getEmail(), "Demande refusée ", "Votre demande d'ajout de " + cible.getNom() + cible.getPrenom() + " a été refusé.");
                     break;
                 case MODIFICATION_INFO:
@@ -94,6 +100,9 @@ public class Admin extends Compte {
                 return false;
             }
             demandeur.ajouterLien(cible, lien);
+            if (lien == LienParente.FILS || lien == LienParente.FILLE) demandeur.getEnfants().add(cible);
+            if (lien == LienParente.PERE) demandeur.setPere(cible);
+            if (lien == LienParente.MERE) demandeur.setMere(cible);
         }
 
         // Ajout du lien inverse dans l'arbre de la cible (si elle est inscrite)
@@ -104,6 +113,9 @@ public class Admin extends Compte {
             }
             LienParente lienInverse = cible.inverseLien(lien);
             cible.ajouterLien(demandeur, lienInverse);
+            if (lienInverse == LienParente.FILS || lienInverse == LienParente.FILLE) cible.getEnfants().add(demandeur);
+            if (lienInverse == LienParente.PERE) cible.setPere(demandeur);
+            if (lienInverse == LienParente.MERE) cible.setMere(demandeur);
         }
 
         // Notification
@@ -117,7 +129,7 @@ public class Admin extends Compte {
     /**
      * Refuse une demande d'ajout de lien faite par un utilisateur
      */
-    public boolean refuserAjoutLien(Personne demandeur, Personne cible, LienParente lien) {
+    public boolean refuserAjoutLien(Personne demandeur, Personne cible) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "❌ Demande refusée",
                 "Votre demande de lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
@@ -130,12 +142,14 @@ public class Admin extends Compte {
     public boolean validerSuppressionLien(Personne p1, Personne p2) {
         p1.supprimerLien(p2);
         p2.supprimerLien(p1);
+        p1.getArbre().getNoeuds().remove(p2);
+        p2.getArbre().getNoeuds().remove(p1);
 
-        MailService.envoyerEmail(p1.getCompte().getEmail(),
+        if (p1.getCompte().getEmail() != null) MailService.envoyerEmail(p1.getCompte().getEmail(),
                 "✅ Suppression de lien acceptée",
                 "Le lien entre vous et " + p2.getNom() + " a été supprimé par l'administrateur.");
 
-        MailService.envoyerEmail(p2.getCompte().getEmail(),
+        if (p2.getCompte().getEmail() != null) MailService.envoyerEmail(p2.getCompte().getEmail(),
                 "✅ Suppression de lien acceptée",
                 "Le lien entre vous et " + p1.getNom() + " a été supprimé par l'administrateur.");
         return true;
@@ -150,6 +164,15 @@ public class Admin extends Compte {
                 "Votre demande de suppression du lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
         return true;
     }
+
+    public void validerInscription(Personne p) {
+        p.setValideParAdmin(true);
+        new AuthService().mettreAJourUtilisateur(p);
+        MailService.envoyerEmail(p.getCompte().getEmail(),
+                "✅ Inscription validée",
+                "Votre inscription a été validée. Vous pouvez maintenant vous connecter.");
+    }
+
 
     /**
      * Vérifie si le lien proposé fait partie des liens autorisés
@@ -186,9 +209,6 @@ public class Admin extends Compte {
                 case "motdepasse":
                     cible.getCompte().setMotDePasse(valeur);
                     break;
-                case "numero":
-                    cible.getCompte().setNumero(valeur);
-                    break;
                 default:
                     System.out.println("⚠️ Champ non modifiable ou inconnu : " + champ);
             }
@@ -204,9 +224,9 @@ public class Admin extends Compte {
     /**
      * Crée une nouvelle personne non inscrite à partir d'un formulaire rempli par un utilisateur
      */
-    public Personne creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) throws IOException {
-        Personne nouvelle = new Personne(null, prenom, nom, dateNaissance, nationalite, null, null, genre, null, null);
+    public void creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) throws IOException {
+        final String nss = UUID.randomUUID().toString().substring(0, 8);
+        Personne nouvelle = new Personne(nss, prenom, nom, dateNaissance, nationalite, null, null, genre, null, null);
         System.out.println("✅ Nouvelle personne créée : " + prenom + " " + nom);
-        return nouvelle;
     }
 }

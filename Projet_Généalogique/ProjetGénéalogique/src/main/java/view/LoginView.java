@@ -60,6 +60,11 @@ public class LoginView {
             String password = passwordField.getText();
             Personne personne = authService.authentifier(identifiant, password);
             if (personne != null) {
+                if (!personne.isValideParAdmin()) {
+                    messageLabel.setText("Votre inscription est en attente de validation par l’administrateur.");
+                    return;
+                }
+
                 if (personne.getCompte().isPremiereConnexion()) {
                     // Redirige vers une vue de changement de mot de passe
                     ChangerMotDePasseView changerView = new ChangerMotDePasseView(authService, personne);

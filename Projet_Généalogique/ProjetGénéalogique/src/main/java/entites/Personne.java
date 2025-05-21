@@ -4,8 +4,6 @@ import entites.enums.Genre;
 import entites.enums.LienParente;
 import entites.enums.NiveauVisibilite;
 import javafx.scene.control.TreeItem;
-import service.DemandeAdminService;
-import service.MailService;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -29,6 +27,8 @@ public class Personne {
     private Set<Personne> enfants;
 
     private boolean estInscrit;
+    private boolean valideParAdmin;
+
 
     private NiveauVisibilite niveauVisibilite;
     private int generation;
@@ -54,13 +54,14 @@ public class Personne {
         this.enfants = new HashSet<>();
         this.liensParente = new HashMap<>();
         this.estInscrit = false;
+        this.setValideParAdmin(false);
         this.niveauVisibilite = NiveauVisibilite.PUBLIQUE; 
         this.generation = 0;
         this.arbre = arbre;
         this.estVivant = true;
     }
 
-    public Personne(String nom,String prenom, LocalDate dateNaissance, String nationalite, Genre genre){
+    public Personne(String nom,String prenom, LocalDate dateNaissance, String nationalite, Genre genre) {
         this.nom = nom;
         this.genre = genre;
         this.dateNaissance = dateNaissance;
@@ -376,5 +377,13 @@ public class Personne {
 
     public void setUrlPhoto(String urlPhoto) {
         this.urlPhoto = urlPhoto;
+    }
+
+    public boolean isValideParAdmin() {
+        return valideParAdmin;
+    }
+
+    public void setValideParAdmin(boolean valideParAdmin) {
+        this.valideParAdmin = valideParAdmin;
     }
 }

@@ -165,11 +165,12 @@ public class DemandeDAO {
             TypeDemande type = TypeDemande.valueOf(fields[1].toUpperCase());
             String demandeurNSS = fields[2];
             String cibleNSS = fields[3];
+            LienParente lien = LienParente.valueOf(fields[5].toString());
 
             Personne demandeur = UserDAO.chercherParNSS(demandeurNSS);
             Personne cible = UserDAO.chercherParNSS(cibleNSS);
             if (demandeur == null || cible == null) return null;
-            DemandeAdmin d = new DemandeAdmin(demandeur, cible, demandeur.getLiens().get(cible), type);
+            DemandeAdmin d = new DemandeAdmin(demandeur, cible, lien, type);
             return d;
         } catch (Exception e) {
             return null;

@@ -214,7 +214,7 @@ public class UserDAO {
     private static Personne construireDepuisLigne(String line) {
         try {
             String[] fields = line.split(",");
-            if (fields.length < 18) return null;
+            if (fields.length < 21) return null;
             String nss = fields[0];
             String prenom = fields[1];
             String nom = fields[2];

@@ -104,6 +104,7 @@ public class AffichageArbre {
         if (personne.getPere() != null) {
             construireNiveaux(personne.getPere(), niveaux, niveau - 1);
             personne.ajouterLien(personne.getPere(), LienParente.PERE);
+            personne.getArbre().getNoeuds().add(personne.getPere());
         } else {
             System.out.println("ℹ️ Aucun père défini pour " + personne.getPrenom() + " " + personne.getNom());
         }
@@ -111,6 +112,7 @@ public class AffichageArbre {
         if (personne.getMere() != null) {
             construireNiveaux(personne.getMere(), niveaux, niveau - 1);
             personne.ajouterLien(personne.getMere(), LienParente.MERE);
+            personne.getArbre().getNoeuds().add(personne.getMere());
         } else {
             System.out.println("ℹ️ Aucun mère définie pour " + personne.getPrenom() + " " + personne.getNom());
         }
@@ -131,6 +133,7 @@ public class AffichageArbre {
                 } else if (enfant.getGenre() == Genre.FEMME) {
                     personne.ajouterLien(enfant, LienParente.FILLE);
                 }
+                personne.getArbre().getNoeuds().add(enfant);
             } else {
                 System.err.println("⚠️ Genre non défini pour : " + enfant.getPrenom() + " " + enfant.getNom());
                 personne.ajouterLien(enfant, null); // Lien est null si le genre est absent

@@ -32,8 +32,8 @@ public class InitialisationCSV {
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 20) {
-                    System.err.println("Ligne mal formatée (moins de 20 colonnes), ignorée : " + line);
+                if (values.length < 21) {
+                    System.err.println("Ligne mal formatée (moins de 21 colonnes), ignorée : " + line);
                     continue;
                 }
 
@@ -56,9 +56,11 @@ public class InitialisationCSV {
                     String premiereConnexion = values[16].trim();
                     String urlPhoto = values[18].trim();
                     String inscrit = values[19].trim();
+                    String valideParAdmin = values[20].trim();
 
                     boolean premiereConnexionBool = premiereConnexion.equals("true");
                     boolean inscritBool = inscrit.equals("true");
+                    boolean valideParAdminBool = valideParAdmin.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
 
@@ -66,12 +68,23 @@ public class InitialisationCSV {
                         urlPhoto = "images/default.png";
                     }
 
-                    // Création de l'objet Compte et Personne
-                    Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
-                    compte.setPremiereConnexion(premiereConnexionBool);
-                    Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
-                            codePrive, genre, compte, null);
+                    Personne personne;
+
+                    if (email.equals("diffoglenn007@gmail.com")) {
+                        Admin compte = new Admin(login, motDePasse, email, telephone, adresse);
+                        compte.setPremiereConnexion(premiereConnexionBool);
+                        personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
+                                codePrive, genre, compte, null);
+
+                    } else {
+                        Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
+                        compte.setPremiereConnexion(premiereConnexionBool);
+                        personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
+                                codePrive, genre, compte, null);
+                    }
+
                     personne.setEstInscrit(inscritBool);
+                    personne.setValideParAdmin(valideParAdminBool);
                     personne.setArbre(new ArbreGenealogique(personne));
                     personne.setUrlPhoto(urlPhoto);
 

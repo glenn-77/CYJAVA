@@ -70,10 +70,10 @@ public class AllTreesView {
             arbresBox.setAlignment(Pos.CENTER);
 
             for (ArbreGenealogique arbre : arbres) {
+                if (!arbre.getProprietaire().isEstInscrit()) continue;
                 String nomProprietaire = (arbre.getProprietaire() != null)
                         ? arbre.getProprietaire().getPrenom() + " " + arbre.getProprietaire().getNom()
                         : "Inconnu";
-
                 Button arbreButton = new Button("Voir l'arbre de " + nomProprietaire);
                 arbreButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
                 arbreButton.setOnAction(e -> afficherArbre(arbre));
