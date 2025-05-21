@@ -96,18 +96,19 @@ public class AuthService {
         for (Personne utilisateur : utilisateurs.values()) {
             if (utilisateur.getArbre() != null) continue;
 
+            // Déterminer le racine/ancêtre pour cette personne
             Personne racine = trouverAncetre(utilisateur);
-            String cleFamille = racine.getNss();
+            String cleFamille = racine.getNss(); // Utilisation du NSS de l'ancêtre comme clé
 
-            if (!arbresParFamille.containsKey(cleFamille)) {
-                ArbreGenealogique arbre = new ArbreGenealogique(racine);
-                arbresParFamille.put(cleFamille, arbre);
-                GlobalTreesManager.ajouterArbre(arbre);
-                arbres.add(arbre);
-            }
+            // Si aucun arbre n'existe pour cette racine, créer un nouvel arbre
+            arbresParFamille.putIfAbsent(cleFamille, new ArbreGenealogique(racine));
 
+            // Associer l'utilisateur à l'arbre de la famille
             ArbreGenealogique arbreFamille = arbresParFamille.get(cleFamille);
             utilisateur.setArbre(arbreFamille);
+
+            // Ajouter l'utilisateur dans les nœuds de l'arbre
+            arbreFamille.getNoeuds().add(utilisateur);
         }
     }
 
@@ -301,8 +302,9 @@ public class AuthService {
 
             for (int i = 1; i < lignes.size(); i++) {
                 String[] champs = lignes.get(i).split(",");
-                if (champs.length > 18 && champs[0].equals(nss)) {
+                if (champs.length > 20 && champs[0].equals(nss)) {
                     Compte c = personne.getCompte();
+
                     String nouvelleLigne = String.join(",",
                             personne.getNss(),
                             personne.getPrenom(),
@@ -323,7 +325,9 @@ public class AuthService {
                             c.isPremiereConnexion() ? "true" : "false",
                             personne.getFamilleId(),
                             personne.getUrlPhoto(),
-                            personne.isEstInscrit() ? "true" : "false");
+                            personne.isEstInscrit() ? "true" : "false",
+                            personne.getNiveauVisibilite().toString()  // NiveauVisibilite.
+                    );
 
                     lignes.set(i, nouvelleLigne);
                     break;

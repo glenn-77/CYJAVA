@@ -22,6 +22,7 @@ import entites.Personne;
 import service.MailService;
 import service.DemandeAdminService;
 import service.DemandeAdminService.DemandeAdmin;
+import entites.enums.NiveauVisibilite;
 
 import java.io.*;
 import java.nio.file.*;
@@ -119,6 +120,7 @@ public class MainView {
             Button statistiquesButton = new Button("📊 Voir les statistiques de mon arbre");
             Button rechercheBtn = new Button("🔍 Rechercher une personne");
             Button logoutButton = new Button("🔴 Se déconnecter");
+            Button modifierCompteButton = new Button("Modifier mon compte");
 
             layout.getChildren().addAll(
                     bienvenue,
@@ -143,6 +145,9 @@ public class MainView {
                 AffichageConsultations affichageConsultations = new AffichageConsultations(authService);
                 affichageConsultations.afficherStatistiques(utilisateur.getNss());
             });
+
+            modifierCompteButton.setOnAction(e -> ouvrirModificationCompteUtilisateur(utilisateur));
+            layout.getChildren().add(modifierCompteButton);
 
 
             logoutButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -199,6 +204,38 @@ public class MainView {
         stage.setScene(scene);
         stage.setTitle("Accueil");
         stage.show();
+    }
+
+    private void ouvrirModificationCompteUtilisateur(Personne utilisateur) {
+        Stage modificationStage = new Stage();
+        modificationStage.initModality(Modality.APPLICATION_MODAL);
+        modificationStage.setTitle("Modifier mon niveau de visibilité");
+
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER);
+
+        Label label = new Label("Sélectionnez un niveau de visibilité :");
+        ChoiceBox<NiveauVisibilite> choixVisibilite = new ChoiceBox<>(
+                FXCollections.observableArrayList(NiveauVisibilite.values())
+        );
+        choixVisibilite.setValue(utilisateur.getNiveauVisibilite());
+
+        Button sauvegarderButton = new Button("Sauvegarder");
+        sauvegarderButton.setOnAction(event -> {
+            utilisateur.setNiveauVisibilite(choixVisibilite.getValue());
+
+            // Sauvegarde dans le fichier CSV
+            authService.mettreAJourUtilisateur(utilisateur);
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Le niveau de visibilité a été mis à jour !");
+            alert.showAndWait();
+            modificationStage.close();
+        });
+
+        root.getChildren().addAll(label, choixVisibilite, sauvegarderButton);
+        modificationStage.setScene(new Scene(root, 400, 200));
+        modificationStage.show();
     }
 
     private void ouvrirFormulaire(Stage parentStage) {

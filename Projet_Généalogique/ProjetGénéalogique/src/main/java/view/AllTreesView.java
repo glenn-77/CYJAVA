@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import service.GlobalTreesManager;
 import javafx.geometry.Pos; // Ajout de cet import spécifique pour gérer Pos
 import java.util.List;
+import entites.enums.NiveauVisibilite;
 
 /**
  * Classe qui gère l'affichage de tous les arbres généalogiques.
@@ -31,9 +32,6 @@ public class AllTreesView {
     /**
      * Affiche la liste de tous les arbres généalogiques disponibles.
      */
-    /**
-     * Affiche la liste de tous les arbres généalogiques disponibles.
-     */
     public void afficher() {
         // Charger les arbres depuis le fichier CSV (si nécessaire)
         if (GlobalTreesManager.getArbres().isEmpty()) {
@@ -46,7 +44,25 @@ public class AllTreesView {
             return;
         }
 
+        // Liste des arbres disponibles
         List<ArbreGenealogique> arbres = GlobalTreesManager.getArbres();
+
+        // Filtrage des arbres visibles
+        List<ArbreGenealogique> arbresVisibles = arbres.stream()
+                .filter(arbre -> {
+                    Personne proprietaire = arbre.getProprietaire();
+                    switch (proprietaire.getNiveauVisibilite()) {
+                        case PUBLIQUE:
+                            return true; // Toujours visible
+                        case PROTEGEE:
+                            return arbre.contient(utilisateurConnecte); // Visible uniquement si l'utilisateur est dans l'arbre
+                        case PRIVEE:
+                            return proprietaire.equals(utilisateurConnecte); // Visible uniquement pour le propriétaire lui-même
+                        default:
+                            return false;
+                    }
+                })
+                .toList();
 
         // Layout principal avec style similaire à MainView
         VBox layout = new VBox(20);
@@ -59,7 +75,7 @@ public class AllTreesView {
         layout.getChildren().add(titre);
 
         // Ajouter la liste des arbres ou un message si aucun n'est disponible
-        if (arbres.isEmpty()) {
+        if (arbresVisibles.isEmpty()) {
             Label aucunArbre = new Label("⛔ Aucun arbre généalogique disponible.");
             aucunArbre.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 14px;");
             layout.getChildren().add(aucunArbre);
@@ -69,10 +85,16 @@ public class AllTreesView {
             VBox arbresBox = new VBox(10);
             arbresBox.setAlignment(Pos.CENTER);
 
-            for (ArbreGenealogique arbre : arbres) {
-                String nomProprietaire = (arbre.getProprietaire() != null)
-                        ? arbre.getProprietaire().getPrenom() + " " + arbre.getProprietaire().getNom()
-                        : "Inconnu";
+            for (ArbreGenealogique arbre : arbresVisibles) {
+                String nomProprietaire;
+
+                // Vérifier le niveau de visibilité du propriétaire et ajuster l'affichage
+                Personne proprietaire = arbre.getProprietaire();
+                if (proprietaire.getNiveauVisibilite() == NiveauVisibilite.PRIVEE && !proprietaire.equals(utilisateurConnecte)) {
+                    nomProprietaire = "Inconnu"; // Propriétaire privé et différent de l'utilisateur connecté
+                } else {
+                    nomProprietaire = proprietaire.getPrenom() + " " + proprietaire.getNom(); // Nom complet si visible
+                }
 
                 Button arbreButton = new Button("Voir l'arbre de " + nomProprietaire);
                 arbreButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -110,10 +132,15 @@ public class AllTreesView {
      *
      * @param arbre L'arbre généalogique à afficher.
      */
+    /**
+     * Affiche un arbre spécifique.
+     *
+     * @param arbre L'arbre généalogique à afficher.
+     */
     private void afficherArbre(ArbreGenealogique arbre) {
         // Enregistrer la consultation de l'arbre
         if (arbre != null) {
-            arbre.consulterArbre(utilisateurConnecte.getNss());
+            arbre.consulterArbre(utilisateurConnecte.getNss(), utilisateurConnecte); // Ajouter l'utilisateur connecté
         }
 
         BorderPane arbreView = new BorderPane();
@@ -133,7 +160,7 @@ public class AllTreesView {
 
         // Bouton de retour
         Button retour = new Button("Retour");
-        retour.setOnAction(e -> afficher());
+        retour.setOnAction(e -> afficher()); // Revenir à la liste des arbres
         arbreView.setBottom(retour);
         BorderPane.setMargin(retour, new Insets(10));
 

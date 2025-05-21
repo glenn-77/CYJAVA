@@ -6,7 +6,8 @@ import entites.enums.Genre;
 import entites.enums.LienParente;
 import entites.enums.TypeDemande;
 import service.DemandeAdminService.DemandeAdmin;
-
+import entites.enums.NiveauVisibilite;
+import entites.Personne;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -56,11 +57,13 @@ public class InitialisationCSV {
                     String premiereConnexion = values[16].trim();
                     String urlPhoto = values[18].trim();
                     String inscrit = values[19].trim();
+                    String niveauVisibiliteStr = values[20].trim();
 
                     boolean premiereConnexionBool = premiereConnexion.equals("true");
                     boolean inscritBool = inscrit.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
+                    NiveauVisibilite niveauVisibilite = NiveauVisibilite.valueOf(niveauVisibiliteStr.toUpperCase());
 
                     if (urlPhoto.isEmpty()) {
                         urlPhoto = "images/default.png";
@@ -69,8 +72,11 @@ public class InitialisationCSV {
                     // Création de l'objet Compte et Personne
                     Compte compte = new Compte(login, motDePasse, email, telephone, adresse);
                     compte.setPremiereConnexion(premiereConnexionBool);
+
                     Personne personne = new Personne(nss, prenom, nom, dateNaissance, nationalite, carteIdentite,
                             codePrive, genre, compte, null);
+                    personne.setNiveauVisibilite(niveauVisibilite); // Après création
+
                     personne.setEstInscrit(inscritBool);
                     personne.setArbre(new ArbreGenealogique(personne));
                     personne.setUrlPhoto(urlPhoto);
