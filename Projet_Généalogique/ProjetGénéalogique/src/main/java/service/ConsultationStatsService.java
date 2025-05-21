@@ -8,7 +8,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service pour gérer les statistiques des consultations d'arbre généalogique.
+ * Service for managing statistics related to genealogical tree consultations.
+ * Stores and analyzes consultation data in a CSV file.
  */
 public class ConsultationStatsService {
 
@@ -16,10 +17,10 @@ public class ConsultationStatsService {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
-     * Ajoute une consultation d'arbre dans le fichier.
+     * Records a tree consultation event by writing it to the CSV file.
      *
-     * @param nssArbre     NSS de l'arbre consulté
-     * @param nssConsultant NSS de l'utilisateur consultant
+     * @param nssArbre      the NSS of the tree being consulted
+     * @param nssConsultant the NSS of the user performing the consultation
      */
     public void ajouterConsultation(String nssArbre, String nssConsultant) {
         // Valider les paramètres NSS pour éviter les écritures incorrectes
@@ -30,11 +31,11 @@ public class ConsultationStatsService {
 
         // Préparer les données à écrire dans le fichier
         String dateConsultation = LocalDate.now().format(DATE_FORMAT);
-        String ligneAÉcrire = String.join(",", nssArbre, nssConsultant, dateConsultation);
+        String ligneAecrire = String.join(",", nssArbre, nssConsultant, dateConsultation);
 
         // Écrire dans le fichier avec garantie d'une nouvelle ligne après chaque écriture
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(CSV_FILE), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            writer.write(ligneAÉcrire);
+            writer.write(ligneAecrire);
             writer.newLine(); // Garantir que la ligne est correctement terminée par un saut de ligne
         } catch (IOException e) {
             System.err.println("❌ Erreur lors de l'écriture dans le fichier consultations.csv : " + e.getMessage());
@@ -42,11 +43,11 @@ public class ConsultationStatsService {
     }
 
     /**
-     * Récupère les fréquences de consultation (par mois ou par année).
+     * Calculates consultation frequencies of a specific genealogical tree, grouped by month or year.
      *
-     * @param nssArbre NSS de l'arbre consulté
-     * @param parMois  Si vrai, regroupe par mois, sinon par année
-     * @return Une carte où la clé est le mois/année et la valeur est le nombre de consultations
+     * @param nssArbre the NSS of the consulted tree
+     * @param parMois  if true, groups by month; otherwise, groups by year
+     * @return a map where the key is a month/year and the value is the count of consultations
      */
     public Map<String, Long> calculerFrequences(String nssArbre, boolean parMois) {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(CSV_FILE))) {
@@ -68,10 +69,10 @@ public class ConsultationStatsService {
     }
 
     /**
-     * Récupère les utilisateurs ayant consulté un arbre et leur fréquence de consultation.
+     * Retrieves the users who consulted a tree and the number of times they did so.
      *
-     * @param nssArbre NSS de l'arbre concerné
-     * @return Une carte où la clé est le NSS de l'utilisateur et la valeur est le nombre de consultations
+     * @param nssArbre the NSS of the consulted tree
+     * @return a map where the key is the consultant's NSS and the value is the consultation count
      */
     public Map<String, Long> recupererConsultationsParUtilisateur(String nssArbre) {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(CSV_FILE))) {

@@ -17,17 +17,28 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+/**
+ * A JavaFX view for displaying and uploading family memories such as photos and videos.
+ * Each family has a shared folder where all users with the same family ID can view and contribute media.
+ */
 public class SouvenirsView {
 
     private final Personne utilisateur;
     private final AuthService authService;
     private final File dossierCommun;
 
+    /**
+     * Constructs the SouvenirsView using the given authentication service and logged-in user.
+     * Creates a shared directory for the user's family if it does not already exist.
+     *
+     * @param authService the authentication service
+     * @param utilisateur the currently logged-in user
+     */
     public SouvenirsView(AuthService authService, Personne utilisateur) {
         this.utilisateur = utilisateur;
         this.authService = authService;
 
-        // Utilise l'identifiant de la famille pour le dossier partagé
+        // Create the shared directory based on the user's family ID
         String familleId = utilisateur.getFamilleId();
         this.dossierCommun = new File("souvenirs/famille_" + familleId);
 
@@ -36,6 +47,12 @@ public class SouvenirsView {
         }
     }
 
+    /**
+     * Starts the JavaFX scene to view and upload family memories.
+     * Users can see images and videos stored in the shared folder and upload new ones.
+     *
+     * @param stage the main JavaFX stage
+     */
     public void start(Stage stage) {
         BorderPane root = new BorderPane();
 
@@ -57,6 +74,7 @@ public class SouvenirsView {
 
         afficherSouvenirs(galerie);
 
+        // Upload button
         Button uploadButton = new Button("Ajouter un souvenir");
         uploadButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
@@ -77,6 +95,7 @@ public class SouvenirsView {
             }
         });
 
+        // Return button
         Button retourButton = new Button("Retour");
         retourButton.setOnAction(e -> {
             MainView mainView = new MainView(authService, utilisateur);
@@ -95,6 +114,11 @@ public class SouvenirsView {
         stage.show();
     }
 
+    /**
+     * Loads and displays all the images and videos from the shared folder.
+     *
+     * @param galerie the FlowPane container where media elements will be added
+     */
     private void afficherSouvenirs(FlowPane galerie) {
         galerie.getChildren().clear();
         File[] fichiers = dossierCommun.listFiles();

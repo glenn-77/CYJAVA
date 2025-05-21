@@ -22,10 +22,6 @@ public class Admin extends Compte {
         this.role = "admin";
     }
 
-    public String getRole() {
-        return role;
-    }
-
     public void traiterDemande(DemandeAdmin demande, boolean accepter) throws IOException {
         Personne demandeur = demande.getDemandeur();
         Personne cible = demande.getCible();
@@ -85,10 +81,10 @@ public class Admin extends Compte {
     /**
      * Valide une demande d'ajout de lien faite par un utilisateur
      */
-    public boolean validerAjoutLien(Personne demandeur, Personne cible, LienParente lien) {
+    public void validerAjoutLien(Personne demandeur, Personne cible, LienParente lien) {
         if (!isLienAutorise(lien)) {
             System.out.println("❌ Lien non autorisé : " + lien);
-            return false;
+            return;
         }
 
         // Ajout du lien dans l'arbre du demandeur
@@ -97,7 +93,7 @@ public class Admin extends Compte {
             arbreDemandeur.getNoeuds().add(cible);
             if (!CoherenceVerifier.verifierToutesLesCoherences(arbreDemandeur)) {
                 arbreDemandeur.getNoeuds().remove(cible);
-                return false;
+                return;
             }
             demandeur.ajouterLien(cible, lien);
             if (lien == LienParente.FILS || lien == LienParente.FILLE) demandeur.getEnfants().add(cible);
@@ -123,23 +119,21 @@ public class Admin extends Compte {
                 "✅ Demande acceptée",
                 "Votre demande de lien avec " + cible.getNom() + " a été approuvée.");
 
-        return true;
     }
 
     /**
      * Refuse une demande d'ajout de lien faite par un utilisateur
      */
-    public boolean refuserAjoutLien(Personne demandeur, Personne cible) {
+    public void refuserAjoutLien(Personne demandeur, Personne cible) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "❌ Demande refusée",
                 "Votre demande de lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
-        return true;
     }
 
     /**
      * Accepte une demande de suppression de lien entre deux personnes
      */
-    public boolean validerSuppressionLien(Personne p1, Personne p2) {
+    public void validerSuppressionLien(Personne p1, Personne p2) {
         p1.supprimerLien(p2);
         p2.supprimerLien(p1);
         p1.getArbre().getNoeuds().remove(p2);
@@ -152,17 +146,15 @@ public class Admin extends Compte {
         if (p2.getCompte().getEmail() != null) MailService.envoyerEmail(p2.getCompte().getEmail(),
                 "✅ Suppression de lien acceptée",
                 "Le lien entre vous et " + p1.getNom() + " a été supprimé par l'administrateur.");
-        return true;
     }
 
     /**
      * Refuse une demande de suppression de lien
      */
-    public boolean refuserSuppressionLien(Personne demandeur, Personne cible) {
+    public void refuserSuppressionLien(Personne demandeur, Personne cible) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "❌ Suppression refusée",
                 "Votre demande de suppression du lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
-        return true;
     }
 
     public void validerInscription(Personne p) {
@@ -226,7 +218,7 @@ public class Admin extends Compte {
      */
     public void creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) throws IOException {
         final String nss = UUID.randomUUID().toString().substring(0, 8);
-        Personne nouvelle = new Personne(nss, prenom, nom, dateNaissance, nationalite, null, null, genre, null, null);
+        new Personne(nss, prenom, nom, dateNaissance, nationalite, null, null, genre, null, null);
         System.out.println("✅ Nouvelle personne créée : " + prenom + " " + nom);
     }
 }

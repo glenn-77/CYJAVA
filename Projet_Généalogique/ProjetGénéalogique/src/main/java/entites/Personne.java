@@ -49,7 +49,7 @@ public class Personne {
         this.codePrive = codePrive;
         this.genre = genre;
         this.compte = compte;
-        this.setFamilleId("FAM_" + nom.toUpperCase());
+        this.familleId = "FAM" + this.nom.toUpperCase();
 
         this.enfants = new HashSet<>();
         this.liensParente = new HashMap<>();
@@ -155,10 +155,6 @@ public class Personne {
         return compte;
     }
 
-    public void setCompte(Compte compte) {
-        this.compte = compte;
-    }
-
     public LienParente getLien() {
         return lien;
     }
@@ -175,21 +171,15 @@ public class Personne {
         if (this.compte instanceof Admin) {
             return true;
         }
-        switch (this.niveauVisibilite) {
-            case PUBLIQUE:
-                return true;
-
-            case PRIVEE:
+        return switch (this.niveauVisibilite) {
+            case PUBLIQUE -> true;
+            case PRIVEE ->
                 // Seul le propriétaire (créateur de l'arbre) peut voir cette personne
-                return this.equals(demandeur);
-
-            case PROTEGEE:
+                    this.equals(demandeur);
+            case PROTEGEE ->
                 // Vérifie si le demandeur appartient au même arbre
-                return this.arbre != null && this.arbre.contient(demandeur);
-
-            default:
-                return false;
-        }
+                    this.arbre != null && this.arbre.contient(demandeur);
+        };
     }
 
     public String getNomVisible(Personne demandeur) {
@@ -214,10 +204,6 @@ public class Personne {
 
     public boolean isEstVivant() {
         return estVivant;
-    }
-
-    public void setEstVivant(boolean estVivant) {
-        this.estVivant = estVivant;
     }
 
     public void ajouterLien(Personne autre, LienParente lien) {
@@ -365,10 +351,6 @@ public class Personne {
 
     public String getFamilleId() {
         return familleId;
-    }
-
-    public void setFamilleId(String familleId) {
-        this.familleId = familleId;
     }
 
     @Override

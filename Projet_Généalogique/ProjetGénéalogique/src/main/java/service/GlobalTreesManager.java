@@ -10,14 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Gère la liste globale des arbres généalogiques.
+ * A utility class responsible for managing the global list of genealogical trees.
+ * Supports loading from a CSV file and accessing or adding trees programmatically.
  */
 public class GlobalTreesManager {
 
     private static final List<ArbreGenealogique> arbres = new ArrayList<>();
 
     /**
-     * Charge les arbres généalogiques depuis le fichier utilisateurs.csv.
+     * Loads genealogical trees from the 'utilisateurs.csv' file.
+     * Each user loaded from the file is checked for an associated tree,
+     * which is added to the global list if not already present.
      */
     public static void chargerArbresDepuisCSV() {
         System.out.println("Chargement des utilisateurs depuis le fichier CSV...");
@@ -47,18 +50,18 @@ public class GlobalTreesManager {
     }
 
     /**
-     * Retourne tous les arbres généalogiques.
+     * Returns the global list of genealogical trees.
      *
-     * @return Une liste d'arbres généalogiques.
+     * @return a list of {@link ArbreGenealogique}
      */
     public static List<ArbreGenealogique> getArbres() {
         return arbres;
     }
 
     /**
-     * Ajoute un arbre généalogique à la liste globale.
+     * Adds a genealogical tree to the global list if not already present.
      *
-     * @param arbre L'arbre à ajouter.
+     * @param arbre the tree to add
      */
     public static void ajouterArbre(ArbreGenealogique arbre) {
         if (arbre != null && !arbres.contains(arbre)) {

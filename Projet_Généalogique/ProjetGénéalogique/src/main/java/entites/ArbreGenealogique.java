@@ -3,7 +3,6 @@ package entites;
 
 import java.util.*;
 import service.ConsultationStatsService;
-import entites.enums.NiveauVisibilite;
 /**
  * Represents a genealogical tree containing people and their familial relationships.
  * Each tree has a single owner and supports adding, deleting, and querying persons.
@@ -11,9 +10,9 @@ import entites.enums.NiveauVisibilite;
 public class ArbreGenealogique {
 
     /** List of all persons (nodes) in the tree */
-    private Set<Personne> noeuds;
+    private final Set<Personne> noeuds;
     /** The owner of the genealogical tree */
-    private Personne proprietaire;
+    private final Personne proprietaire;
 
     /**
      * Constructor initializing the genealogical tree with its owner.
@@ -36,15 +35,6 @@ public class ArbreGenealogique {
     /** Returns the owner of the tree. */
     public Personne getProprietaire() {
         return proprietaire;
-    }
-
-    /**
-     * Displays the tree in a textual form.
-     */
-    public void afficherTexte() {
-        for (Personne p : noeuds) {
-            System.out.println(p.getNom() + " (" + p.getLien() + ")");
-        }
     }
 
     /**

@@ -1,6 +1,8 @@
 package view;
 
+import entites.Admin;
 import entites.enums.LienParente;
+import entites.enums.TypeDemande;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -10,10 +12,27 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import service.AuthService;
+import service.DemandeAdminService;
 import service.MailService;
 
+
+/**
+ * Displays a detailed popup view for a {@link Personne} with information visibility
+ * depending on the relationship to the current user.
+ * Includes functionality to request deletion of the person from the family tree.
+ */
 public class PersonneDetailView {
 
+    /**
+     * Displays a popup window showing detailed information about a person.
+     * The visibility of certain attributes depends on the user's access rights.
+     * If the user has a defined relationship with the person, a delete button is shown
+     * that allows the user to request deletion via an email to the administrator.
+     *
+     * @param personne           the person whose details are to be shown
+     * @param utilisateurCourant the currently logged-in user
+     */
     public static void showPopup(Personne personne, Personne utilisateurCourant) {
         Stage popupStage = new Stage();
         VBox layout = new VBox(10);
@@ -42,6 +61,7 @@ public class PersonneDetailView {
 
         Text info = new Text(details.toString());
 
+        // If the user has a relationship with the person, show the delete button
         if (utilisateurCourant.getLiens().containsKey(personne)) {
             Button boutonSupprimer = new Button("Supprimer");
             boutonSupprimer.setOnAction(e -> {
@@ -60,9 +80,10 @@ public class PersonneDetailView {
                                 personne.getPrenom(),
                                 personne.getNom()
                         );
-                        MailService.envoyerEmail("admin@exemple.com", sujet, corps);
+                        MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, corps);
                         Alert confirmationEnvoyee = new Alert(Alert.AlertType.INFORMATION);
                         confirmationEnvoyee.setTitle("Demande envoyée");
+                        new AuthService().ajouterDemande(new DemandeAdminService.DemandeAdmin(utilisateurCourant, personne, lien, TypeDemande.SUPPRESSION_PERSONNE));
                         confirmationEnvoyee.setHeaderText(null);
                         confirmationEnvoyee.setContentText("Votre demande de suppression a été envoyée à l'administrateur.");
                         confirmationEnvoyee.show();

@@ -16,6 +16,10 @@ import entites.ArbreGenealogique;
 
 import java.util.*;
 
+/**
+ * A JavaFX-based graphical tree renderer for displaying a genealogical tree.
+ * Includes logic for node layout, parent-child linking, and interactivity such as popups and coloring.
+ */
 public class AffichageArbre {
 
     private final Personne utilisateurConnecte;
@@ -32,11 +36,22 @@ public class AffichageArbre {
     // Profondeur maximale de l'arbre (limite des générations descendantes)
     private static final int MAX_PROFONDEUR = 10;
 
+    /**
+     * Constructs the tree visualization for the given connected user and JavaFX stage.
+     *
+     * @param utilisateurConnecte the logged-in user
+     * @param stage               the JavaFX stage
+     */
     public AffichageArbre(Personne utilisateurConnecte, Stage stage) {
         this.utilisateurConnecte = utilisateurConnecte;
         this.stage = stage;
     }
 
+    /**
+     * Renders the genealogical tree in the provided group pane.
+     *
+     * @param group the JavaFX group where the tree nodes and links will be drawn
+     */
     public void afficher(Group group) {
         group.getChildren().clear();
 
@@ -73,12 +88,18 @@ public class AffichageArbre {
         dessinerArbreEtLiens(group, racine, 0);
     }
 
+    /**
+     * Builds the hierarchy levels of the tree for layout purposes.
+     */
     private Map<Integer, List<Personne>> creerNiveaux(Personne racine) {
         Map<Integer, List<Personne>> niveaux = new HashMap<>();
         construireNiveaux(racine, niveaux, 0);
         return niveaux;
     }
 
+    /**
+     * Recursively constructs tree levels by exploring parents and children.
+     */
     private void construireNiveaux(Personne personne, Map<Integer, List<Personne>> niveaux, int niveau) {
         // Vérifiez si la personne est null, déjà visitée ou que la profondeur est atteinte
         if (personne == null) {
@@ -141,6 +162,9 @@ public class AffichageArbre {
         }
     }
 
+    /**
+     * Computes screen positions for each person in the tree.
+     */
     private void calculerPositions(Map<Integer, List<Personne>> niveaux, double centreX) {
         for (int niveau : niveaux.keySet()) {
             List<Personne> personnesNiveau = niveaux.get(niveau);
@@ -161,6 +185,9 @@ public class AffichageArbre {
         }
     }
 
+    /**
+     * Draws all nodes and links of the tree recursively.
+     */
     private void dessinerArbreEtLiens(Group group, Personne personne, int profondeur) {
         if (personne == null || !positions.containsKey(personne) || profondeur > MAX_PROFONDEUR) {
             return;
@@ -193,7 +220,9 @@ public class AffichageArbre {
     }
 
 
-
+    /**
+     * Renders a node (person) at the specified position.
+     */
     private void dessinerNoeud(Group group, Personne personne, double x, double y) {
         double largeurNoeud = 150;
         double hauteurNoeud = 50;
@@ -229,6 +258,9 @@ public class AffichageArbre {
         group.getChildren().addAll(cadre, texte);
     }
 
+    /**
+     * Draws a line connecting two people in the tree.
+     */
     private void dessinerLien(Group group, Personne enfant, Personne parent) {
         if (!positions.containsKey(enfant) || !positions.containsKey(parent)) {
             return;
@@ -246,6 +278,12 @@ public class AffichageArbre {
         group.getChildren().add(ligne);
     }
 
+    /**
+     * Removes a person from the graphical display and updates the tree.
+     *
+     * @param cible the person to remove
+     * @param group the JavaFX group displaying the tree
+     */
     public void supprimerPersonneGraphiquement(Personne cible, Group group) {
         utilisateurConnecte.getArbre().getNoeuds().remove(cible);
         positions.clear();

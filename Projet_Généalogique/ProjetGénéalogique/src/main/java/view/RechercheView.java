@@ -16,17 +16,33 @@ import java.io.*;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * A JavaFX view that provides a unified search interface for finding people by name, surname, or social security number (NSS).
+ * Allows the user to view matching results and display associated photos.
+ */
 public class RechercheView {
 
     private final AuthService authService;
     private final Personne utilisateur;
     final Personne[] personneCourante = {null};
 
+    /**
+     * Constructs a RechercheView instance.
+     *
+     * @param authService the authentication service
+     * @param utilisateur the currently logged-in user
+     */
     public RechercheView(AuthService authService, Personne utilisateur) {
         this.authService = authService;
         this.utilisateur = utilisateur;
     }
 
+    /**
+     * Launches the unified search interface.
+     * Enables the user to search by name, first name, or NSS and display a photo for the selected person.
+     *
+     * @param stage the JavaFX stage in which the scene is set
+     */
     public void start(Stage stage) {
         TextField champRecherche = new TextField();
         champRecherche.setPromptText("Entrez un nom, prénom ou NSS");
@@ -44,6 +60,7 @@ public class RechercheView {
         imageView.setFitWidth(150);
         imageView.setPreserveRatio(true);
 
+        // Dynamic search with filters
         champRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
             String critere = filtre.getValue();
             listeResultats.getItems().clear();
@@ -75,7 +92,7 @@ public class RechercheView {
             }
         });
 
-        // Action bouton Afficher la photo
+        // Show photo button
         boutonPhoto.setOnAction(e -> {
             Personne p = personneCourante[0];
             if (p == null) {
@@ -113,6 +130,7 @@ public class RechercheView {
             }
         });
 
+        // Return button
         Button retourBtn = new Button("Retour");
         retourBtn.setOnAction(e -> {
             MainView retourAccueil = new MainView(authService, utilisateur);
@@ -125,10 +143,23 @@ public class RechercheView {
         stage.setTitle("Recherche unifiée");
     }
 
+    /**
+     * Highlights matching text in a string using a custom marker.
+     *
+     * @param texte     the original text
+     * @param recherche   the substring to highlight
+     * @return the highlighted text with [[RED]] and [[/RED]] markers
+     */
     private String surligner(String texte, String recherche) {
         return texte.replaceAll("(?i)(" + Pattern.quote(recherche) + ")", "[[RED]]$1[[/RED]]");
     }
 
+    /**
+     * Converts a string with [[RED]]...[[/RED]] markers into a JavaFX Label with colored text.
+     *
+     * @param ligne the line with optional highlight markers
+     * @return a styled Label component
+     */
     private Label formatterLigneAvecSurlignage(String ligne) {
         if (!ligne.contains("[[RED]]")) return new Label(ligne);
 
@@ -150,6 +181,13 @@ public class RechercheView {
         return label;
     }
 
+    /**
+     * Creates a bold colored Text node for highlighting.
+     *
+     * @param content the text content
+     * @param color   the color to apply
+     * @return a styled Text node
+     */
     private Text styledText(String content, String color) {
         Text text = new Text(content);
         text.setStyle("-fx-fill: " + color + "; -fx-font-weight: bold;");

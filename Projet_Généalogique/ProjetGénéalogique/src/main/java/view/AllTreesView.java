@@ -12,28 +12,33 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import service.GlobalTreesManager;
-import javafx.geometry.Pos; // Ajout de cet import spécifique pour gérer Pos
+import javafx.geometry.Pos;
 import java.util.List;
 import entites.enums.NiveauVisibilite;
 
 /**
- * Classe qui gère l'affichage de tous les arbres généalogiques.
+ * A JavaFX view that displays all genealogical trees visible to the connected user.
+ * It supports filtering based on visibility rules and rendering the selected tree.
  */
 public class AllTreesView {
 
     private final Personne utilisateurConnecte;
     private final Stage stage;
 
+    /**
+     * Constructs the view with the connected user and the primary JavaFX stage.
+     *
+     * @param utilisateurConnecte the currently logged-in user
+     * @param stage               the JavaFX stage for rendering
+     */
     public AllTreesView(Personne utilisateurConnecte, Stage stage) {
         this.utilisateurConnecte = utilisateurConnecte;
         this.stage = stage;
     }
 
     /**
-     * Affiche la liste de tous les arbres généalogiques disponibles.
-     */
-    /**
-     * Affiche la liste de tous les arbres généalogiques disponibles.
+     * Displays the list of all genealogical trees that are visible to the connected user.
+     * Applies visibility filters based on each tree's access level (public, protected, or private).
      */
     public void afficher() {
         // Charger les arbres depuis le fichier CSV (si nécessaire)
@@ -54,16 +59,13 @@ public class AllTreesView {
         List<ArbreGenealogique> arbresVisibles = arbres.stream()
                 .filter(arbre -> {
                     Personne proprietaire = arbre.getProprietaire();
-                    switch (proprietaire.getNiveauVisibilite()) {
-                        case PUBLIQUE:
-                            return true; // Toujours visible
-                        case PROTEGEE:
-                            return arbre.contient(utilisateurConnecte); // Visible uniquement si l'utilisateur est dans l'arbre
-                        case PRIVEE:
-                            return proprietaire.equals(utilisateurConnecte); // Visible uniquement pour le propriétaire lui-même
-                        default:
-                            return false;
-                    }
+                    return switch (proprietaire.getNiveauVisibilite()) {
+                        case PUBLIQUE -> true; // Toujours visible
+                        case PROTEGEE ->
+                                arbre.contient(utilisateurConnecte); // Visible uniquement si l'utilisateur est dans l'arbre
+                        case PRIVEE ->
+                                proprietaire.equals(utilisateurConnecte); // Visible uniquement pour le propriétaire lui-même
+                    };
                 })
                 .toList();
 
@@ -127,25 +129,20 @@ public class AllTreesView {
         stage.show();
     }
 
+
     /**
-     * Affiche un arbre spécifique.
+     * Displays a specific genealogical tree in a scrollable pane.
      *
-     * @param arbre L'arbre généalogique à afficher.
-     */
-    /**
-     * Affiche un arbre spécifique.
-     *
-     * @param arbre L'arbre généalogique à afficher.
+     * @param arbre the tree to display
      */
     private void afficherArbre(ArbreGenealogique arbre) {
-        // Enregistrer la consultation de l'arbre
+
         if (arbre != null) {
-            arbre.consulterArbre(utilisateurConnecte.getNss(), utilisateurConnecte); // Ajouter l'utilisateur connecté
+            arbre.consulterArbre(utilisateurConnecte.getNss(), utilisateurConnecte);
         }
 
         BorderPane arbreView = new BorderPane();
 
-        // Création de la vue de l'arbre
         if (arbre.getProprietaire() != null) {
             Group arbreGroup = new Group();
             AffichageArbre affichageArbre = new AffichageArbre(arbre.getProprietaire(), stage);
@@ -158,13 +155,12 @@ public class AllTreesView {
             arbreView.setCenter(new Label("Arbre sans propriétaire."));
         }
 
-        // Bouton de retour
+        // Return button
         Button retour = new Button("Retour");
-        retour.setOnAction(e -> afficher()); // Revenir à la liste des arbres
+        retour.setOnAction(e -> afficher());
         arbreView.setBottom(retour);
         BorderPane.setMargin(retour, new Insets(10));
 
-        // Créer une nouvelle scène
         Scene scene = new Scene(arbreView, 1400, 900);
         stage.setScene(scene);
         stage.setTitle("Arbre généalogique");
@@ -172,7 +168,7 @@ public class AllTreesView {
     }
 
     /**
-     * Revient au menu principal.
+     * Navigates back to the main menu.
      */
     private void revenirAuMenuPrincipal() {
         new MainView(null, utilisateurConnecte).start(stage);

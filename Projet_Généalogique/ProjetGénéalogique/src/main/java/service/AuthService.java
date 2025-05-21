@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import dao.UserDAO;
 import entites.ArbreGenealogique;
 import entites.Compte;
 import entites.Personne;
@@ -130,7 +132,13 @@ public class AuthService {
      * @return true s'il existe, sinon false.
      */
     public boolean existe(String email) {
-        return utilisateurs.containsKey(email);
+        for (Personne utilisateur : utilisateurs.values()) {
+            Compte compte = utilisateur.getCompte();
+            if (compte.getEmail().equals(email)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -400,7 +408,7 @@ public class AuthService {
         }
     }
 
-    public boolean supprimerUtilisateurParNSS(String nss) {
+    public void supprimerUtilisateurParNSS(String nss) {
         File inputFile = new File("ressources/utilisateurs.csv");
         File tempFile = new File("ressources/temp_utilisateurs.csv");
 
@@ -427,16 +435,14 @@ public class AuthService {
 
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return;
         }
 
         // Remplacer l'ancien fichier par le nouveau
         if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
             System.out.println("❌ Erreur lors de la mise à jour du fichier.");
-            return false;
         }
 
-        return supprime;
     }
 
 

@@ -12,17 +12,33 @@ import service.AuthService;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 
-
+/**
+ * A JavaFX view that allows a user to change their password.
+ * This view is especially triggered during the first login, where password change is mandatory.
+ */
 public class ChangerMotDePasseView {
 
     private final AuthService authService;
     private final Personne personne;
 
+    /**
+     * Constructs the view with the given authentication service and user.
+     *
+     * @param authService the service used to manage user data and authentication
+     * @param personne    the user who needs to change their password
+     */
     public ChangerMotDePasseView(AuthService authService, Personne personne) {
         this.authService = authService;
         this.personne = personne;
     }
 
+    /**
+     * Starts the password change interface.
+     * Prompts the user to input and confirm a new password, ensuring it differs from the old one.
+     * On success, the password is updated and the user is redirected to the login view.
+     *
+     * @param stage the JavaFX stage in which the view is displayed
+     */
     public void start(Stage stage) {
         Label titre = new Label("🔐 Changement de mot de passe obligatoire");
         PasswordField nouveauMotDePasse = new PasswordField();

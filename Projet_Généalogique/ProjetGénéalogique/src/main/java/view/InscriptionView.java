@@ -29,15 +29,32 @@ import javafx.stage.FileChooser;
 import java.io.File;
 
 
-
+/**
+ * A JavaFX view that handles the user registration process.
+ * Displays a form to collect personal information and sends a registration request
+ * to the administrator after submission. If the form is valid, a private code and temporary
+ * password are generated and emailed to the user.
+ */
 public class InscriptionView {
 
     private final AuthService authService;
 
+    /**
+     * Constructs the InscriptionView with the given authentication service.
+     *
+     * @param authService service used to manage authentication and user registration
+     */
     public InscriptionView(AuthService authService) {
         this.authService = authService;
     }
 
+    /**
+     * Starts the JavaFX window for user registration.
+     * Collects information including name, date of birth, nationality, gender, and contact details.
+     * A photo of the ID is also required.
+     *
+     * @param stage the JavaFX stage where the scene is displayed
+     */
     public void start(Stage stage) {
         stage.setTitle("Inscription");
 
@@ -49,6 +66,7 @@ public class InscriptionView {
         Label titleLabel = new Label("Inscrivez-vous !");
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
+        // Input fields
         TextField nssField = new TextField();
         nssField.setPromptText("Numéro de Sécurité Sociale");
 
@@ -82,6 +100,7 @@ public class InscriptionView {
         TextField nationaliteField = new TextField();
         nationaliteField.setPromptText("Nationalité");
 
+        // ID photo
         Label carteLabel = new Label("Carte d'identité :");
         ImageView imageView = new ImageView();
         imageView.setFitWidth(200);
@@ -117,9 +136,11 @@ public class InscriptionView {
         TextField adresseField = new TextField();
         adresseField.setPromptText("Adresse");
 
+        // Register button
         Button inscrireBtn = new Button("S'inscrire");
         inscrireBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-font-weight: bold;");
 
+        // Return button
         Button retourBtn = new Button("Retour");
         retourBtn.setOnAction(e -> {
             MainView mainView = new MainView(authService);
@@ -130,6 +151,7 @@ public class InscriptionView {
 
         inscrireBtn.setOnAction(e -> {
             try {
+                // Collect input values
                 String nss = nssField.getText();
                 String nom = nomField.getText();
                 String prenom = prenomField.getText();
@@ -141,6 +163,7 @@ public class InscriptionView {
                 String telephone = telephoneField.getText();
                 String adresse = adresseField.getText();
 
+                // Check for empty fields
                 if (nss.isEmpty() || nom.isEmpty() || prenom.isEmpty() || dateNaissance == null ||
                         nationalite.isEmpty() || carteId.isEmpty() || genre == null ||
                         email.isEmpty() || telephone.isEmpty() || adresse.isEmpty()) {
@@ -149,12 +172,14 @@ public class InscriptionView {
                     return;
                 }
 
+                // Generate credentials
                 String motDePasse = prenom;
                 final String codePrive = UUID.randomUUID().toString().substring(0, 8);
                 Compte compte = new Compte(prenom.toLowerCase() + "." + nom.toLowerCase().charAt(0), motDePasse, email, telephone, adresse);
                 Personne p = new Personne(nss, prenom, nom, dateNaissance, nationalite,
                         carteId, codePrive, genre, compte, null);
 
+                // Check for existing email
                 if (authService.existe(email)) {
                     message.setStyle("-fx-text-fill: red;");
                     message.setText("Cet email est déjà utilisé.");
@@ -170,6 +195,7 @@ public class InscriptionView {
                                     "\n\nVotre mot de passe temporaire est votre prénom. Merci de le modifier lors de votre première connexion lorsque votre inscription sera confirmée.");
 
 
+                    // Clear fields
                     nssField.clear(); nomField.clear(); prenomField.clear(); dateNaissancePicker.setValue(null);
                     nationaliteField.clear(); genreBox.setValue(null);
                     emailField.clear(); telephoneField.clear(); adresseField.clear();

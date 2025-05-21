@@ -1,5 +1,6 @@
 package view;
 
+import entites.Admin;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -9,14 +10,31 @@ import javafx.stage.Stage;
 import entites.Personne;
 import service.AuthService;
 
+/**
+ * A JavaFX view that handles user authentication (login).
+ * Supports login via email, username, or private code.
+ * Redirects users to the appropriate screen based on their validation and login state.
+ */
 public class LoginView {
 
     private final AuthService authService;
 
+    /**
+     * Constructs the LoginView with the provided authentication service.
+     *
+     * @param authService the authentication service used to validate users
+     */
     public LoginView(AuthService authService) {
         this.authService = authService;
     }
 
+    /**
+     * Starts the login scene in the provided JavaFX stage.
+     * Allows users to log in, register, or return to the home screen.
+     * Handles login failures, unvalidated users, and first-time logins with password change redirection.
+     *
+     * @param primaryStage the JavaFX stage on which the login UI will be displayed
+     */
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Connexion");
 
@@ -45,33 +63,40 @@ public class LoginView {
         Button inscriptionButton = new Button("S'inscrire");
         Button retourButton = new Button("Retour");
 
+        // Redirect to registration screen
         inscriptionButton.setOnAction(e -> {
             InscriptionView inscriptionView = new InscriptionView(authService);
             inscriptionView.start(primaryStage);
         });
 
+        // Redirect to home screen
         retourButton.setOnAction(e -> {
             MainView mainView = new MainView(authService);
             mainView.start(primaryStage);
         });
 
+        // Attempt authentication
         loginButton.setOnAction(e -> {
             String identifiant = identifiantField.getText();
             String password = passwordField.getText();
             Personne personne = authService.authentifier(identifiant, password);
             if (personne != null) {
+                if (personne.getCompte() instanceof Admin) {
+                    MainView accueil = new MainView(authService, personne);
+                    accueil.start(primaryStage);
+                }
                 if (!personne.isValideParAdmin()) {
                     messageLabel.setText("Votre inscription est en attente de validation par l’administrateur.");
                     return;
                 }
 
                 if (personne.getCompte().isPremiereConnexion()) {
-                    // Redirige vers une vue de changement de mot de passe
+                    // Redirect to password change screen
                     ChangerMotDePasseView changerView = new ChangerMotDePasseView(authService, personne);
                     changerView.start(primaryStage);
                     return;
                 }
-
+                // Redirect to main application
                 MainView accueil = new MainView(authService, personne);
                 accueil.start(primaryStage);
             } else {

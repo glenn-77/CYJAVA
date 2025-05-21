@@ -15,12 +15,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Class to initialize people and their relationships from a CSV file.
+ * Utility class for initializing user and relationship data from CSV files.
+ * Handles user creation, parent-child relationships, and loading admin requests.
  */
 public class InitialisationCSV {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * Loads user data from a CSV file and initializes associated Personne objects.
+     * Also sets up parent-child links after the initial load.
+     *
+     * @param in the input stream of the CSV file
+     * @return a list of users parsed from the CSV
+     * @throws IOException if an I/O error occurs while reading
+     */
     public List<Personne> chargerUtilisateurs(InputStream in) throws IOException {
         List<Personne> utilisateurs = new ArrayList<>();
         Map<String, Personne> mapNssPersonne = new HashMap<>();
@@ -104,7 +113,7 @@ public class InitialisationCSV {
             }
         }
 
-        // Deuxième passe pour lier les parents et enfants
+        // Link parents and children after creating all Personne objects
         for (String[] relation : relations) {
             String nssEnfant = relation[0];
             String nssPere = relation[1];
@@ -149,6 +158,13 @@ public class InitialisationCSV {
         return utilisateurs;
     }
 
+    /**
+     * Loads administrative requests from a CSV file.
+     *
+     * @param in the input stream of the CSV file
+     * @return a set of admin requests parsed from the CSV
+     * @throws IOException if an error occurs while reading the file
+     */
     public Set<DemandeAdmin> chargerDemandes(InputStream in) throws IOException {
         Set<DemandeAdmin> demandes = new HashSet<>();
 

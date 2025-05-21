@@ -17,10 +17,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import entites.enums.Genre;
+
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import service.AuthService;
 import entites.Personne;
 import service.MailService;
-import service.DemandeAdminService;
 import service.DemandeAdminService.DemandeAdmin;
 import entites.enums.NiveauVisibilite;
 
@@ -32,6 +35,8 @@ public class MainView {
 
     private final AuthService authService;
     private final Personne utilisateur;
+    final Logger LOGGER = Logger.getLogger(MainView.class.getName());
+
 
     public MainView(AuthService authService) {
         this(authService, null);
@@ -47,7 +52,7 @@ public class MainView {
         layout.setPadding(new Insets(40));
         layout.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(layout, 800, 900);
+        Scene scene = new Scene(layout, 1000, 1000);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 
         if (utilisateur != null) {
@@ -70,7 +75,7 @@ public class MainView {
                     imageView.setImage(new Image(new File("Projet_Généalogique/ProjetGénéalogique/ressources/images/default.png").toURI().toString()));
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Error loading profile image", e);
             }
 
             // 🖼 Modifier la photo
@@ -108,7 +113,7 @@ public class MainView {
                                 imageView.setImage(nouvelleImage);
 
                             } catch (IOException ex) {
-                                ex.printStackTrace();
+                                LOGGER.log(Level.SEVERE, "Error loading profile image", e);
                                 new Alert(Alert.AlertType.ERROR, "Erreur lors de la mise à jour de la photo.").show();
                             }
                         }
@@ -179,7 +184,7 @@ public class MainView {
                 arbreView.setBottom(retourBtn);
                 BorderPane.setMargin(retourBtn, new Insets(10));
 
-                Scene arbreScene = new Scene(arbreView, 1400, 900);
+                Scene arbreScene = new Scene(arbreView, 1400, 1000);
                 arbreScene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
                 stage.setScene(arbreScene);
             });
@@ -234,7 +239,7 @@ public class MainView {
         });
 
         root.getChildren().addAll(label, choixVisibilite, sauvegarderButton);
-        modificationStage.setScene(new Scene(root, 400, 200));
+        modificationStage.setScene(new Scene(root, 1000, 1000));
         modificationStage.show();
     }
 
@@ -329,7 +334,7 @@ public class MainView {
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Error processing form submission", ex);
                 Alert error = new Alert(Alert.AlertType.ERROR,
                         "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
                 error.setHeaderText("Erreur d'envoi");
@@ -338,7 +343,7 @@ public class MainView {
         });
 
         root.getChildren().addAll(actionRow, addFieldsBox, modifyBox, champsCommuns, envoyerBtn);
-        formStage.setScene(new Scene(root, 500, 600));
+        formStage.setScene(new Scene(root, 1000, 1000));
         formStage.show();
     }
 }

@@ -6,12 +6,20 @@ import entites.Personne;
 
 import java.util.*;
 
+
 /**
- * Provides consistency checks on the genealogical tree to validate logical and biological rules.
+ * Provides various validation checks on a genealogical tree to ensure data consistency.
+ * Includes checks for logical relationship structures, parental constraints, and chronological coherence.
  */
 public class CoherenceVerifier {
 
-    /** Ensures reciprocal relationships are symmetrical between two persons. */
+    /**
+     * Verifies that all declared relationships are reciprocal and symmetric.
+     * For example, if A is the parent of B, then B must be the child of A.
+     *
+     * @param arbre the genealogical tree to verify
+     * @return true if all reciprocal relationships are valid, false otherwise
+     */
     public static boolean verifierReciprocite(ArbreGenealogique arbre) {
         for (Personne p : arbre.getNoeuds()) {
             for (Map.Entry<Personne, LienParente> entry : p.getLiens().entrySet()) {
@@ -29,7 +37,12 @@ public class CoherenceVerifier {
         return true;
     }
 
-    /** Ensures a person does not have more than two biological parents. */
+    /**
+     * Ensures that no person in the tree has more than two biological parents (one mother and one father).
+     *
+     * @param arbre the genealogical tree to verify
+     * @return true if no one has more than two parents, false otherwise
+     */
     public static boolean verifierNbParents(ArbreGenealogique arbre) {
         for (Personne enfant : arbre.getNoeuds()) {
             int nbParents = 0;
@@ -46,7 +59,12 @@ public class CoherenceVerifier {
         return true;
     }
 
-    /** Detects and flags if a person is linked to themselves. */
+    /**
+     * Verifies that no person is linked to themselves.
+     *
+     * @param arbre the genealogical tree to verify
+     * @return true if no self-links exist, false otherwise
+     */
     public static boolean verifierAutoLien(ArbreGenealogique arbre) {
         for (Personne p : arbre.getNoeuds()) {
             for (Personne autre : p.getLiens().keySet()) {
@@ -60,7 +78,11 @@ public class CoherenceVerifier {
     }
 
     /**
-     * Checks date-of-birth-based consistency (e.g., parents must be older).
+     * Checks that relationship directions align with birth dates.
+     * Parents must be born before their children, and vice versa.
+     *
+     * @param arbre the genealogical tree to verify
+     * @return true if chronological coherence is respected, false otherwise
      */
     public static boolean verifierCoherence(ArbreGenealogique arbre) {
         Set<LienParente> liensAscendants = Set.of(
@@ -94,15 +116,17 @@ public class CoherenceVerifier {
         return true;
     }
 
-    /** Runs all coherence verification methods. */
+    /**
+     * Runs all coherence verification methods (reciprocity, parent count, self-link, and date-based logic).
+     *
+     * @param arbre the genealogical tree to verify
+     * @return true if all checks pass, false otherwise
+     */
     public static boolean verifierToutesLesCoherences(ArbreGenealogique arbre) {
         verifierReciprocite(arbre);
         verifierNbParents(arbre);
         verifierAutoLien(arbre);
         verifierCoherence(arbre);
-        if (!verifierReciprocite(arbre) || !verifierNbParents(arbre) || !verifierAutoLien(arbre) || !verifierCoherence(arbre)) {
-            return false;
-        }
-        return true;
+        return verifierReciprocite(arbre) && verifierNbParents(arbre) && verifierAutoLien(arbre) && verifierCoherence(arbre);
     }
 }

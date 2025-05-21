@@ -12,11 +12,14 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
 /**
  * DAO class to handle queries from the CSV-based user database.
  */
 public class UserDAO {
 
+    private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
     private static final String CSV_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/utilisateurs.csv";
 
     /**
@@ -35,7 +38,7 @@ public class UserDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error reading user data from CSV file", e);
         }
         return null;
     }
@@ -57,7 +60,7 @@ public class UserDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error reading user data from CSV file", e);
         }
         return results;
     }
@@ -79,7 +82,7 @@ public class UserDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error reading user data from CSV file", e);
         }
         return results;
     }
@@ -101,55 +104,11 @@ public class UserDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error reading user data from CSV file", e);
         }
         return results;
     }
-
-    /**
-     * Searches for persons by first name.
-     * @param prenom The first name.
-     * @return Set of matching persons.
-     */
-    public static Set<Personne> chercherParPrenom(String prenom) {
-        Set<Personne> results = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
-            String line;
-            reader.readLine();
-            while ((line = reader.readLine()) != null) {
-                Personne p = construireDepuisLigne(line);
-                if (p != null && p.getPrenom().equalsIgnoreCase(prenom)) {
-                    results.add(p);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
-
-    /**
-     * Searches for persons by name.
-     * @param nom The last name.
-     * @return Set of matching persons.
-     */
-    public static Set<Personne> chercherParNom(String nom) {
-        Set<Personne> results = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(CSV_PATH))) {
-            String line;
-            reader.readLine();
-            while ((line = reader.readLine()) != null) {
-                Personne p = construireDepuisLigne(line);
-                if (p != null && p.getNom().trim().equalsIgnoreCase(nom.trim())) {
-                    results.add(p);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
-
+    
     /**
      * Retrieves all family members linked to a person by NSS.
      * @param nss The social security number.
@@ -172,7 +131,7 @@ public class UserDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error reading user data from CSV file", e);
         }
         return family;
     }
@@ -242,6 +201,7 @@ public class UserDAO {
             personne.setUrlPhoto(urlPhoto);
             return personne;
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to parse CSV line: " + line, e);
             return null;
         }
     }

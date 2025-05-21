@@ -4,12 +4,18 @@ import entites.Personne;
 import entites.enums.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Service responsible for handling administrative requests (e.g., adding, modifying, or deleting individuals in the family tree).
+ */
 public class DemandeAdminService {
 
+    /**
+     * Represents an administrative request initiated by a user concerning another user or tree action.
+     * Includes details such as requester, target, request type, relationship, and status.
+     */
     public static class DemandeAdmin {
         private String id;
         private final Personne demandeur;
@@ -21,6 +27,14 @@ public class DemandeAdminService {
 
         private static int compteur = 1;
 
+        /**
+         * Constructs a new administrative request.
+         *
+         * @param demandeur the user who submitted the request
+         * @param cible     the person concerned by the request
+         * @param lien      the type of relationship involved (e.g., parent, child)
+         * @param type      the type of request (e.g., ADD, MODIFY, DELETE)
+         */
         public DemandeAdmin(Personne demandeur, Personne cible, LienParente lien, TypeDemande type) {
             this.setId(String.format("%03d", compteur++));
             this.demandeur = demandeur;
@@ -29,12 +43,13 @@ public class DemandeAdminService {
             this.type = type;
         }
 
+        /**
+         * Gets the global counter used for assigning request IDs.
+         *
+         * @return the current counter value
+         */
         public static int getCompteur() {
             return compteur;
-        }
-
-        public static void setCompteur(int nvcompteur) {
-            DemandeAdmin.compteur = nvcompteur;
         }
 
         public Personne getDemandeur() {
@@ -76,45 +91,30 @@ public class DemandeAdminService {
 
     private static final Set<DemandeAdmin> demandes = new HashSet<>();
 
+    /**
+     * Adds a new administrative request to the system.
+     *
+     * @param demande the request to add
+     */
     public static void ajouterDemande(DemandeAdmin demande) {
         demandes.add(demande);
     }
 
+    /**
+     * Returns a copy of all administrative requests.
+     *
+     * @return a set of requests
+     */
     public static Set<DemandeAdmin> getDemandes() {
         return new HashSet<>(demandes);
     }
 
+    /**
+     * Removes a given administrative request.
+     *
+     * @param demande the request to remove
+     */
     public static void supprimerDemande(DemandeAdmin demande) {
         demandes.remove(demande);
-    }
-
-    public static void afficherDemandes() {
-        if (demandes.isEmpty()) {
-            System.out.println("✅ Aucune demande en attente.");
-            return;
-        }
-        System.out.println("📨 Demandes en attente :");
-        for (int i = 0; i < demandes.size(); i++) {
-            DemandeAdmin d = new ArrayList<>(demandes).get(i);
-            if (d.type == TypeDemande.AJOUT_LIEN) System.out.printf("[%d] %s demande un lien '%s' avec %s\n",
-                    i + 1,
-                    d.getDemandeur().getNom(),
-                    d.getLien(),
-                    d.getCible().getNom());
-            if (d.type == TypeDemande.SUPPRESSION_LIEN) System.out.printf("[%d] %s demande une suppression du lien '%s' avec %s\n",
-                    i + 1,
-                    d.getDemandeur().getNom(),
-                    d.getLien(),
-                    d.getCible().getNom());
-            if (d.type == TypeDemande.MODIFICATION_INFO) System.out.printf("[%d] %s souhaite modifier les infos de %s\n",
-                    i + 1,
-                    d.getDemandeur().getNom(),
-                    d.getCible().getNom());
-            if (d.type == TypeDemande.AJOUT_PERSONNE) System.out.printf("[%d] %s demande à ajouter %s avec un lien '%s'\n",
-                    i + 1,
-                    d.getDemandeur().getNom(),
-                    d.getCible().getNom(),
-                    d.getLien());
-        }
     }
 }

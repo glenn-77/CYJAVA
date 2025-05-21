@@ -7,15 +7,26 @@ import com.sendgrid.helpers.mail.objects.Email;
 
 import java.io.IOException;
 
+/**
+ * Utility class responsible for sending emails using the SendGrid API.
+ * It reads the API key from a .env configuration file and sends plain text emails to recipients.
+ */
 public class MailService {
     private static final Dotenv dotenv = Dotenv.configure()
             .directory("Projet_Généalogique/ProjetGénéalogique")
             .filename(".env")
             .load();
 
-    ;  // charge le .env
+    // Loaded from environment configuration
     private static final String SENDGRID_API_KEY = dotenv.get("SENDGRID_API_KEY");
 
+    /**
+     * Sends an email using the SendGrid service.
+     *
+     * @param destinataire the recipient's email address
+     * @param sujet        the subject of the email
+     * @param contenu      the body content of the email (plain text)
+     */
     public static void envoyerEmail(String destinataire, String sujet, String contenu) {
         Email from = new Email("diffoglenn007@gmail.com");
         Email to = new Email(destinataire);
