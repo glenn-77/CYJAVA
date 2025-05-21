@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3bf5bf3f-4f7c-4338-b2fd-0382eea8fdfd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/src/main/java/view/ModifierCompteView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/src/main/java/entites/Personne.java" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/src/main/java/entites/Personne.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/src/main/java/view/MainView.java" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/src/main/java/view/MainView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/compteurD.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/compteurD.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/consultations.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/consultations.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/demandes.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/demandes.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/entites/Personne$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/entites/Personne$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/entites/Personne.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/entites/Personne.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/initialisation/InitialisationCSV.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/initialisation/InitialisationCSV.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/service/AuthService.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/service/AuthService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/utilisateurs.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/utilisateurs.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/AffichageArbre.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/AffichageArbre.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/AllTreesView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/AllTreesView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/ChangerMotDePasseView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/ChangerMotDePasseView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/DemandesAdminView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/DemandesAdminView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/InscriptionView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/InscriptionView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/MainView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/MainView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/PersonneDetailView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/PersonneDetailView.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/RechercheView.class" beforeDir="false" afterPath="$PROJECT_DIR$/Projet_Généalogique/ProjetGénéalogique/target/classes/view/RechercheView.class" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2xGfI8ENwOWlyogP5DZ8pLXqc34" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main .executor&quot;: &quot;Run&quot;,
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;bcc1487b&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="Main " type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="openjdk-24" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="test.Main" />
+      <module name="ProjetGenealogique" />
+      <option name="VM_PARAMETERS" value="--module-path $MAVEN_REPOSITORY$/org/openjfx/javafx-base/21.0.5:$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/21.0.5:$MAVEN_REPOSITORY$/org/openjfx/javafx-fxml/21.0.5:$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/21.0.5:$MAVEN_REPOSITORY$/org/openjfx/javafx-media/21.0.5:$MAVEN_REPOSITORY$/org/openjfx/javafx-base/21:$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/21:$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/21:$MAVEN_REPOSITORY$/org/openjfx/javafx-media/21 --add-modules javafx.controls,javafx.fxml" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="CYJAVA2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="CYJAVA2" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.15989.150" />
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-IU-241.15989.150" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3bf5bf3f-4f7c-4338-b2fd-0382eea8fdfd" name="Changes" comment="" />
+      <created>1747569247365</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1747569247365</updated>
+      <workItem from="1747569248544" duration="841000" />
+      <workItem from="1747571335316" duration="49000" />
+      <workItem from="1747571404964" duration="3000" />
+      <workItem from="1747643023147" duration="6000" />
+      <workItem from="1747643884310" duration="8695000" />
+      <workItem from="1747851935422" duration="8622000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

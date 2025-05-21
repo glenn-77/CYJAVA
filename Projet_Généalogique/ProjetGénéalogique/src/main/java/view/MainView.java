@@ -146,7 +146,8 @@ public class MainView {
                 affichageConsultations.afficherStatistiques(utilisateur.getNss());
             });
 
-            modifierCompteButton.setOnAction(e -> ouvrirModificationCompteUtilisateur(utilisateur));
+            modifierCompteButton.setOnAction(e -> new ModifierCompteView(utilisateur, authService).start(stage));
+
             layout.getChildren().add(modifierCompteButton);
 
 

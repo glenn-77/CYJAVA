@@ -192,6 +192,9 @@ public class Personne {
         }
     }
 
+
+
+
     public String getNomVisible(Personne demandeur) {
         return this.estVisiblePar(demandeur) ? this.nom : "???";
     }
