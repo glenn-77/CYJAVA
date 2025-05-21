@@ -125,7 +125,6 @@ public class AffichageArbre {
         if (personne.getPere() != null) {
             construireNiveaux(personne.getPere(), niveaux, niveau - 1);
             personne.ajouterLien(personne.getPere(), LienParente.PERE);
-            personne.getArbre().getNoeuds().add(personne.getPere());
         } else {
             System.out.println("ℹ️ Aucun père défini pour " + personne.getPrenom() + " " + personne.getNom());
         }
@@ -133,7 +132,6 @@ public class AffichageArbre {
         if (personne.getMere() != null) {
             construireNiveaux(personne.getMere(), niveaux, niveau - 1);
             personne.ajouterLien(personne.getMere(), LienParente.MERE);
-            personne.getArbre().getNoeuds().add(personne.getMere());
         } else {
             System.out.println("ℹ️ Aucun mère définie pour " + personne.getPrenom() + " " + personne.getNom());
         }
@@ -154,7 +152,6 @@ public class AffichageArbre {
                 } else if (enfant.getGenre() == Genre.FEMME) {
                     personne.ajouterLien(enfant, LienParente.FILLE);
                 }
-                personne.getArbre().getNoeuds().add(enfant);
             } else {
                 System.err.println("⚠️ Genre non défini pour : " + enfant.getPrenom() + " " + enfant.getNom());
                 personne.ajouterLien(enfant, null); // Lien est null si le genre est absent
@@ -279,15 +276,39 @@ public class AffichageArbre {
     }
 
     /**
-     * Removes a person from the graphical display and updates the tree.
+     * Removes a person from the tree and reassigns their children to the person’s parents if available.
+     * - The removed person is disconnected from the tree.
+     * - Their children are re-linked to either the father or the mother, depending on availability.
+     * - All corresponding relationship links are updated.
      *
-     * @param cible the person to remove
-     * @param group the JavaFX group displaying the tree
+     * @param cible the person to remove from the genealogical tree
+     * @param arbre the genealogical tree from which the person is being removed
      */
-    public void supprimerPersonneGraphiquement(Personne cible, Group group) {
-        utilisateurConnecte.getArbre().getNoeuds().remove(cible);
-        positions.clear();
-        dejaTraites.clear();
-        afficher(group);
+    public static void reattribuerLienAprèsSuppression(Personne cible, ArbreGenealogique arbre) {
+        // Step 1: retrieve parents
+        Personne pere = cible.getPere();
+        Personne mere = cible.getMere();
+
+        // Step 2: for each child of the removed person
+        for (Personne enfant : new ArrayList<>(cible.getEnfants())) {
+            // Remove the link with the removed person
+            enfant.supprimerLien(cible);
+
+            // Reassign to a grandparent if available
+            if (pere != null) {
+                if(enfant.getGenre() == Genre.HOMME) pere.ajouterLien(enfant, LienParente.FILS);
+                else pere.ajouterLien(enfant, LienParente.FILLE);
+            } else if (mere != null) {
+                if(enfant.getGenre() == Genre.HOMME) mere.ajouterLien(enfant, LienParente.FILS);
+                else mere.ajouterLien(enfant, LienParente.FILLE);
+            }
+        }
+
+        // Step 3: remove the person from the tree
+        arbre.getNoeuds().remove(cible);
+
+        // Remove links to the person's parents
+        if (pere != null) pere.supprimerLien(cible);
+        if (mere != null) mere.supprimerLien(cible);
     }
 }

@@ -6,22 +6,43 @@ import service.MailService;
 import service.DemandeAdminService;
 import service.DemandeAdminService.DemandeAdmin;
 import service.AuthService;
+import view.AffichageArbre;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Represents an administrator account, inheriting from {@link Compte}.
+ * The admin is responsible for validating or rejecting user requests related to the genealogical tree.
+ * It includes logic to handle link additions, deletions, profile updates, and person removals.
+ */
 public class Admin extends Compte {
 
     private final String role;
 
+    /**
+     * Constructs a new admin account.
+     *
+     * @param login     the username
+     * @param motDePasse the password
+     * @param email     the email address
+     * @param telephone the phone number
+     * @param adresse   the postal address
+     */
     public Admin(String login, String motDePasse,
                  String email, String telephone, String adresse) {
         super(login, motDePasse, email, telephone, adresse);
         this.role = "admin";
     }
 
+    /**
+     * Processes a user request. Depending on the type and whether it is accepted or not,
+     * it performs the appropriate action and notifies the requester.
+     *
+     * @param demande the administrative request to process
+     * @param accepter true to accept the request, false to reject
+     */
     public void traiterDemande(DemandeAdmin demande, boolean accepter) throws IOException {
         Personne demandeur = demande.getDemandeur();
         Personne cible = demande.getCible();
@@ -53,6 +74,11 @@ public class Admin extends Compte {
                         System.out.println("Erreur lors de la modification des informations : " + e.getMessage());
                     }
                     break;
+                case SUPPRESSION_PERSONNE:
+                    AffichageArbre.reattribuerLienAprèsSuppression(cible, demandeur.getArbre());
+                    new AuthService().supprimerUtilisateurParNSS(cible.getNss());
+                    MailService.envoyerEmail(demandeur.getCompte().getEmail(), "Suppression d'un membre de famille", "Votre demande de suppression de " + cible.getPrenom() + cible.getNom() + " a été validée");
+                    break;
             }
             demande.setStatut(Statut.ACCEPTEE);
         } else {
@@ -70,6 +96,9 @@ public class Admin extends Compte {
                 case MODIFICATION_INFO:
                     MailService.envoyerEmail(demandeur.getCompte().getEmail(), "Demande refusée ", "Votre demande de modification de " + cible.getNom() + cible.getPrenom() + " a été refusé.");
                     break;
+                case SUPPRESSION_PERSONNE:
+                    MailService.envoyerEmail(demandeur.getCompte().getEmail(), "Demande refusée ", "Votre demande de Suppression de " + cible.getNom() + cible.getPrenom() + " a été refusé.");
+                    break;
             }
             demande.setStatut(Statut.REFUSEE);
         }
@@ -79,7 +108,7 @@ public class Admin extends Compte {
 
 
     /**
-     * Valide une demande d'ajout de lien faite par un utilisateur
+     * Validates the addition of a relationship between two users.
      */
     public void validerAjoutLien(Personne demandeur, Personne cible, LienParente lien) {
         if (!isLienAutorise(lien)) {
@@ -87,10 +116,8 @@ public class Admin extends Compte {
             return;
         }
 
-        // Ajout du lien dans l'arbre du demandeur
         ArbreGenealogique arbreDemandeur = demandeur.getArbre();
         if (!arbreDemandeur.contient(cible)) {
-            arbreDemandeur.getNoeuds().add(cible);
             if (!CoherenceVerifier.verifierToutesLesCoherences(arbreDemandeur)) {
                 arbreDemandeur.getNoeuds().remove(cible);
                 return;
@@ -101,20 +128,13 @@ public class Admin extends Compte {
             if (lien == LienParente.MERE) demandeur.setMere(cible);
         }
 
-        // Ajout du lien inverse dans l'arbre de la cible (si elle est inscrite)
         if (cible.isEstInscrit()) {
-            ArbreGenealogique arbreCible = cible.getArbre();
-            if (!arbreCible.contient(demandeur)) {
-                arbreCible.getNoeuds().add(demandeur);
-            }
             LienParente lienInverse = cible.inverseLien(lien);
-            cible.ajouterLien(demandeur, lienInverse);
             if (lienInverse == LienParente.FILS || lienInverse == LienParente.FILLE) cible.getEnfants().add(demandeur);
             if (lienInverse == LienParente.PERE) cible.setPere(demandeur);
             if (lienInverse == LienParente.MERE) cible.setMere(demandeur);
         }
 
-        // Notification
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "✅ Demande acceptée",
                 "Votre demande de lien avec " + cible.getNom() + " a été approuvée.");
@@ -122,7 +142,7 @@ public class Admin extends Compte {
     }
 
     /**
-     * Refuse une demande d'ajout de lien faite par un utilisateur
+     * Sends a rejection email for a link addition request.
      */
     public void refuserAjoutLien(Personne demandeur, Personne cible) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
@@ -131,13 +151,11 @@ public class Admin extends Compte {
     }
 
     /**
-     * Accepte une demande de suppression de lien entre deux personnes
+     * Validates the removal of a relationship between two users.
      */
     public void validerSuppressionLien(Personne p1, Personne p2) {
         p1.supprimerLien(p2);
         p2.supprimerLien(p1);
-        p1.getArbre().getNoeuds().remove(p2);
-        p2.getArbre().getNoeuds().remove(p1);
 
         if (p1.getCompte().getEmail() != null) MailService.envoyerEmail(p1.getCompte().getEmail(),
                 "✅ Suppression de lien acceptée",
@@ -149,7 +167,7 @@ public class Admin extends Compte {
     }
 
     /**
-     * Refuse une demande de suppression de lien
+     * Sends a rejection email for a link removal request.
      */
     public void refuserSuppressionLien(Personne demandeur, Personne cible) {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
@@ -157,6 +175,9 @@ public class Admin extends Compte {
                 "Votre demande de suppression du lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
     }
 
+    /**
+     * Validates a user registration request and notifies the user.
+     */
     public void validerInscription(Personne p) {
         p.setValideParAdmin(true);
         new AuthService().mettreAJourUtilisateur(p);
@@ -167,7 +188,10 @@ public class Admin extends Compte {
 
 
     /**
-     * Vérifie si le lien proposé fait partie des liens autorisés
+     * Checks if the requested relationship type is allowed.
+     *
+     * @param lien the relationship type
+     * @return true if the link is allowed, false otherwise
      */
     private boolean isLienAutorise(LienParente lien) {
         return lien == LienParente.PERE || lien == LienParente.MERE
@@ -175,46 +199,7 @@ public class Admin extends Compte {
     }
 
     /**
-     * Edits mutable fields of a person (email, phone, etc.), skipping immutable fields.
-     * @param cible The person to edit.
-     * @param nouvellesInfos Map of fields to update.
-     * @return true if successful, false otherwise.
-     */
-    public boolean modifierChamps(Personne cible, Map<String, String> nouvellesInfos) {
-        for (Map.Entry<String, String> entry : nouvellesInfos.entrySet()) {
-            String champ = entry.getKey().toLowerCase();
-            String valeur = entry.getValue();
-
-            switch (champ) {
-                case "adresse":
-                    cible.getCompte().setAdresse(valeur);
-                    break;
-                case "email":
-                    cible.getCompte().setEmail(valeur);
-                    break;
-                case "telephone":
-                    cible.getCompte().setTelephone(valeur);
-                    break;
-                case "login":
-                    cible.getCompte().setLogin(valeur);
-                    break;
-                case "motdepasse":
-                    cible.getCompte().setMotDePasse(valeur);
-                    break;
-                default:
-                    System.out.println("⚠️ Champ non modifiable ou inconnu : " + champ);
-            }
-        }
-
-        MailService.envoyerEmail(cible.getCompte().getEmail(),
-                "✏️ Mise à jour de votre fiche",
-                "Votre profil a été mis à jour par l'administrateur.");
-
-        return true;
-    }
-
-    /**
-     * Crée une nouvelle personne non inscrite à partir d'un formulaire rempli par un utilisateur
+     * Creates a person without an account for tree linking purposes.
      */
     public void creerPersonneSansCompte(String nom, String prenom, LocalDate dateNaissance, String nationalite, Genre genre) throws IOException {
         final String nss = UUID.randomUUID().toString().substring(0, 8);

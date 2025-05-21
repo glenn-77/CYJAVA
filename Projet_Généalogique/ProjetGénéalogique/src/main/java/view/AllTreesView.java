@@ -1,5 +1,6 @@
 package view;
 
+import entites.Admin;
 import entites.ArbreGenealogique;
 import entites.Personne;
 import javafx.geometry.Insets;
@@ -59,6 +60,7 @@ public class AllTreesView {
         List<ArbreGenealogique> arbresVisibles = arbres.stream()
                 .filter(arbre -> {
                     Personne proprietaire = arbre.getProprietaire();
+                    if (utilisateurConnecte.getCompte() instanceof Admin) return true;
                     return switch (proprietaire.getNiveauVisibilite()) {
                         case PUBLIQUE -> true; // Toujours visible
                         case PROTEGEE ->
@@ -97,7 +99,7 @@ public class AllTreesView {
                 // Vérifier le niveau de visibilité du propriétaire et ajuster l'affichage
                 Personne proprietaire = arbre.getProprietaire();
                 if (!proprietaire.isEstInscrit()) continue;
-                if (proprietaire.getNiveauVisibilite() == NiveauVisibilite.PRIVEE && !proprietaire.equals(utilisateurConnecte)) {
+                if (proprietaire.getNiveauVisibilite() == NiveauVisibilite.PRIVEE && !proprietaire.equals(utilisateurConnecte) && !(utilisateurConnecte.getCompte() instanceof Admin)) {
                     nomProprietaire = "Inconnu"; // Propriétaire privé et différent de l'utilisateur connecté
                 } else {
                     nomProprietaire = proprietaire.getPrenom() + " " + proprietaire.getNom(); // Nom complet si visible

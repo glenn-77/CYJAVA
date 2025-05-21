@@ -1,5 +1,6 @@
 package view;
 
+import entites.Admin;
 import entites.enums.LienParente;
 import entites.enums.TypeDemande;
 import javafx.collections.FXCollections;
@@ -151,7 +152,8 @@ public class MainView {
                 affichageConsultations.afficherStatistiques(utilisateur.getNss());
             });
 
-            modifierCompteButton.setOnAction(e -> ouvrirModificationCompteUtilisateur(utilisateur));
+            modifierCompteButton.setOnAction(e -> new ModifierCompteView(utilisateur, authService).start(stage));
+
             layout.getChildren().add(modifierCompteButton);
 
 
@@ -209,38 +211,6 @@ public class MainView {
         stage.setScene(scene);
         stage.setTitle("Accueil");
         stage.show();
-    }
-
-    private void ouvrirModificationCompteUtilisateur(Personne utilisateur) {
-        Stage modificationStage = new Stage();
-        modificationStage.initModality(Modality.APPLICATION_MODAL);
-        modificationStage.setTitle("Modifier mon niveau de visibilité");
-
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(20));
-        root.setAlignment(Pos.CENTER);
-
-        Label label = new Label("Sélectionnez un niveau de visibilité :");
-        ChoiceBox<NiveauVisibilite> choixVisibilite = new ChoiceBox<>(
-                FXCollections.observableArrayList(NiveauVisibilite.values())
-        );
-        choixVisibilite.setValue(utilisateur.getNiveauVisibilite());
-
-        Button sauvegarderButton = new Button("Sauvegarder");
-        sauvegarderButton.setOnAction(event -> {
-            utilisateur.setNiveauVisibilite(choixVisibilite.getValue());
-
-            // Sauvegarde dans le fichier CSV
-            authService.mettreAJourUtilisateur(utilisateur);
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Le niveau de visibilité a été mis à jour !");
-            alert.showAndWait();
-            modificationStage.close();
-        });
-
-        root.getChildren().addAll(label, choixVisibilite, sauvegarderButton);
-        modificationStage.setScene(new Scene(root, 1000, 1000));
-        modificationStage.show();
     }
 
     private void ouvrirFormulaire(Stage parentStage) {
@@ -303,32 +273,47 @@ public class MainView {
                             final String nss = UUID.randomUUID().toString().substring(0, 8);
                             Personne cible = new Personne(nss, prenomField.getText(), nomField.getText(), datePicker.getValue(), natField.getText(), null, null, genreCombo.getValue(), null, null);
                             LienParente lien = lienCombo.getValue();
-                            authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.AJOUT_PERSONNE));
-                            authService.ajouterUtilisateur(cible);
-                            String sujet = "Demande d'ajout d'une nouvelle personne";
-                            String contenu = "Veuillez ajouter la personne suivante : " +
-                                    prenomField.getText() + " " + nomField.getText() +
-                                    ", née le " + datePicker.getValue() +
-                                    ", " + natField.getText() + ", " + genreCombo.getValue() + ", " + lienCombo.getValue() + ".";
-                            MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, contenu);
-                            Alert info = new Alert(Alert.AlertType.INFORMATION, "Demande envoyée à l’admin.");
-                            info.show();
-                            formStage.close();
+                            if (utilisateur.getCompte() instanceof Admin) {
+                                authService.ajouterUtilisateur(cible);
+                                ((Admin) utilisateur.getCompte()).validerAjoutLien(utilisateur, cible, lien);
+                                Alert info = new Alert(Alert.AlertType.INFORMATION, "Nouvelle personne ajoutée à l'arbre!");
+                                info.show();
+                                formStage.close();
+                            } else {
+                                authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.AJOUT_PERSONNE));
+                                authService.ajouterUtilisateur(cible);
+                                String sujet = "Demande d'ajout d'une nouvelle personne";
+                                String contenu = "Veuillez ajouter la personne suivante : " +
+                                        prenomField.getText() + " " + nomField.getText() +
+                                        ", née le " + datePicker.getValue() +
+                                        ", " + natField.getText() + ", " + genreCombo.getValue() + ", " + lienCombo.getValue() + ".";
+                                MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, contenu);
+                                Alert info = new Alert(Alert.AlertType.INFORMATION, "Demande envoyée à l’admin.");
+                                info.show();
+                                formStage.close();
+                            }
                         }
                     });
                 } else {
                     Personne cible = personCombo.getValue();
                     LienParente lien = lienCombo.getValue();
                     if (cible != null && lien != null) {
-                        authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.MODIFICATION_INFO));
-                        String sujet = "Demande de modification de profil";
-                        String contenu = "Veuillez modifier la personne " + cible.getPrenom() + " " +
-                                cible.getNom() + " (ID " + cible.getNss() + ") : " +
-                                "nouvelle nationalité = " + natField.getText() +
-                                ", nouveau genre = " + genreCombo.getValue() + ", nouveau lien = " + lienCombo.getValue() + ".";
-                        MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, contenu);
-                        new Alert(Alert.AlertType.INFORMATION, "✅ Demande envoyée à l'admin.").show();
-                        formStage.close();
+                        if (utilisateur.getCompte() instanceof Admin) {
+                            AuthService.modifierPersonne(cible.getNom(), cible.getPrenom(), cible.getNationalite(), cible.getGenre());
+                            Alert info = new Alert(Alert.AlertType.INFORMATION, "Informations modifiées!");
+                            info.show();
+                            formStage.close();
+                        } else {
+                            authService.ajouterDemande(new DemandeAdmin(utilisateur, cible, lien, TypeDemande.MODIFICATION_INFO));
+                            String sujet = "Demande de modification de profil";
+                            String contenu = "Veuillez modifier la personne " + cible.getPrenom() + " " +
+                                    cible.getNom() + " (ID " + cible.getNss() + ") : " +
+                                    "nouvelle nationalité = " + natField.getText() +
+                                    ", nouveau genre = " + genreCombo.getValue() + ", nouveau lien = " + lienCombo.getValue() + ".";
+                            MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, contenu);
+                            new Alert(Alert.AlertType.INFORMATION, "✅ Demande envoyée à l'admin.").show();
+                            formStage.close();
+                        }
                     } else {
                         new Alert(Alert.AlertType.WARNING, "Veuillez remplir tous les champs.").show();
                     }

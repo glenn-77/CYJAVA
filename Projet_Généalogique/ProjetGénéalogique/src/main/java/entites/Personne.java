@@ -208,12 +208,20 @@ public class Personne {
 
     public void ajouterLien(Personne autre, LienParente lien) {
         this.liensParente.put(autre, lien);
-        if(autre.isEstInscrit()) autre.liensParente.put(this, inverseLien(lien));
+        this.arbre.getNoeuds().add(autre);
+        autre.liensParente.put(this, inverseLien(lien));
+        if(autre.isEstInscrit()) {
+            autre.arbre.getNoeuds().add(this);
+        }
     }
 
     public void supprimerLien(Personne autre) {
         this.liensParente.remove(autre);
-        if(autre.isEstInscrit()) autre.liensParente.remove(this);
+        this.arbre.getNoeuds().remove(autre);
+        autre.liensParente.remove(this);
+        if(autre.isEstInscrit()) {
+            autre.arbre.getNoeuds().remove(this);
+        }
 
     }
 

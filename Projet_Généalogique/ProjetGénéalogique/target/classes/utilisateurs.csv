@@ -1,5 +1,5 @@
 nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId,photo,inscrit,valideParAdmin,niveauVisibilite
-100000001,Jean,Dupont,1950-04-12,Française,ID000001,jean.dupont@mail.com,0611111111,10 rue Victor Hugo,CODE1,,,HOMME,jean.d,pass1,017,false,FAM_DUPONT,images/image.jpeg,true,true,PRIVEE
+100000001,Jean,Dupont,1950-04-12,Française,ID000001,jean.dupont@mail.com,0611111111,10 rue Victor Hugo,CODE1,,,HOMME,jean.d,pass1,017,false,FAMDUPONT,images/image.jpeg,true,true,PUBLIQUE
 100000002,Marie,Dupont,1952-07-30,Française,ID000002,marie.dupont@mail.com,0611111112,10 rue Victor Hugo,CODE2,,,FEMME,marie.d,pass2,002,false,FAM_DUPONT,images/default.png,true,true,PUBLIQUE
 100000003,Luc,Dupont,1975-03-22,Française,ID000003,luc.dupont@mail.com,0611111113,12 rue Victor Hugo,CODE3,100000001,100000002,HOMME,luc.d,pass3,003,false,FAM_DUPONT,images/default.png,true,true,PUBLIQUE
 100000004,Sophie,Dupont,1978-08-15,Française,ID000004,sophie.dupont@mail.com,0611111114,12 rue Victor Hugo,CODE4,100000001,100000002,FEMME,sophie.d,pass4,004,false,FAM_DUPONT,images/default.png,true,true,PROTEGEE

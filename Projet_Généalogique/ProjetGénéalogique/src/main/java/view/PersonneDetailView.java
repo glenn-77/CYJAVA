@@ -62,7 +62,7 @@ public class PersonneDetailView {
         Text info = new Text(details.toString());
 
         // If the user has a relationship with the person, show the delete button
-        if (utilisateurCourant.getLiens().containsKey(personne)) {
+        if (utilisateurCourant.getLiens().containsKey(personne) || utilisateurCourant.getCompte() instanceof Admin) {
             Button boutonSupprimer = new Button("Supprimer");
             boutonSupprimer.setOnAction(e -> {
                 Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
@@ -72,21 +72,29 @@ public class PersonneDetailView {
 
                 confirmation.showAndWait().ifPresent(reponse -> {
                     if (reponse == ButtonType.OK) {
-                        String sujet = "Demande de suppression d'une personne";
-                        String corps = String.format(
-                                "Bonjour Admin,\n\nL'utilisateur %s %s souhaite supprimer %s %s de son arbre généalogique.",
-                                personne.getArbre().getProprietaire().getPrenom(),
-                                personne.getArbre().getProprietaire().getNom(),
-                                personne.getPrenom(),
-                                personne.getNom()
-                        );
-                        MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, corps);
-                        Alert confirmationEnvoyee = new Alert(Alert.AlertType.INFORMATION);
-                        confirmationEnvoyee.setTitle("Demande envoyée");
-                        new AuthService().ajouterDemande(new DemandeAdminService.DemandeAdmin(utilisateurCourant, personne, lien, TypeDemande.SUPPRESSION_PERSONNE));
-                        confirmationEnvoyee.setHeaderText(null);
-                        confirmationEnvoyee.setContentText("Votre demande de suppression a été envoyée à l'administrateur.");
-                        confirmationEnvoyee.show();
+                        if (utilisateurCourant.getCompte() instanceof Admin && utilisateurCourant.getLiens().containsKey(personne)) {
+                            AffichageArbre.reattribuerLienAprèsSuppression(personne, utilisateurCourant.getArbre());
+                            if (!personne.isEstInscrit()) new AuthService().supprimerUtilisateurParNSS(personne.getNss());
+                        } else if (utilisateurCourant.getCompte() instanceof Admin && !utilisateurCourant.getLiens().containsKey(personne)) {
+                            if (!personne.isEstInscrit()) new AuthService().supprimerUtilisateurParNSS(personne.getNss());
+                        }
+                        else {
+                            String sujet = "Demande de suppression d'une personne";
+                            String corps = String.format(
+                                    "Bonjour Admin,\n\nL'utilisateur %s %s souhaite supprimer %s %s de son arbre généalogique.",
+                                    personne.getArbre().getProprietaire().getPrenom(),
+                                    personne.getArbre().getProprietaire().getNom(),
+                                    personne.getPrenom(),
+                                    personne.getNom()
+                            );
+                            MailService.envoyerEmail("diffoglenn007@gmail.com", sujet, corps);
+                            Alert confirmationEnvoyee = new Alert(Alert.AlertType.INFORMATION);
+                            confirmationEnvoyee.setTitle("Demande envoyée");
+                            new AuthService().ajouterDemande(new DemandeAdminService.DemandeAdmin(utilisateurCourant, personne, lien, TypeDemande.SUPPRESSION_PERSONNE));
+                            confirmationEnvoyee.setHeaderText(null);
+                            confirmationEnvoyee.setContentText("Votre demande de suppression a été envoyée à l'administrateur.");
+                            confirmationEnvoyee.show();
+                        }
                     }
                 });
             });
