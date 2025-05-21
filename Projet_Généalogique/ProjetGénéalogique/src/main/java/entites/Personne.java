@@ -55,13 +55,13 @@ public class Personne {
         this.liensParente = new HashMap<>();
         this.estInscrit = false;
         this.setValideParAdmin(false);
-        this.niveauVisibilite = NiveauVisibilite.PUBLIQUE; 
+        this.niveauVisibilite = NiveauVisibilite.PUBLIQUE;
         this.generation = 0;
         this.arbre = arbre;
         this.estVivant = true;
     }
 
-    public Personne(String nom,String prenom, LocalDate dateNaissance, String nationalite, Genre genre) {
+    public Personne(String nom,String prenom, LocalDate dateNaissance, String nationalite, Genre genre){
         this.nom = nom;
         this.genre = genre;
         this.dateNaissance = dateNaissance;
@@ -184,13 +184,20 @@ public class Personne {
                 return this.equals(demandeur);
 
             case PROTEGEE:
-                // Vérifie si l’utilisateur est dans le même arbre généalogique
-                ArbreGenealogique arbreUtilisateur = demandeur.getArbre();
-                return arbreUtilisateur != null && arbreUtilisateur.contient(this);
+                // Vérifie si le demandeur appartient au même arbre
+                return this.arbre != null && this.arbre.contient(demandeur);
 
             default:
                 return false;
         }
+    }
+
+    public String getNomVisible(Personne demandeur) {
+        return this.estVisiblePar(demandeur) ? this.nom : "???";
+    }
+
+    public String getPrenomVisible(Personne demandeur) {
+        return this.estVisiblePar(demandeur) ? this.prenom : "???";
     }
 
     public ArbreGenealogique getArbre() {
@@ -289,12 +296,11 @@ public class Personne {
         }
     }
 
-    public TreeItem<String> genererArbreFamilial() {
-        return genererArbreFamilial(new HashSet<>());
+    public TreeItem<String> genererArbreFamilial(Personne demandeur) {
+        return genererArbreFamilial(new HashSet<>(), demandeur);
     }
 
-    private TreeItem<String> genererArbreFamilial(Set<Personne> dejaVisites) {
-        // Si cette personne a déjà été visitée, on arrête la récursion
+    private TreeItem<String> genererArbreFamilial(Set<Personne> dejaVisites, Personne demandeur) {
         if (dejaVisites.contains(this)) {
             return null;
         }
@@ -302,30 +308,30 @@ public class Personne {
         // Marquer cette personne comme visitée
         dejaVisites.add(this);
 
-        // Créer le noeud racine pour cette personne
-        TreeItem<String> racine = new TreeItem<>(
-                prenom + " " + nom + " (" + (genre != null ? genre : "Genre inconnu") + ")"
-        );
+        // Si la personne n'est pas visible (privée), afficher "???"
+        String affichage = this.estVisiblePar(demandeur)
+                ? this.getPrenom() + " " + this.getNom() // Nom complet si visible
+                : "???"; // Afficher ??? si NON visible
 
-        // Ajouter les parents
-        if (pere != null) {
-            TreeItem<String> arbrePere = pere.genererArbreFamilial(dejaVisites);
-            if (arbrePere != null) {
-                racine.getChildren().add(arbrePere);
-            }
-        }
-        if (mere != null) {
-            TreeItem<String> arbreMere = mere.genererArbreFamilial(dejaVisites);
-            if (arbreMere != null) {
-                racine.getChildren().add(arbreMere);
-            }
+        // Créer le nœud racine pour cette personne
+        TreeItem<String> racine = new TreeItem<>(affichage);
+
+        // Ajouter les parents (si visibles)
+        if (pere != null && pere.estVisiblePar(demandeur)) {
+            TreeItem<String> arbrePere = pere.genererArbreFamilial(dejaVisites, demandeur);
+            if (arbrePere != null) racine.getChildren().add(arbrePere);
         }
 
-        // Ajouter chaque enfant
+        if (mere != null && mere.estVisiblePar(demandeur)) {
+            TreeItem<String> arbreMere = mere.genererArbreFamilial(dejaVisites, demandeur);
+            if (arbreMere != null) racine.getChildren().add(arbreMere);
+        }
+
+        // Ajouter les enfants (si visibles)
         for (Personne enfant : enfants) {
-            TreeItem<String> arbreEnfant = enfant.genererArbreFamilial(dejaVisites);
-            if (arbreEnfant != null) {
-                racine.getChildren().add(arbreEnfant);
+            if (enfant.estVisiblePar(demandeur)) {
+                TreeItem<String> arbreEnfant = enfant.genererArbreFamilial(dejaVisites, demandeur);
+                if (arbreEnfant != null) racine.getChildren().add(arbreEnfant);
             }
         }
 

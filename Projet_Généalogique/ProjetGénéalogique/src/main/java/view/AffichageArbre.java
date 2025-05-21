@@ -205,20 +205,27 @@ public class AffichageArbre {
         cadre.setArcWidth(15);
         cadre.setArcHeight(15);
 
-        // Texte limité avec wrapping pour éviter toute surcharge
-        Text texte = new Text(personne.getPrenom() + " " + personne.getNom());
+        // Vérification des règles de visibilité
+        String prenomVisible = personne.getPrenomVisible(utilisateurConnecte);
+        String nomVisible = personne.getNomVisible(utilisateurConnecte);
+
+        // Texte limité avec les noms visibles
+        Text texte = new Text(prenomVisible + " " + nomVisible);
         texte.setFont(Font.font("Arial", 14));
         texte.setX(cadre.getX() + 10);
         texte.setY(cadre.getY() + 30);
         texte.setFill(Color.DARKBLUE);
 
+        // Effets sur le nœud (au survol et au clic)
         cadre.setOnMouseEntered(e -> cadre.setStroke(Color.DARKRED));
         cadre.setOnMouseExited(e -> cadre.setStroke(Color.BLACK));
 
         cadre.setOnMouseClicked((MouseEvent e) -> {
+            // Afficher plus de détails dans un popup
             PersonneDetailView.showPopup(personne, utilisateurConnecte);
         });
 
+        // Ajouter le rectangle et le texte au group
         group.getChildren().addAll(cadre, texte);
     }
 

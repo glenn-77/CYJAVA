@@ -5,6 +5,7 @@ import entites.*;
 import entites.enums.Genre;
 import entites.enums.LienParente;
 import entites.enums.TypeDemande;
+import entites.enums.NiveauVisibilite;
 import service.DemandeAdminService.DemandeAdmin;
 
 import java.io.*;
@@ -32,8 +33,8 @@ public class InitialisationCSV {
 
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                if (values.length < 21) {
-                    System.err.println("Ligne mal formatée (moins de 21 colonnes), ignorée : " + line);
+                if (values.length < 22) {
+                    System.err.println("Ligne mal formatée (moins de 22 colonnes), ignorée : " + line);
                     continue;
                 }
 
@@ -57,12 +58,14 @@ public class InitialisationCSV {
                     String urlPhoto = values[18].trim();
                     String inscrit = values[19].trim();
                     String valideParAdmin = values[20].trim();
+                    String niveauVisibiliteStr = values[21].trim();
 
                     boolean premiereConnexionBool = premiereConnexion.equals("true");
                     boolean inscritBool = inscrit.equals("true");
                     boolean valideParAdminBool = valideParAdmin.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
+                    NiveauVisibilite niveauVisibilite = NiveauVisibilite.valueOf(niveauVisibiliteStr.toUpperCase());
 
                     if (urlPhoto.isEmpty()) {
                         urlPhoto = "images/default.png";
@@ -85,6 +88,7 @@ public class InitialisationCSV {
 
                     personne.setEstInscrit(inscritBool);
                     personne.setValideParAdmin(valideParAdminBool);
+                    personne.setNiveauVisibilite(niveauVisibilite);
                     personne.setArbre(new ArbreGenealogique(personne));
                     personne.setUrlPhoto(urlPhoto);
 

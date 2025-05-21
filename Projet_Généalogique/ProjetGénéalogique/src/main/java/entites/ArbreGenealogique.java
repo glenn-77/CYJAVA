@@ -3,6 +3,7 @@ package entites;
 
 import java.util.*;
 import service.ConsultationStatsService;
+import entites.enums.NiveauVisibilite;
 /**
  * Represents a genealogical tree containing people and their familial relationships.
  * Each tree has a single owner and supports adding, deleting, and querying persons.
@@ -52,6 +53,7 @@ public class ArbreGenealogique {
      * @return true if present, false otherwise.
      */
     public boolean contient(Personne p) {
+        // Retourne vrai si la personne est dans les noeuds
         return noeuds.contains(p);
     }
 
@@ -63,6 +65,7 @@ public class ArbreGenealogique {
     public Set<Personne> afficherArbrePour(Personne demandeur) {
         Set<Personne> visibles = new HashSet<>();
         for (Personne p : noeuds) {
+            // Ajouter uniquement si la personne est visible pour le demandeur
             if (p.estVisiblePar(demandeur)) {
                 visibles.add(p);
             }
@@ -70,11 +73,12 @@ public class ArbreGenealogique {
         return visibles;
     }
 
-    /**
-     * Finds persons common to two genealogical trees.
-     * @param autre The other genealogical tree.
-     * @return A list of shared persons.
-     */
+
+        /**
+         * Finds persons common to two genealogical trees.
+         * @param autre The other genealogical tree.
+         * @return A list of shared persons.
+         */
     public Set<Personne> trouverMembresCommuns(ArbreGenealogique autre) {
         Set<Personne> communs = new HashSet<>();
         for (Personne p1 : this.noeuds) {
@@ -116,10 +120,14 @@ public class ArbreGenealogique {
         }
     }
 
-    public void consulterArbre(String nssConsultant) {
+    public void consulterArbre(String nssConsultant, Personne demandeur) {
         ConsultationStatsService statsService = new ConsultationStatsService();
         statsService.ajouterConsultation(this.proprietaire.getNss(), nssConsultant);
-        System.out.println("✅ Consultation enregistrée pour l'arbre de " + proprietaire.getPrenom() + " " + proprietaire.getNom());
+
+        System.out.println("✅ Consultation enregistrée pour l'arbre de "
+                + proprietaire.getPrenomVisible(demandeur)
+                + " "
+                + proprietaire.getNomVisible(demandeur));
     }
 
 }

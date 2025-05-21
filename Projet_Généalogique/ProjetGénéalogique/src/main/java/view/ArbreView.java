@@ -28,18 +28,22 @@ public class ArbreView {
         layout.setAlignment(Pos.TOP_LEFT);
 
         Label titre = new Label("Arbre généalogique");
+        titre.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         layout.getChildren().add(titre);
 
+        // Récupération des membres visibles
         Set<Personne> membresVisibles = arbre.afficherArbrePour(utilisateur);
+
         for (Personne p : membresVisibles) {
-            Label personneLabel = new Label(p.getPrenom() + " " + p.getNom() + " (" + p.getLien() + ")");
+            // Utilisation explicite de getPrenomVisible et getNomVisible
+            String affichageNom = p.getPrenomVisible(utilisateur) + " " + p.getNomVisible(utilisateur);
+            Label personneLabel = new Label(affichageNom + " (" + (p.getLien() != null ? p.getLien().name().toLowerCase() : "lien inconnu") + ")");
             layout.getChildren().add(personneLabel);
         }
 
+        // Bouton retour
         Button retour = new Button("Retour");
-        retour.setOnAction(e -> {
-            new MainView(new AuthService(), utilisateur).start(stage);  // À adapter
-        });
+        retour.setOnAction(e -> new MainView(new AuthService(), utilisateur).start(stage));
 
         layout.getChildren().add(retour);
 
