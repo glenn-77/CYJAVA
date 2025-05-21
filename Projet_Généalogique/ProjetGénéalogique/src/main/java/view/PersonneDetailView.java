@@ -39,7 +39,6 @@ public class PersonneDetailView {
         layout.setAlignment(Pos.CENTER);
 
         LienParente lien = utilisateurCourant.getLiens().get(personne);
-        String lienTexte = lien != null ? lien.name().toLowerCase() : "aucun";
 
         StringBuilder details = new StringBuilder();
 

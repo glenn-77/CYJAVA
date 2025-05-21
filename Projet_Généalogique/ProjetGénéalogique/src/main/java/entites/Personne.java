@@ -3,11 +3,15 @@ package entites;
 import entites.enums.Genre;
 import entites.enums.LienParente;
 import entites.enums.NiveauVisibilite;
-import javafx.scene.control.TreeItem;
 
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Represents a person in the genealogical tree.
+ * Contains identity data, relationships (parents, children), and account info.
+ * Supports link management, visibility rules, and genealogical logic.
+ */
 public class Personne {
 
     private final String nss;  
@@ -36,8 +40,11 @@ public class Personne {
     private Map<Personne, LienParente> liensParente;
     private ArbreGenealogique arbre;
 
-    private Compte compte; 
+    private Compte compte;
 
+    /**
+     * Full constructor to initialize a person and link it to a user account and a tree.
+     */
     public Personne(String nss, String prenom, String nom, LocalDate dateNaissance, 
                     String nationalite, String carteIdentite, String codePrive, Genre genre, Compte compte, ArbreGenealogique arbre) {
         this.nss = nss;
@@ -61,6 +68,9 @@ public class Personne {
         this.estVivant = true;
     }
 
+    /**
+     * Lightweight constructor used for temporary or unregistered persons.
+     */
     public Personne(String nom,String prenom, LocalDate dateNaissance, String nationalite, Genre genre){
         this.nom = nom;
         this.genre = genre;
@@ -70,7 +80,8 @@ public class Personne {
         this.prenom = prenom;
         this.nationalite = nationalite;
     }
-    
+
+    // Getters, setters, and helper methods...
     public String getNss() {
         return nss;
     }
@@ -123,6 +134,9 @@ public class Personne {
         return enfants;
     }
 
+    /**
+     * Adds a child to the person and updates tree links.
+     */
     public void addEnfant(Personne enfant) {
         this.enfants.add(enfant);
     }
@@ -167,6 +181,9 @@ public class Personne {
         return this.equals(autre);
     }
 
+    /**
+     * Checks if a person is visible to the requester based on visibility level and roles.
+     */
     public boolean estVisiblePar(Personne demandeur) {
         if (this.compte instanceof Admin) {
             return true;
@@ -182,10 +199,16 @@ public class Personne {
         };
     }
 
+    /**
+     * Returns the name or a hidden placeholder depending on visibility rules.
+     */
     public String getNomVisible(Personne demandeur) {
         return this.estVisiblePar(demandeur) ? this.nom : "???";
     }
 
+    /**
+     * Returns the first name or a hidden placeholder depending on visibility rules.
+     */
     public String getPrenomVisible(Personne demandeur) {
         return this.estVisiblePar(demandeur) ? this.prenom : "???";
     }
@@ -206,6 +229,12 @@ public class Personne {
         return estVivant;
     }
 
+    /**
+     * Adds a bidirectional relationship between this person and another.
+     *
+     * @param autre the other person
+     * @param lien the relationship from this person to the other
+     */
     public void ajouterLien(Personne autre, LienParente lien) {
         this.liensParente.put(autre, lien);
         this.arbre.getNoeuds().add(autre);
@@ -215,6 +244,9 @@ public class Personne {
         }
     }
 
+    /**
+     * Removes a bidirectional relationship with another person.
+     */
     public void supprimerLien(Personne autre) {
         this.liensParente.remove(autre);
         this.arbre.getNoeuds().remove(autre);
@@ -225,6 +257,12 @@ public class Personne {
 
     }
 
+    /**
+     * Determines the inverse of a given relationship depending on the person's gender.
+     *
+     * @param lien the current relationship
+     * @return the inverse relationship
+     */
     public LienParente inverseLien(LienParente lien) {
         return switch (lien) {
             case PERE, MERE -> this.genre == Genre.HOMME ? LienParente.FILS : LienParente.FILLE;
@@ -237,103 +275,11 @@ public class Personne {
         };
     }
 
-    public void afficherFamille() {
-        System.out.println("=== Famille de " + prenom + " " + nom + " ===");
-
-        // Parents
-        System.out.print("Père : ");
-        if (pere != null) {
-            System.out.println(pere.getPrenom() + " " + pere.getNom());
-        } else {
-            System.out.println("Inconnu");
-        }
-
-        System.out.print("Mère : ");
-        if (mere != null) {
-            System.out.println(mere.getPrenom() + " " + mere.getNom());
-        } else {
-            System.out.println("Inconnue");
-        }
-
-        // Frères et sœurs (au moins un parent en commun)
-        Set<Personne> freresSoeurs = new HashSet<>();
-        if (pere != null) {
-            for (Personne enfantPere : pere.getEnfants()) {
-                if (!enfantPere.equals(this)) freresSoeurs.add(enfantPere);
-            }
-        }
-        if (mere != null) {
-            for (Personne enfantMere : mere.getEnfants()) {
-                if (!enfantMere.equals(this)) freresSoeurs.add(enfantMere);
-            }
-        }
-
-        System.out.print("Frères/Sœurs : ");
-        if (freresSoeurs.isEmpty()) {
-            System.out.println("Aucun");
-        } else {
-            for (Personne frereSoeur : freresSoeurs) {
-                System.out.print(frereSoeur.getPrenom() + " " + frereSoeur.getNom() + "; ");
-            }
-            System.out.println();
-        }
-
-        // Enfants
-        System.out.print("Enfants : ");
-        if (enfants.isEmpty()) {
-            System.out.println("Aucun");
-        } else {
-            for (Personne enfant : enfants) {
-                System.out.print(enfant.getPrenom() + " " + enfant.getNom() + "; ");
-            }
-            System.out.println();
-        }
-    }
-
-    public TreeItem<String> genererArbreFamilial(Personne demandeur) {
-        return genererArbreFamilial(new HashSet<>(), demandeur);
-    }
-
-    private TreeItem<String> genererArbreFamilial(Set<Personne> dejaVisites, Personne demandeur) {
-        if (dejaVisites.contains(this)) {
-            return null;
-        }
-
-        // Marquer cette personne comme visitée
-        dejaVisites.add(this);
-
-        // Si la personne n'est pas visible (privée), afficher "???"
-        String affichage = this.estVisiblePar(demandeur)
-                ? this.getPrenom() + " " + this.getNom() // Nom complet si visible
-                : "???"; // Afficher ??? si NON visible
-
-        // Créer le nœud racine pour cette personne
-        TreeItem<String> racine = new TreeItem<>(affichage);
-
-        // Ajouter les parents (si visibles)
-        if (pere != null && pere.estVisiblePar(demandeur)) {
-            TreeItem<String> arbrePere = pere.genererArbreFamilial(dejaVisites, demandeur);
-            if (arbrePere != null) racine.getChildren().add(arbrePere);
-        }
-
-        if (mere != null && mere.estVisiblePar(demandeur)) {
-            TreeItem<String> arbreMere = mere.genererArbreFamilial(dejaVisites, demandeur);
-            if (arbreMere != null) racine.getChildren().add(arbreMere);
-        }
-
-        // Ajouter les enfants (si visibles)
-        for (Personne enfant : enfants) {
-            if (enfant.estVisiblePar(demandeur)) {
-                TreeItem<String> arbreEnfant = enfant.genererArbreFamilial(dejaVisites, demandeur);
-                if (arbreEnfant != null) racine.getChildren().add(arbreEnfant);
-            }
-        }
-
-        return racine;
-    }
 
 
-
+    /**
+     * Defines equality based on NSS (if present), or by identity data.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

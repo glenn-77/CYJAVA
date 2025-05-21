@@ -26,28 +26,48 @@ import service.AuthService;
 import entites.Personne;
 import service.MailService;
 import service.DemandeAdminService.DemandeAdmin;
-import entites.enums.NiveauVisibilite;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * JavaFX main dashboard for authenticated and non-authenticated users.
+ * Displays profile information, navigation buttons, and tree-related features.
+ * Allows access to genealogical tree visualization, statistics, photos, requests, and account management.
+ */
 public class MainView {
 
     private final AuthService authService;
     private final Personne utilisateur;
     final Logger LOGGER = Logger.getLogger(MainView.class.getName());
 
-
+    /**
+     * Constructs the main view for unauthenticated use.
+     *
+     * @param authService the authentication service
+     */
     public MainView(AuthService authService) {
         this(authService, null);
     }
 
+    /**
+     * Constructs the main view for an authenticated user.
+     *
+     * @param authService the authentication service
+     * @param utilisateur the connected user
+     */
     public MainView(AuthService authService, Personne utilisateur) {
         this.authService = authService;
         this.utilisateur = utilisateur;
     }
 
+    /**
+     * Starts the view and displays the home screen.
+     * Shows personalized content and features based on authentication state.
+     *
+     * @param stage the main JavaFX stage
+     */
     public void start(Stage stage) {
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(40));
@@ -213,6 +233,12 @@ public class MainView {
         stage.show();
     }
 
+    /**
+     * Opens a modal window to add or modify a person in the genealogical tree.
+     * The form adapts based on the selected action ("Ajout" or "Modification").
+     *
+     * @param parentStage the parent stage for modal ownership
+     */
     private void ouvrirFormulaire(Stage parentStage) {
         Stage formStage = new Stage();
         formStage.initOwner(parentStage);

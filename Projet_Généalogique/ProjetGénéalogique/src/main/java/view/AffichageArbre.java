@@ -154,7 +154,6 @@ public class AffichageArbre {
                 }
             } else {
                 System.err.println("⚠️ Genre non défini pour : " + enfant.getPrenom() + " " + enfant.getNom());
-                personne.ajouterLien(enfant, null); // Lien est null si le genre est absent
             }
         }
     }

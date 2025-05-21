@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import dao.UserDAO;
 import entites.ArbreGenealogique;
 import entites.Compte;
 import entites.Personne;
@@ -15,7 +14,8 @@ import entites.enums.Genre;
 import service.DemandeAdminService.DemandeAdmin;
 
 /**
- * Service d'authentification et gestion des utilisateurs et arbres généalogiques.
+ * Authentication and user management service.
+ * Handles user registration, login, administrative requests, and genealogy tree initialization from CSV files.
  */
 public class AuthService {
 
@@ -26,6 +26,9 @@ public class AuthService {
     private static final String UTILISATEURS_FILE_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/utilisateurs.csv";
     private static final String DEMANDE_FILE_PATH = "Projet_Généalogique/ProjetGénéalogique/ressources/demandes.csv";
 
+    /**
+     * Default constructor that loads users, counters, and requests from CSV files at startup.
+     */
     public AuthService() {
         this.utilisateurs = new HashMap<>();
         this.arbres = new ArrayList<>();
@@ -58,7 +61,7 @@ public class AuthService {
     }
 
     /**
-     * Charge les utilisateurs depuis un fichier CSV.
+     * Loads users from the `utilisateurs.csv` file and indexes them by their NSS.
      */
     private void chargerUtilisateursDepuisCSV() throws IOException {
         InitialisationCSV loader = new InitialisationCSV();
@@ -74,7 +77,7 @@ public class AuthService {
     }
 
     /**
-     * Initialise les demandes administrateur.
+     * Loads administrative requests from `demandes.csv` and stores them in memory.
      */
     private void chargerDemandesDepuisCSV() throws IOException {
         InitialisationCSV loader = new InitialisationCSV();
@@ -91,7 +94,7 @@ public class AuthService {
     }
 
     /**
-     * Initialise les arbres généalogiques en fonction des utilisateurs.
+     * Builds genealogy trees by grouping users by family and finding the oldest known ancestor.
      */
     private void chargerArbres() {
         Map<String, ArbreGenealogique> arbresParFamille = new HashMap<>();
@@ -115,6 +118,9 @@ public class AuthService {
         }
     }
 
+    /**
+     * Traverses ancestry to find the root ancestor of a person.
+     */
     private Personne trouverAncetre(Personne p) {
         Set<Personne> visites = new HashSet<>();
         while ((p.getPere() != null || p.getMere() != null) && !visites.contains(p)) {
@@ -126,10 +132,10 @@ public class AuthService {
     }
 
     /**
-     * Vérifie si un utilisateur existe via son email.
+     * Checks if an account already exists using its email.
      *
-     * @param email L'email de l'utilisateur.
-     * @return true s'il existe, sinon false.
+     * @param email user email
+     * @return true if it exists, false otherwise
      */
     public boolean existe(String email) {
         for (Personne utilisateur : utilisateurs.values()) {
@@ -142,11 +148,11 @@ public class AuthService {
     }
 
     /**
-     * Authentifie un utilisateur via son email et mot de passe.
+     * Authenticates a user using login, email, or private code, and their password.
      *
-     * @param identifiant       L'email ou login de l'utilisateur.
-     * @param motDePasse  Le mot de passe de l'utilisateur.
-     * @return L'objet Personne correspondant, ou null si l'authentification échoue.
+     * @param identifiant login, email, or private code
+     * @param motDePasse  password
+     * @return the authenticated user if valid, otherwise null
      */
     public Personne authentifier(String identifiant, String motDePasse) {
         for (Personne utilisateur : utilisateurs.values()) {
@@ -160,9 +166,9 @@ public class AuthService {
     }
 
     /**
-     * Ajoute un utilisateur et met à jour le fichier CSV.
+     * Adds a registered user to the system and writes their info to the CSV file.
      *
-     * @param personne La personne à ajouter.
+     * @param personne the user to add
      */
     public void ajouterUtilisateur(Personne personne) {
         utilisateurs.put(personne.getNss(), personne);
@@ -183,6 +189,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * Adds an administrative request to the system and updates the request file.
+     *
+     * @param demande the request to add
+     */
     public void ajouterDemande(DemandeAdmin demande){
         demandesAdmins.add(demande);
         DemandeAdminService.ajouterDemande(demande);
@@ -199,10 +210,10 @@ public class AuthService {
     }
 
     /**
-     * Sauvegarde uniquement un nouvel utilisateur dans le fichier CSV.
+     * Saves only the newly added user to `utilisateurs.csv`.
      *
-     * @param personne La personne à enregistrer.
-     * @throws IOException Si une erreur d'écriture se produit.
+     * @param personne user to save
+     * @throws IOException if write fails
      */
     public void sauvegarderNouvelUtilisateur(Personne personne) throws IOException {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
@@ -276,6 +287,12 @@ public class AuthService {
 
     }
 
+    /**
+     * Saves a new administrative request to `demandes.csv`.
+     *
+     * @param demande request to save
+     * @throws IOException if write fails
+     */
     public void sauvegarderDemande(DemandeAdmin demande) throws IOException {
         Path path = Paths.get(DEMANDE_FILE_PATH);
 
@@ -304,6 +321,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * Updates a user's information in `utilisateurs.csv`.
+     *
+     * @param personne the updated user
+     */
     public void mettreAJourUtilisateur(Personne personne) {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
         List<String> lignes;
@@ -351,6 +373,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * Updates the status of an admin request in `demandes.csv`.
+     *
+     * @param demande the updated request
+     */
     public void mettreAJourDemande(DemandeAdmin demande) {
         Path path = Paths.get(DEMANDE_FILE_PATH);
         List<String> lignes;
@@ -381,7 +408,15 @@ public class AuthService {
         }
     }
 
-    // Modifie la nationalité et le genre d'une personne existante non inscrite identifiée par son NSS
+    /**
+     * Updates the nationality and gender of an unregistered person by name.
+     *
+     * @param nomCible       target last name
+     * @param prenomCible    target first name
+     * @param nouvelleNat    new nationality
+     * @param nouveauGenre   new gender
+     * @throws IOException if the file update fails
+     */
     public static void modifierPersonne(String nomCible, String prenomCible, String nouvelleNat, Genre nouveauGenre) throws IOException {
         Path path = Paths.get(UTILISATEURS_FILE_PATH);
         List<String> lignes = Files.readAllLines(path);
@@ -398,6 +433,12 @@ public class AuthService {
         Files.write(path, lignes);
     }
 
+    /**
+     * Finds a user by their social security number (NSS).
+     *
+     * @param nss the NSS to search
+     * @return the matched user, or null if not found
+     */
     public Personne getPersonneParNSS(String nss) {
         if (utilisateurs.containsKey(nss)) {
             System.out.println("✅ Personne trouvée pour NSS : " + nss); // DEBUG
@@ -408,6 +449,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * Deletes a user from the CSV file using their NSS.
+     *
+     * @param nss the NSS of the user to delete
+     */
     public void supprimerUtilisateurParNSS(String nss) {
         File inputFile = new File("ressources/utilisateurs.csv");
         File tempFile = new File("ressources/temp_utilisateurs.csv");

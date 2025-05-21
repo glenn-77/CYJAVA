@@ -55,7 +55,7 @@ public class Admin extends Compte {
                     validerAjoutLien(demandeur, cible, lien);
                     break;
                 case SUPPRESSION_LIEN:
-                    validerSuppressionLien(demandeur, cible);
+                    AffichageArbre.reattribuerLienAprèsSuppression(cible, demandeur.getArbre());
                     break;
                 case AJOUT_PERSONNE:
                     if (demandeur.equals(cible)) validerInscription(demandeur);
@@ -148,22 +148,6 @@ public class Admin extends Compte {
         MailService.envoyerEmail(demandeur.getCompte().getEmail(),
                 "❌ Demande refusée",
                 "Votre demande de lien avec " + cible.getNom() + " a été refusée par l'administrateur.");
-    }
-
-    /**
-     * Validates the removal of a relationship between two users.
-     */
-    public void validerSuppressionLien(Personne p1, Personne p2) {
-        p1.supprimerLien(p2);
-        p2.supprimerLien(p1);
-
-        if (p1.getCompte().getEmail() != null) MailService.envoyerEmail(p1.getCompte().getEmail(),
-                "✅ Suppression de lien acceptée",
-                "Le lien entre vous et " + p2.getNom() + " a été supprimé par l'administrateur.");
-
-        if (p2.getCompte().getEmail() != null) MailService.envoyerEmail(p2.getCompte().getEmail(),
-                "✅ Suppression de lien acceptée",
-                "Le lien entre vous et " + p1.getNom() + " a été supprimé par l'administrateur.");
     }
 
     /**
