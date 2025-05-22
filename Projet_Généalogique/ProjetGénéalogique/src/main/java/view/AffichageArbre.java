@@ -292,14 +292,25 @@ public class AffichageArbre {
         for (Personne enfant : new ArrayList<>(cible.getEnfants())) {
             // Remove the link with the removed person
             enfant.supprimerLien(cible);
+            if (cible.getGenre() == Genre.HOMME) enfant.setPere(null);
+            else enfant.setMere(null);
+            cible.getEnfants().remove(enfant);
 
             // Reassign to a grandparent if available
             if (pere != null) {
-                if(enfant.getGenre() == Genre.HOMME) pere.ajouterLien(enfant, LienParente.FILS);
+                if(enfant.getGenre() == Genre.HOMME) {
+                    pere.ajouterLien(enfant, LienParente.FILS);
+                }
                 else pere.ajouterLien(enfant, LienParente.FILLE);
+                pere.addEnfant(enfant);
+                enfant.setPere(pere);
             } else if (mere != null) {
-                if(enfant.getGenre() == Genre.HOMME) mere.ajouterLien(enfant, LienParente.FILS);
+                if(enfant.getGenre() == Genre.HOMME) {
+                    mere.ajouterLien(enfant, LienParente.FILS);
+                }
                 else mere.ajouterLien(enfant, LienParente.FILLE);
+                mere.addEnfant(enfant);
+                enfant.setMere(mere);
             }
         }
 
@@ -307,7 +318,15 @@ public class AffichageArbre {
         arbre.getNoeuds().remove(cible);
 
         // Remove links to the person's parents
-        if (pere != null) pere.supprimerLien(cible);
-        if (mere != null) mere.supprimerLien(cible);
+        if (pere != null) {
+            pere.supprimerLien(cible);
+            cible.setPere(null);
+            pere.getEnfants().remove(cible);
+        }
+        if (mere != null) {
+            mere.supprimerLien(cible);
+            cible.setMere(null);
+            mere.getEnfants().remove(cible);
+        }
     }
 }
