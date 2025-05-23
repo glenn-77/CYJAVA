@@ -80,15 +80,55 @@ public class AffichageArbre {
             return;
         }
 
+        if (!arbre.getNoeuds().contains(racine)) {
+            System.out.println("Erreur : La racine n'existe pas dans les nœuds de l'arbre.");
+            return;
+        }
         // Construire une grille logique avec générations
-        Map<Integer, List<Personne>> niveaux = creerNiveaux(racine);
+        Map<Integer, List<Personne>> niveaux;
+        try {
+            niveaux = creerNiveaux(racine);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la construction des niveaux : " + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
         double centreX = group.getBoundsInLocal().getWidth() / 2;
 
         // Calculer les positions logiques des nœuds
-        calculerPositions(niveaux, centreX);
+        try {
+            calculerPositions(niveaux, centreX);
+        } catch (Exception e) {
+            System.err.println("Erreur lors du calcul des positions : " + e.getMessage());
+            return;
+        }
+
+        System.out.println("===== Affichage de l'arbre généalogique =====");
+        for (Map.Entry<Integer, List<Personne>> entry : niveaux.entrySet()) {
+            int niveau = entry.getKey();
+            for (Personne p : entry.getValue()) {
+                System.out.println("Niveau " + niveau + " : " + p.getPrenom() + " " + p.getNom());
+
+                if (p.getPere() != null) {
+                    System.out.println("➡️  " + p.getPere().getPrenom() + " " + p.getPere().getNom() + " est le père de " + p.getPrenom() + " " + p.getNom());
+                }
+                if (p.getMere() != null) {
+                    System.out.println("➡️  " + p.getMere().getPrenom() + " " + p.getMere().getNom() + " est la mère de " + p.getPrenom() + " " + p.getNom());
+                }
+                for (Personne enfant : p.getEnfants()) {
+                    System.out.println("👶  " + p.getPrenom() + " " + p.getNom() + " est parent de " + enfant.getPrenom() + " " + enfant.getNom());
+                }
+            }
+        }
+        System.out.println("=============================================");
 
         // Dessiner l'arbre complet (nœuds + liens)
-        dessinerArbreEtLiens(group, racine, 0);
+        try {
+            dessinerArbreEtLiens(group, racine, 0);
+        } catch (Exception e) {
+            System.err.println("Erreur lors du dessin de l'arbre : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
