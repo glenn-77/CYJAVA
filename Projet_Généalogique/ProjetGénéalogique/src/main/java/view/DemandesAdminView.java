@@ -15,10 +15,10 @@ import org.jetbrains.annotations.NotNull;
 import service.AuthService;
 import service.DemandeAdminService.DemandeAdmin;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
+
 
 public class DemandesAdminView {
 
@@ -35,6 +35,12 @@ public class DemandesAdminView {
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+
+        VBox container = new VBox(15);
+        scrollPane.setContent(container);
 
         // Champs de filtre
         HBox filtreBox = new HBox(10);
@@ -55,12 +61,10 @@ public class DemandesAdminView {
 
         // Titre
         Label title = new Label("Demandes en attente");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        title.setId("title");
         root.getChildren().add(title);
 
-        // Zone d'affichage des demandes
-        VBox listeDemandes = new VBox(15);
-        root.getChildren().add(listeDemandes);
+        root.getChildren().add(scrollPane);
 
         // Bouton retour
         Button retour = new Button("🔙 Retour");
@@ -70,11 +74,11 @@ public class DemandesAdminView {
         // Scene
         Scene scene = new Scene(root, 800, 800);
         try {
-            var cssResource = getClass().getResource("/style.css");
+            var cssResource = getClass().getResource("/demandes.css");
             if (cssResource != null) {
                 scene.getStylesheets().add(cssResource.toExternalForm());
             } else {
-                LOGGER.warning("CSS file not found: /style.css");
+                LOGGER.warning("CSS file not found: /demandes.css");
             }
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Failed to load CSS stylesheet", ex);
@@ -85,13 +89,13 @@ public class DemandesAdminView {
         stage.show();
 
         // Affichage initial
-        afficherDemandesFiltres(listeDemandes, "", null);
+        afficherDemandesFiltres(container, "", null);
 
         // Action bouton filtrer
         boutonFiltrer.setOnAction(e -> {
             String rechercheTexte = champRecherche.getText();
             TypeDemande type = typeComboBox.getValue();
-            afficherDemandesFiltres(listeDemandes, rechercheTexte, type);
+            afficherDemandesFiltres(container, rechercheTexte, type);
         });
     }
 
@@ -120,56 +124,50 @@ public class DemandesAdminView {
         for (DemandeAdmin demande : resultats) {
             VBox blocDemande = new VBox(5);
             blocDemande.setPadding(new Insets(10));
-            blocDemande.setStyle("-fx-border-color: black; -fx-border-radius: 5; -fx-padding: 10;");
+            blocDemande.getStyleClass().add("bloc-demande");
 
             Label resume = new Label(demande.getDemandeur().getPrenom() + " demande : " + demande.getType());
+            resume.getStyleClass().add("resume-label");
 
             Button afficherDetails = new Button("Détails");
+            afficherDetails.getStyleClass().add("details-button");
             VBox detailsBox = new VBox();
             detailsBox.setVisible(false);
+            detailsBox.getStyleClass().add("details-box");
 
             afficherDetails.setOnAction(e -> detailsBox.setVisible(!detailsBox.isVisible()));
             detailsBox.getChildren().add(getLabel(demande));
 
             HBox boutons = new HBox(10);
             boutons.setAlignment(Pos.CENTER);
-            Button validerBtn = new Button("Valider");
-            Button refuserBtn = new Button("Refuser");
 
+            Button validerBtn = new Button("Valider");
+            validerBtn.getStyleClass().add("valider");
             validerBtn.setOnAction(ev -> {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Confirmer la demande ?", ButtonType.YES, ButtonType.NO);
-                confirm.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.YES) {
-                        try {
-                            if (admin.getCompte() instanceof Admin) {
-                                ((Admin) admin.getCompte()).traiterDemande(demande, true);
-                                authService.mettreAJourDemande(demande);
-                                afficherDemandesFiltres(container, recherche, filtreType); // refresh
-                            }
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "Error while processing admin request", ex);
-                        }
+                try {
+                    if (admin.getCompte() instanceof Admin) {
+                        ((Admin) admin.getCompte()).traiterDemande(demande, true);
+                        authService.mettreAJourDemande(demande);
+                        afficherDemandesFiltres(container, recherche, filtreType);
                     }
-                });
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, "Erreur lors du traitement de la demande", ex);
+                }
             });
 
+            Button refuserBtn = new Button("Refuser");
+            refuserBtn.getStyleClass().add("refuser");
             refuserBtn.setOnAction(ev -> {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Refuser la demande ?", ButtonType.YES, ButtonType.NO);
-                confirm.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.YES) {
-                        try {
-                            if (admin.getCompte() instanceof Admin) {
-                                ((Admin) admin.getCompte()).traiterDemande(demande, false);
-                                authService.mettreAJourDemande(demande);
-                                afficherDemandesFiltres(container, recherche, filtreType); // refresh
-                            }
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "Error while rejecting admin request", ex);
-                        }
+                try {
+                    if (admin.getCompte() instanceof Admin) {
+                        ((Admin) admin.getCompte()).traiterDemande(demande, false);
+                        authService.mettreAJourDemande(demande);
+                        authService.supprimerDemandeParID(demande.getId());
+                        afficherDemandesFiltres(container, recherche, filtreType);
                     }
-                });
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, "Erreur lors du refus de la demande", ex);
+                }
             });
 
             boutons.getChildren().addAll(validerBtn, refuserBtn);
@@ -207,6 +205,8 @@ public class DemandesAdminView {
             default:
                 message = "Type de demande inconnu.";
         }
-        return new Label(message);
+        Label label = new Label(message);
+        label.getStyleClass().add("details-content");
+        return label;
     }
 }

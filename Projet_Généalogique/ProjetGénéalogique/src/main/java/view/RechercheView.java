@@ -24,6 +24,7 @@ public class RechercheView {
 
     private final AuthService authService;
     private final Personne utilisateur;
+    private boolean isDarkMode = false;
     final Personne[] personneCourante = {null};
 
     /**
@@ -44,21 +45,66 @@ public class RechercheView {
      * @param stage the JavaFX stage in which the scene is set
      */
     public void start(Stage stage) {
+        // 🔹 Titre
+        Label titreLabel = new Label("Rechercher une personne");
+        titreLabel.setId("titre-recherche");
+
+        // 🔹 Barre de recherche
         TextField champRecherche = new TextField();
         champRecherche.setPromptText("Entrez un nom, prénom ou NSS");
+        champRecherche.getStyleClass().add("text-field");
 
         ComboBox<String> filtre = new ComboBox<>();
         filtre.getItems().addAll("Nom", "Prénom", "NSS");
         filtre.setValue("Nom");
+        filtre.getStyleClass().add("combo-box");
 
         Button boutonPhoto = new Button("📷 Afficher la photo");
+        boutonPhoto.setId("photo-button");
+
         ListView<Label> listeResultats = new ListView<>();
+        listeResultats.getStyleClass().add("list-view");
 
         // Zone d'affichage de la photo
         ImageView imageView = new ImageView();
         imageView.setFitHeight(150);
         imageView.setFitWidth(150);
         imageView.setPreserveRatio(true);
+        imageView.getStyleClass().add("image-view");
+
+        Button retourBtn = new Button("Retour");
+        retourBtn.setId("retour-button");
+        retourBtn.setOnAction(e -> {
+            MainView retourAccueil = new MainView(authService, utilisateur);
+            retourAccueil.start(stage);
+        });
+
+        Button themeButton = new Button("Mode sombre");
+
+        VBox layout = new VBox(15);
+        layout.getStyleClass().add("root");
+        layout.getChildren().addAll(
+                titreLabel,
+                champRecherche,
+                filtre,
+                boutonPhoto,
+                listeResultats,
+                imageView,
+                retourBtn,
+                themeButton
+        );
+
+        themeButton.setOnAction(e -> {
+            if (isDarkMode) {
+                layout.getStyleClass().remove("dark-mode");
+                themeButton.setText("Mode sombre");
+                isDarkMode = false;
+            } else {
+                layout.getStyleClass().add("dark-mode");
+                themeButton.setText("Mode clair");
+                isDarkMode = true;
+            }
+        });
 
         // Dynamic search with filters
         champRecherche.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -82,7 +128,7 @@ public class RechercheView {
                     String ligne = switch (critere) {
                         case "Nom" -> surligner(p.getNom(), newValue) + " | Prénom : " + p.getPrenom();
                         case "Prénom" -> "Nom : " + p.getNom() + " | " + surligner(p.getPrenom(), newValue);
-                        case "NSS" -> "Nom : " + p.getNom() + " | " + "Prénom : " + p.getPrenom() + " | " + "NSS : " + surligner(p.getNss(), newValue);
+                        case "NSS" -> "Nom : " + p.getNom() + " | Prénom : " + p.getPrenom() + " | NSS : " + surligner(p.getNss(), newValue);
                         default -> "";
                     };
                     Label label = formatterLigneAvecSurlignage(ligne);
@@ -96,8 +142,7 @@ public class RechercheView {
         boutonPhoto.setOnAction(e -> {
             Personne p = personneCourante[0];
             if (p == null) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Aucune personne sélectionnée.");
-                alert.show();
+                new Alert(Alert.AlertType.INFORMATION, "Aucune personne sélectionnée.").show();
                 return;
             }
 
@@ -107,40 +152,24 @@ public class RechercheView {
                 Image image = new Image(new FileInputStream(chemin));
                 imageView.setImage(image);
 
-                if (image.isError()) {
-                    System.err.println("❌ Erreur de chargement de l'image !");
-                    Alert alert = new Alert(Alert.AlertType.WARNING, "Erreur lors du chargement de l'image.");
-                    alert.show();
+                if (image.isError() || imageView.getImage() == null) {
+                    new Alert(Alert.AlertType.WARNING, "Erreur lors du chargement de l'image.").show();
                 }
-
-                if (imageView.getImage() == null) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING, "Image non chargée.");
-                    alert.show();
-                }
-
             } catch (FileNotFoundException ex) {
                 try {
-                    System.out.println("Fichier par défaut utilisé");
                     Image defaultImg = new Image(new FileInputStream("Projet_Généalogique/ProjetGénéalogique/ressources/images/default.png"));
                     imageView.setImage(defaultImg);
                 } catch (Exception ignore) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Impossible de charger l'image par défaut.");
-                    alert.show();
+                    new Alert(Alert.AlertType.ERROR, "Impossible de charger l'image par défaut.").show();
                 }
             }
         });
 
-        // Return button
-        Button retourBtn = new Button("Retour");
-        retourBtn.setOnAction(e -> {
-            MainView retourAccueil = new MainView(authService, utilisateur);
-            retourAccueil.start(stage);
-        });
-
-        VBox layout = new VBox(10, champRecherche, filtre, boutonPhoto, listeResultats, imageView, retourBtn);
         Scene scene = new Scene(layout, 800, 800);
+        scene.getStylesheets().add(getClass().getResource("/recherche.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Recherche unifiée");
+        stage.show();
     }
 
     /**

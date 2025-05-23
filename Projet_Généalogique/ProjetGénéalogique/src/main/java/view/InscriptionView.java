@@ -1,16 +1,21 @@
 package view;
 
+import entites.*;
 import entites.enums.Genre;
 import entites.enums.LienParente;
 import entites.enums.TypeDemande;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
-import entites.*;
 import service.AuthService;
 import service.MailService;
 import service.DemandeAdminService.DemandeAdmin;
@@ -20,12 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
-
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.stage.FileChooser;
 import java.io.File;
 
 
@@ -38,6 +37,7 @@ import java.io.File;
 public class InscriptionView {
 
     private final AuthService authService;
+    private boolean isDarkMode = false;
 
     /**
      * Constructs the InscriptionView with the given authentication service.
@@ -58,13 +58,13 @@ public class InscriptionView {
     public void start(Stage stage) {
         stage.setTitle("Inscription");
 
-        VBox layout = new VBox(10);
-        layout.setPadding(new Insets(30));
-        layout.setAlignment(Pos.CENTER);
-        layout.setStyle("-fx-background-color: #f4f4f4;");
+        VBox root = new VBox();
+        root.setPadding(new Insets(30));
+        root.setAlignment(Pos.CENTER);
+        root.getStyleClass().add("root");
 
         Label titleLabel = new Label("Inscrivez-vous !");
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        titleLabel.setId("title");
 
         // Input fields
         TextField nssField = new TextField();
@@ -78,11 +78,8 @@ public class InscriptionView {
 
         DatePicker dateNaissancePicker = new DatePicker();
         dateNaissancePicker.setPromptText("Date de naissance (jj/MM/aaaa)");
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        dateNaissancePicker.setConverter(new StringConverter<LocalDate>() {
-            @Override
+        dateNaissancePicker.setConverter(new StringConverter<>() {
             public String toString(LocalDate date) {
                 return date != null ? formatter.format(date) : "";
             }
@@ -100,7 +97,6 @@ public class InscriptionView {
         TextField nationaliteField = new TextField();
         nationaliteField.setPromptText("Nationalité");
 
-        // ID photo
         Label carteLabel = new Label("Carte d'identité :");
         ImageView imageView = new ImageView();
         imageView.setFitWidth(200);
@@ -136,18 +132,27 @@ public class InscriptionView {
         TextField adresseField = new TextField();
         adresseField.setPromptText("Adresse");
 
-        // Register button
         Button inscrireBtn = new Button("S'inscrire");
-        inscrireBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-font-weight: bold;");
+        inscrireBtn.setId("inscrire-button");
 
-        // Return button
         Button retourBtn = new Button("Retour");
-        retourBtn.setOnAction(e -> {
-            MainView mainView = new MainView(authService);
-            mainView.start(stage);
-        });
+        retourBtn.setOnAction(e -> new MainView(authService).start(stage));
 
         Label message = new Label();
+        message.setId("message-label");
+
+        Button themeButton = new Button("Mode sombre");
+        themeButton.setOnAction(e -> {
+            if (isDarkMode) {
+                root.getStyleClass().remove("dark-mode");
+                themeButton.setText("Mode sombre");
+                isDarkMode = false;
+            } else {
+                root.getStyleClass().add("dark-mode");
+                themeButton.setText("Mode clair");
+                isDarkMode = true;
+            }
+        });
 
         inscrireBtn.setOnAction(e -> {
             try {
@@ -165,17 +170,15 @@ public class InscriptionView {
 
                 // Check for empty fields
                 if (nss.isEmpty() || nom.isEmpty() || prenom.isEmpty() || dateNaissance == null ||
-                        nationalite.isEmpty() || carteId.isEmpty() || genre == null ||
+                        nationalite.isEmpty() || carteId == null || genre == null ||
                         email.isEmpty() || telephone.isEmpty() || adresse.isEmpty()) {
-                    message.setStyle("-fx-text-fill: red;");
                     message.setText("Merci de remplir tous les champs.");
                     return;
                 }
 
                 // Generate credentials
-                String motDePasse = prenom;
                 final String codePrive = UUID.randomUUID().toString().substring(0, 8);
-                Compte compte = new Compte(prenom.toLowerCase() + "." + nom.toLowerCase().charAt(0), motDePasse, email, telephone, adresse);
+                Compte compte = new Compte(prenom.toLowerCase() + "." + nom.toLowerCase().charAt(0), prenom, email, telephone, adresse);
                 Personne p = new Personne(nss, prenom, nom, dateNaissance, nationalite,
                         carteId, codePrive, genre, compte, null);
 
@@ -200,10 +203,7 @@ public class InscriptionView {
                     nationaliteField.clear(); genreBox.setValue(null);
                     emailField.clear(); telephoneField.clear(); adresseField.clear();
                     PauseTransition pause = new PauseTransition(Duration.seconds(4));
-                    pause.setOnFinished(ev -> {
-                        LoginView loginView = new LoginView(authService);
-                        loginView.start(stage);
-                    });
+                    pause.setOnFinished(ev -> new LoginView(authService).start(stage));
                     pause.play();
                 }
             } catch (Exception ex) {
@@ -213,16 +213,22 @@ public class InscriptionView {
             }
         });
 
-        layout.getChildren().addAll(
+        VBox formBox = new VBox(15,
                 titleLabel,
-                nssField, nomField, prenomField, dateNaissancePicker,
-                nationaliteField, carteLabel, choisirImageBtn, imageView, genreBox,
-                emailField, telephoneField, adresseField,
-                inscrireBtn, retourBtn, message
+                nssField, nomField, prenomField,
+                dateNaissancePicker, nationaliteField,
+                genreBox, emailField, telephoneField, adresseField,
+                carteLabel, choisirImageBtn, imageView,
+                inscrireBtn, retourBtn, themeButton,
+                message
         );
+        formBox.setAlignment(Pos.CENTER);
+        formBox.getStyleClass().add("form-container");
 
-        Scene scene = new Scene(layout, 800, 1200);
-        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        root.getChildren().add(formBox);
+
+        Scene scene = new Scene(root, 850, 1100);
+        scene.getStylesheets().add(getClass().getResource("/inscription.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
     }

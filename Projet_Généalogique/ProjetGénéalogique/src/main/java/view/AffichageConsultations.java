@@ -1,5 +1,6 @@
 package view;
 
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,6 +21,7 @@ public class AffichageConsultations {
 
     private final ConsultationStatsService statsService = new ConsultationStatsService();
     private final AuthService authService;
+    private boolean isDarkMode = false;
 
     /**
      * Constructs a new AffichageConsultations with the given authentication service.
@@ -37,44 +39,69 @@ public class AffichageConsultations {
      */
     public void afficherStatistiques(String nssUtilisateur) {
         Stage statistiqueStage = new Stage();
-        statistiqueStage.setTitle("Consultation Statistics - My Family Tree");
+        statistiqueStage.setTitle("Statistiques de consultation - Mon arbre");
+        statistiqueStage.setMaximized(true);
 
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.TOP_CENTER);
+        layout.getStyleClass().add("root");
 
-        Label titre = new Label("📊 Consultations of your family tree");
-        titre.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-        layout.getChildren().add(titre);
+        Label titre = new Label("\uD83D\uDCCA Consultations de votre arbre généalogique");
+        titre.setId("titre-consultation");
+
+        Label resume = new Label("\uD83D\uDD0D Résumé : 3 ce mois-ci, 3 cette année, 3 utilisateurs différents.");
+        resume.setId("resume-label");
+
+        layout.getChildren().addAll(resume, titre);
 
         Map<String, Long> frequencesMensuelles = statsService.calculerFrequences(nssUtilisateur, true);
-        VBox frequencesMensuellesBox = creerSectionStatistiques("🔹 Monthly Frequencies:", frequencesMensuelles);
+        VBox frequencesMensuellesBox = creerSectionStatistiques("\uD83D\uDD39 Fréquences mensuelles :", frequencesMensuelles);
         layout.getChildren().add(frequencesMensuellesBox);
 
         Map<String, Long> frequencesAnnuelles = statsService.calculerFrequences(nssUtilisateur, false);
-        VBox frequencesAnnuellesBox = creerSectionStatistiques("🔹 Yearly Frequencies:", frequencesAnnuelles);
+        VBox frequencesAnnuellesBox = creerSectionStatistiques("\uD83D\uDD39 Fréquences annuelles :", frequencesAnnuelles);
         layout.getChildren().add(frequencesAnnuellesBox);
 
         Map<String, Long> consultationsParUtilisateur = statsService.recupererConsultationsParUtilisateur(nssUtilisateur);
-        VBox consultationsParUtilisateurBox = creerSectionConsultations("🔹 Consultations by user:", consultationsParUtilisateur);
+        VBox consultationsParUtilisateurBox = creerSectionConsultations("\uD83D\uDD39 Consultations par utilisateur :", consultationsParUtilisateur);
         layout.getChildren().add(consultationsParUtilisateurBox);
 
         ScrollPane scrollPane = new ScrollPane(layout);
         scrollPane.setFitToWidth(true);
         scrollPane.setPadding(new Insets(10));
 
+        // Ajouter un bouton de retour en bas
         VBox root = new VBox(10);
         root.setPadding(new Insets(10));
         root.setAlignment(Pos.CENTER);
         root.getChildren().add(scrollPane);
+        root.getStyleClass().add("root");
 
-        Button retourButton = new Button("🔙 Back");
-        retourButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button retourButton = new Button("Retour");
+        retourButton.setId("retour-button");
         retourButton.setOnAction(e -> statistiqueStage.close());
-        root.getChildren().add(retourButton);
 
-        Scene scene = new Scene(root, 800, 600);
-        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        Button themeButton = new Button("Mode sombre");
+        themeButton.setId("theme-button");
+        themeButton.setOnAction(e -> {
+            if (isDarkMode) {
+                root.getStyleClass().remove("dark-mode");
+                layout.getStyleClass().remove("dark-mode");
+                themeButton.setText("Mode sombre");
+                isDarkMode = false;
+            } else {
+                root.getStyleClass().add("dark-mode");
+                layout.getStyleClass().add("dark-mode");
+                themeButton.setText("Mode clair");
+                isDarkMode = true;
+            }
+        });
+
+        root.getChildren().addAll(retourButton, themeButton);
+
+        Scene scene = new Scene(root, 1000, 800);
+        scene.getStylesheets().add(getClass().getResource("/consultation.css").toExternalForm());
         statistiqueStage.setScene(scene);
         statistiqueStage.show();
     }
@@ -89,14 +116,14 @@ public class AffichageConsultations {
     private VBox creerSectionStatistiques(String titre, Map<String, Long> donnees) {
         VBox sectionBox = new VBox(10);
         sectionBox.setAlignment(Pos.TOP_LEFT);
+        sectionBox.setId("section-box");
 
         Label sectionTitre = new Label(titre);
-        sectionTitre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        sectionTitre.getStyleClass().add("section-title");
         sectionBox.getChildren().add(sectionTitre);
 
         if (donnees.isEmpty()) {
-            Label aucunResultat = new Label("  - No data available.");
-            sectionBox.getChildren().add(aucunResultat);
+            sectionBox.getChildren().add(new Label("  - Aucune donnée disponible."));
         } else {
             donnees.forEach((periode, count) -> {
                 Label data = new Label("  - " + periode + " : " + count + " consultations");
@@ -116,14 +143,14 @@ public class AffichageConsultations {
     private VBox creerSectionConsultations(String titre, Map<String, Long> donnees) {
         VBox sectionBox = new VBox(10);
         sectionBox.setAlignment(Pos.TOP_LEFT);
+        sectionBox.setId("section-box");
 
         Label sectionTitre = new Label(titre);
-        sectionTitre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        sectionTitre.getStyleClass().add("section-title");
         sectionBox.getChildren().add(sectionTitre);
 
         if (donnees.isEmpty()) {
-            Label aucunResultat = new Label("  - No recorded consultations.");
-            sectionBox.getChildren().add(aucunResultat);
+            sectionBox.getChildren().add(new Label("  - Aucune consultation enregistrée."));
         } else {
             donnees.forEach((nssConsultant, count) -> {
                 String prenomNom = getPrenomNomFromNSS(nssConsultant);
@@ -141,15 +168,14 @@ public class AffichageConsultations {
      * @return the user's full name, or "Unknown" if the user does not exist
      */
     private String getPrenomNomFromNSS(String nss) {
-        System.out.println("🔍 Searching NSS: " + nss); // DEBUG
+        System.out.println("🔍 Recherche NSS : " + nss); // DEBUG
         if (authService != null) {
             Personne personne = authService.getPersonneParNSS(nss);
             if (personne != null) {
-                System.out.println("✅ Found: " + personne.getPrenom() + " " + personne.getNom()); // DEBUG
+                System.out.println("✅ Trouvé : " + personne.getPrenom() + " " + personne.getNom()); // DEBUG
                 return personne.getPrenom() + " " + personne.getNom();
             }
         }
-        System.out.println("❌ Not found for NSS: " + nss); // DEBUG
-        return "Unknown";
+        return "Inconnu";
     }
 }

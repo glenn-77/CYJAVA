@@ -10,9 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.Group;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -26,6 +24,7 @@ import service.AuthService;
 import entites.Personne;
 import service.MailService;
 import service.DemandeAdminService.DemandeAdmin;
+import entites.enums.NiveauVisibilite;
 
 import java.io.*;
 import java.nio.file.*;
@@ -40,7 +39,8 @@ public class MainView {
 
     private final AuthService authService;
     private final Personne utilisateur;
-    final Logger LOGGER = Logger.getLogger(MainView.class.getName());
+    private boolean isDarkMode = false;
+    private final Logger LOGGER = Logger.getLogger(MainView.class.getName());
 
     /**
      * Constructs the main view for unauthenticated use.
@@ -74,17 +74,32 @@ public class MainView {
         layout.setAlignment(Pos.CENTER);
 
         Scene scene = new Scene(layout, 1000, 1000);
-        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/mainview.css").toExternalForm());
+
+        ToggleButton themeToggle = new ToggleButton("🌙 Mode sombre");
+        themeToggle.getStyleClass().add("toggle-theme");
+        themeToggle.setOnAction(e -> {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                layout.getStyleClass().add("dark-mode");
+                themeToggle.setText("☀️ Mode clair");
+            } else {
+                layout.getStyleClass().remove("dark-mode");
+                themeToggle.setText("🌙 Mode sombre");
+            }
+        });
+        layout.getChildren().add(themeToggle);
 
         if (utilisateur != null) {
             Label bienvenue = new Label("Bienvenue " + utilisateur.getPrenom() + " !");
-            bienvenue.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+            bienvenue.getStyleClass().add("welcome-label");
 
             // 📸 Photo de profil
             ImageView imageView = new ImageView();
             imageView.setFitHeight(150);
             imageView.setFitWidth(150);
             imageView.setPreserveRatio(true);
+            imageView.getStyleClass().add("profile-picture");
 
             try {
                 File file = new File("Projet_Généalogique/ProjetGénéalogique/ressources/" + utilisateur.getUrlPhoto());
@@ -101,6 +116,25 @@ public class MainView {
 
             // 🖼 Modifier la photo
             Button modifierPhotoBtn = new Button("🖼 Modifier ma photo");
+            Button voirMonArbreBtn = new Button("🌳 Voir mon arbre familial");
+            Button voirTousArbresBtn = new Button("👥 Voir tous les arbres");
+            Button souvenirsBtn = new Button("📸 Souvenirs");
+            Button statistiquesButton = new Button("📊 Voir les statistiques de mon arbre");
+            Button rechercheBtn = new Button("🔍 Rechercher une personne");
+            Button modifierCompteButton = new Button("Modifier mon compte");
+            Button logoutButton = new Button("🔴 Se déconnecter");
+
+            List<Button> boutons = Arrays.asList(
+                    modifierPhotoBtn, voirMonArbreBtn, voirTousArbresBtn,
+                    souvenirsBtn, rechercheBtn, statistiquesButton,
+                    modifierCompteButton
+            );
+            for (Button b : boutons) {
+                b.getStyleClass().add("button");
+            }
+
+            logoutButton.getStyleClass().add("logout-button");
+
             modifierPhotoBtn.setOnAction(e -> {
                         FileChooser fileChooser = new FileChooser();
                         fileChooser.setTitle("Choisir une nouvelle photo");
@@ -134,50 +168,16 @@ public class MainView {
                                 imageView.setImage(nouvelleImage);
 
                             } catch (IOException ex) {
-                                LOGGER.log(Level.SEVERE, "Error loading profile image", e);
+                                ex.printStackTrace();
                                 new Alert(Alert.AlertType.ERROR, "Erreur lors de la mise à jour de la photo.").show();
                             }
                         }
                     });
 
-            Button voirMonArbreBtn = new Button("🌳 Voir mon arbre familial");
-            Button voirTousArbresBtn = new Button("👥 Voir tous les arbres");
-            Button souvenirsBtn = new Button("📸 Souvenirs");
-            Button statistiquesButton = new Button("📊 Voir les statistiques de mon arbre");
-            Button rechercheBtn = new Button("🔍 Rechercher une personne");
-            Button logoutButton = new Button("🔴 Se déconnecter");
-            Button modifierCompteButton = new Button("Modifier mon compte");
-
-            layout.getChildren().addAll(
-                    bienvenue,
-                    imageView,
-                    modifierPhotoBtn,
-                    voirMonArbreBtn,
-                    voirTousArbresBtn,
-                    souvenirsBtn,
-                    rechercheBtn,
-                    statistiquesButton
-            );
-
-            if (utilisateur.getCompte().getEmail().equalsIgnoreCase("diffoglenn007@gmail.com")) {
-                Button voirDemandesBtn = new Button("📬 Voir les demandes");
-                voirDemandesBtn.setOnAction(e -> {
-                    new DemandesAdminView(authService, utilisateur).start(stage);
-                });
-                layout.getChildren().add(voirDemandesBtn);
-            }
-
-            statistiquesButton.setOnAction(e -> {
-                AffichageConsultations affichageConsultations = new AffichageConsultations(authService);
-                affichageConsultations.afficherStatistiques(utilisateur.getNss());
-            });
-
+            statistiquesButton.setOnAction(e -> new AffichageConsultations(authService).afficherStatistiques(utilisateur.getNss()));
+            rechercheBtn.setOnAction(e -> new RechercheView(authService, utilisateur).start(stage));
+            souvenirsBtn.setOnAction(e -> new SouvenirsView(authService, utilisateur).start(stage));
             modifierCompteButton.setOnAction(e -> new ModifierCompteView(utilisateur, authService).start(stage));
-
-            layout.getChildren().add(modifierCompteButton);
-
-
-            logoutButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
             logoutButton.setOnAction(e -> new MainView(authService).start(stage));
 
             layout.getChildren().add(logoutButton);
@@ -189,6 +189,8 @@ public class MainView {
                 topBar.setAlignment(Pos.TOP_RIGHT);
                 topBar.setPadding(new Insets(10));
                 Button formButton = new Button("Ajouter/Modifier un nœud");
+                formButton.getStyleClass().add("button");
+                formButton.setOnAction(event -> ouvrirFormulaire(stage));
                 topBar.getChildren().add(formButton);
                 arbreView.setTop(topBar);
                 formButton.setOnAction(event -> ouvrirFormulaire(stage));
@@ -207,20 +209,33 @@ public class MainView {
                 BorderPane.setMargin(retourBtn, new Insets(10));
 
                 Scene arbreScene = new Scene(arbreView, 1400, 1000);
-                arbreScene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+                arbreScene.getStylesheets().add(getClass().getResource("/mainview.css").toExternalForm());
                 stage.setScene(arbreScene);
             });
 
             voirTousArbresBtn.setOnAction(e -> new AllTreesView(utilisateur, stage).afficher());
-            souvenirsBtn.setOnAction(e -> new SouvenirsView(authService, utilisateur).start(stage));
-            rechercheBtn.setOnAction(e -> new RechercheView(authService, utilisateur).start(stage));
 
+            layout.getChildren().addAll(
+                    bienvenue, imageView, modifierPhotoBtn, voirMonArbreBtn,
+                    voirTousArbresBtn, souvenirsBtn, rechercheBtn, statistiquesButton
+            );
+
+            if (utilisateur.getCompte().getEmail().equalsIgnoreCase("diffoglenn007@gmail.com")) {
+                Button voirDemandesBtn = new Button("📬 Voir les demandes");
+                voirDemandesBtn.getStyleClass().add("button");
+                voirDemandesBtn.setOnAction(e -> new DemandesAdminView(authService, utilisateur).start(stage));
+                layout.getChildren().add(voirDemandesBtn);
+            }
+
+            layout.getChildren().addAll(modifierCompteButton, logoutButton);
         } else {
             Label titleLabel = new Label("Bienvenue !");
-            titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+            titleLabel.getStyleClass().add("welcome-label");
 
             Button loginButton = new Button("Se connecter");
             Button registerButton = new Button("S'inscrire");
+            loginButton.getStyleClass().add("button");
+            registerButton.getStyleClass().add("button");
 
             loginButton.setOnAction(e -> new LoginView(authService).start(stage));
             registerButton.setOnAction(e -> new InscriptionView(authService).start(stage));
@@ -232,7 +247,6 @@ public class MainView {
         stage.setTitle("Accueil");
         stage.show();
     }
-
     /**
      * Opens a modal window to add or modify a person in the genealogical tree.
      * The form adapts based on the selected action ("Ajout" or "Modification").

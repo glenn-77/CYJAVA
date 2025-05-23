@@ -1,0 +1,79 @@
+/* consultation.css */
+
+.root {
+    -fx-background-color: #e6f0ff;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+#titre-consultation {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 0 10 0;
+    -fx-text-fill: #222;
+}
+
+#resume-label {
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+    -fx-text-fill: #333;
+    -fx-padding: 0 0 10 0;
+}
+
+#section-box {
+    -fx-background-color: #f4f4f4;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 15;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1;
+    -fx-margin: 5;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+    -fx-padding: 0 0 5 0;
+}
+
+#retour-button,
+#theme-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+/* DARK MODE */
+.root.dark-mode {
+    -fx-background-color: #1e1e1e;
+}
+
+.root.dark-mode #titre-consultation {
+    -fx-text-fill: #ffffff;
+}
+
+.root.dark-mode #resume-label {
+    -fx-text-fill: #dddddd;
+}
+
+.root.dark-mode #section-box {
+    -fx-background-color: #2b2b2b;
+    -fx-border-color: #555;
+}
+
+.root.dark-mode .section-title {
+    -fx-text-fill: #ffffff;
+}
+
+.root.dark-mode #retour-button,
+.root.dark-mode #theme-button {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+}
+
+.root.dark-mode .label {
+    -fx-text-fill: #e0e0e0;
+}

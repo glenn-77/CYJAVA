@@ -491,5 +491,44 @@ public class AuthService {
 
     }
 
+    public boolean supprimerDemandeParID(String id) {
+        File inputFile = new File("ressources/demandes.csv");
+        File tempFile = new File("ressources/temp_demandes.csv");
+
+        boolean supprime = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                String[] fields = ligne.split(",");
+                if (fields.length == 0) continue;
+
+                String idCourant = fields[0];
+
+                if (idCourant.equals(id)) {
+                    supprime = true; // ligne ignorée
+                    continue;
+                }
+
+                writer.write(ligne);
+                writer.newLine();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Remplacer l'ancien fichier par le nouveau
+        if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+            System.out.println("❌ Erreur lors de la mise à jour du fichier.");
+            return false;
+        }
+
+        return supprime;
+    }
+
 
 }

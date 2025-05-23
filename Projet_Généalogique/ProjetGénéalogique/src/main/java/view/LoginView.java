@@ -18,6 +18,7 @@ import service.AuthService;
 public class LoginView {
 
     private final AuthService authService;
+    private boolean isDarkMode = false;
 
     /**
      * Constructs the LoginView with the provided authentication service.
@@ -41,29 +42,41 @@ public class LoginView {
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(30));
         layout.setAlignment(Pos.CENTER);
-        layout.setStyle("-fx-background-color: #f4f4f4;");
+        layout.getStyleClass().add("root");
 
         Label titleLabel = new Label("Connectez-vous !");
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        titleLabel.setId("title");
 
         TextField identifiantField = new TextField();
         identifiantField.setPromptText("Email, login ou code privée");
-        identifiantField.setMaxWidth(250);
+        identifiantField.getStyleClass().add("text-field");
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Mot de passe");
-        passwordField.setMaxWidth(250);
+        passwordField.getStyleClass().add("password-field");
 
         Label messageLabel = new Label();
-        messageLabel.setStyle("-fx-text-fill: red;");
+        messageLabel.setId("error-label");
 
         Button loginButton = new Button("Se connecter");
-        loginButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 20; -fx-font-weight: bold;");
+        loginButton.setId("login-button");
 
         Button inscriptionButton = new Button("S'inscrire");
         Button retourButton = new Button("Retour");
 
-        // Redirect to registration screen
+        Button themeButton = new Button("Mode sombre");
+        themeButton.setOnAction(e -> {
+            if (isDarkMode) {
+                layout.getStyleClass().remove("dark-mode");
+                themeButton.setText("Mode sombre");
+                isDarkMode = false;
+            } else {
+                layout.getStyleClass().add("dark-mode");
+                themeButton.setText("Mode clair");
+                isDarkMode = true;
+            }
+        });
+
         inscriptionButton.setOnAction(e -> {
             InscriptionView inscriptionView = new InscriptionView(authService);
             inscriptionView.start(primaryStage);
@@ -91,7 +104,7 @@ public class LoginView {
                 }
 
                 if (personne.getCompte().isPremiereConnexion()) {
-                    // Redirect to password change screen
+                    // Redirige vers une vue de changement de mot de passe
                     ChangerMotDePasseView changerView = new ChangerMotDePasseView(authService, personne);
                     changerView.start(primaryStage);
                     return;
@@ -105,13 +118,18 @@ public class LoginView {
         });
 
         layout.getChildren().addAll(
-                titleLabel, identifiantField, passwordField,
-                loginButton, inscriptionButton, retourButton,
+                titleLabel,
+                identifiantField,
+                passwordField,
+                loginButton,
+                inscriptionButton,
+                retourButton,
+                themeButton,
                 messageLabel
         );
 
         Scene scene = new Scene(layout, 850, 850);
-        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/login.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

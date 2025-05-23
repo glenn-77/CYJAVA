@@ -22,6 +22,7 @@ public class ModifierCompteView {
 
     private final Personne utilisateur;
     private final AuthService authService;
+    private boolean isDarkMode = false;
 
     /**
      * Constructs the view with the authenticated user and authentication service.
@@ -46,12 +47,29 @@ public class ModifierCompteView {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle("Modifier mon compte");
         stage.setMinWidth(500);
-        stage.setMinHeight(650);
+        stage.setMinHeight(750);
         stage.setResizable(true);
 
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
         content.setAlignment(Pos.CENTER);
+        content.getStyleClass().add("light"); // par défaut clair
+
+        // 🌙 Bouton mode sombre
+        ToggleButton themeToggle = new ToggleButton("🌙 Mode sombre");
+
+        themeToggle.setOnAction(e -> {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                content.getStyleClass().remove("light");
+                content.getStyleClass().add("dark");
+                themeToggle.setText("☀️ Mode clair");
+            } else {
+                content.getStyleClass().remove("dark");
+                content.getStyleClass().add("light");
+                themeToggle.setText("🌙 Mode sombre");
+            }
+        });
 
         Label nomLabel = new Label("Nom : " + utilisateur.getNom());
         Label prenomLabel = new Label("Prénom : " + utilisateur.getPrenom());
@@ -69,7 +87,12 @@ public class ModifierCompteView {
         PasswordField confirmField = new PasswordField();
         confirmField.setPromptText("Confirmer le mot de passe");
 
-        Button enregistrerBtn = new Button("Enregistrer");
+        Button enregistrerBtn = new Button("✅ Enregistrer");
+        enregistrerBtn.getStyleClass().add("save-button");
+
+        Button retourBtn = new Button("🔙 Retour");
+        retourBtn.getStyleClass().add("retour-button");
+        retourBtn.setOnAction(e -> stage.close());
 
         enregistrerBtn.setOnAction(e -> {
             String login = loginField.getText().trim();
@@ -98,11 +121,11 @@ public class ModifierCompteView {
                     stage.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                new Alert(Alert.AlertType.ERROR, "Exception lors de l'enregistrement : " + ex.getMessage()).show();
             }
         });
 
         content.getChildren().addAll(
+                themeToggle,
                 nomLabel,
                 prenomLabel,
                 new Label("Login :"), loginField,
@@ -111,14 +134,16 @@ public class ModifierCompteView {
                 new Label("Visibilité :"), visibiliteChoice,
                 new Label("Mot de passe :"), motDePasseField,
                 new Label("Confirmation :"), confirmField,
-                enregistrerBtn
+                enregistrerBtn,
+                retourBtn
         );
 
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefViewportHeight(Region.USE_COMPUTED_SIZE);
 
-        Scene scene = new Scene(scrollPane, 500, 650);
+        Scene scene = new Scene(scrollPane, 500, 750);
+        scene.getStylesheets().add(getClass().getResource("/modifiercompte.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
     }

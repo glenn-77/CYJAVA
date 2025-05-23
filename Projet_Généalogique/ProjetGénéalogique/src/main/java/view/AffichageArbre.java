@@ -28,6 +28,8 @@ public class AffichageArbre {
     // Espacements standards pour les calculs d'affichage
     private static final double VERTICAL_SPACING = 200; // Espacement vertical entre les générations
     private static final double HORIZONTAL_SPACING = 150; // Espacement horizontal minimum entre nœuds
+    private boolean darkMode = false;
+
 
     // Pour éviter les doublons et gérer les cycles
     private final Map<Personne, double[]> positions = new HashMap<>();
