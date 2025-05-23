@@ -71,6 +71,7 @@ public class InitialisationCSV {
                     boolean valideParAdminBool = valideParAdmin.equals("true");
                     LocalDate dateNaissance = LocalDate.parse(dateStr, DATE_FORMAT);
                     Genre genre = Genre.valueOf(genreStr);
+                    if (niveauVisibiliteStr.isEmpty() || niveauVisibiliteStr.equals("null")) niveauVisibiliteStr = "PUBLIQUE";
                     NiveauVisibilite niveauVisibilite = NiveauVisibilite.valueOf(niveauVisibiliteStr.toUpperCase());
 
                     if (urlPhoto.isEmpty()) {

@@ -1,0 +1,80 @@
+/* ==== FOND GÉNÉRAL ==== */
+.root, .light {
+    -fx-background-color: #f5faff;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.dark {
+    -fx-background-color: #1e1e1e;
+}
+
+/* ==== CHAMPS DE TEXTE & LABELS ==== */
+.label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.text-field, .password-field, .choice-box, .combo-box {
+    -fx-background-radius: 6px;
+    -fx-padding: 6px;
+}
+
+/* ==== MODE SOMBRE POUR TOUS ==== */
+.dark .label,
+.dark .text-field,
+.dark .password-field,
+.dark .choice-box,
+.dark .combo-box {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: #2e2e2e;
+}
+
+/* ==== BOUTON DE SAUVEGARDE ==== */
+.save-button {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.save-button:hover {
+    -fx-background-color: #27ae60;
+}
+
+.dark .save-button {
+    -fx-background-color: #27ae60;
+}
+
+/* ==== BOUTON RETOUR ==== */
+.retour-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.retour-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+/* ==== BOUTON MODE SOMBRE ==== */
+.theme-button.blue-toggle {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px 14px;
+    -fx-cursor: hand;
+}
+
+.theme-button.blue-toggle:hover {
+    -fx-background-color: #2980b9;
+}
+
+.dark .theme-button {
+    -fx-background-color: #2980b9;
+}

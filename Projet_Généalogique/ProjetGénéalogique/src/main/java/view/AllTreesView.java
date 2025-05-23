@@ -12,6 +12,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import service.AuthService;
 import service.GlobalTreesManager;
 import javafx.geometry.Pos;
 import java.util.List;
@@ -173,6 +174,6 @@ public class AllTreesView {
      * Navigates back to the main menu.
      */
     private void revenirAuMenuPrincipal() {
-        new MainView(null, utilisateurConnecte).start(stage);
+        new MainView(new AuthService(), utilisateurConnecte).start(stage);
     }
 }

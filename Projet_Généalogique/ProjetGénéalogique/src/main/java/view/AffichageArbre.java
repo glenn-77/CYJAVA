@@ -12,6 +12,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import entites.Personne;
 import entites.ArbreGenealogique;
+import service.CoherenceVerifier;
 
 
 import java.util.*;
@@ -114,6 +115,11 @@ public class AffichageArbre {
         }
         if (niveau > MAX_PROFONDEUR) {
             System.out.println("⛔ Profondeur maximale atteinte pour : " + personne.getPrenom() + " " + personne.getNom());
+            return;
+        }
+
+        if (!CoherenceVerifier.verifierToutesLesCoherences(personne.getArbre())) {
+            System.err.println("Arbre non cohérent pour : " + personne.getPrenom() + " " + personne.getNom() + "");
             return;
         }
 

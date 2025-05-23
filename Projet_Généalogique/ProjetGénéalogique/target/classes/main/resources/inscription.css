@@ -1,0 +1,103 @@
+/* Thème clair */
+.root {
+    -fx-background-color: #f9f9f9;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+#title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222;
+    -fx-padding: 10;
+}
+
+.text-field, .password-field, .combo-box, .date-picker {
+    -fx-max-width: 300px;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #ccc;
+    -fx-background-color: #fff;
+    -fx-font-size: 14px;
+    -fx-text-fill: #000;
+}
+
+.combo-box {
+    -fx-font-weight: normal;
+}
+
+.date-picker {
+    -fx-font-weight: normal;
+}
+
+.button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+#inscrire-button {
+    -fx-background-color: #4CAF50;
+}
+
+#message-label {
+    -fx-text-fill: red;
+    -fx-padding: 10;
+}
+
+/* Bloc formulaire */
+.form-container {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-padding: 30;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 4);
+}
+
+/* ---------------------- */
+/*        MODE SOMBRE     */
+/* ---------------------- */
+.root.dark-mode {
+    -fx-background-color: #1e1e1e;
+}
+
+.root.dark-mode #title {
+    -fx-text-fill: #f0f0f0;
+}
+
+.root.dark-mode Label {
+    -fx-text-fill: #f0f0f0;
+}
+
+.root.dark-mode .text-field,
+.root.dark-mode .password-field,
+.root.dark-mode .combo-box,
+.root.dark-mode .date-picker {
+    -fx-background-color: #333;
+    -fx-text-fill: #f0f0f0;
+    -fx-border-color: #555;
+}
+
+.root.dark-mode .combo-box .list-cell {
+    -fx-text-fill: #f0f0f0;
+}
+
+.root.dark-mode .button {
+    -fx-background-color: #2980b9;
+}
+
+.root.dark-mode #inscrire-button {
+    -fx-background-color: #27ae60;
+}
+
+.root.dark-mode #message-label {
+    -fx-text-fill: #ff7373;
+}
+
+.root.dark-mode .form-container {
+    -fx-background-color: #2a2a2a;
+}

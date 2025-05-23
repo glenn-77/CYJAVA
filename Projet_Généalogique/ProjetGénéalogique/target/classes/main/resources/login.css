@@ -1,0 +1,77 @@
+/* Thème clair */
+.root {
+    -fx-background-color: #f4f4f4;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label {
+    -fx-text-fill: #333;
+    -fx-font-size: 14px;
+}
+
+#title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222;
+}
+
+.text-field, .password-field {
+    -fx-max-width: 250px;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 5;
+    -fx-background-color: #fff;
+    -fx-font-size: 14px;
+    -fx-text-fill: #000;
+}
+
+.button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+#login-button {
+    -fx-background-color: #4CAF50;
+}
+
+#error-label {
+    -fx-text-fill: red;
+    -fx-font-style: italic;
+}
+
+/* Mode sombre */
+.root.dark-mode {
+    -fx-background-color: #1e1e1e;
+}
+
+.root.dark-mode .label {
+    -fx-text-fill: #f0f0f0;
+}
+
+.root.dark-mode #title {
+    -fx-text-fill: #f0f0f0;
+}
+
+.root.dark-mode .text-field,
+.root.dark-mode .password-field {
+    -fx-background-color: #333;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+}
+
+.root.dark-mode .button {
+    -fx-background-color: #2980b9;
+}
+
+.root.dark-mode #login-button {
+    -fx-background-color: #27ae60;
+}
+
+.root.dark-mode #error-label {
+    -fx-text-fill: #ff7373;
+}

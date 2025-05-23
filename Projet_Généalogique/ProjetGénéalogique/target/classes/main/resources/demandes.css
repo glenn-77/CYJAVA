@@ -1,0 +1,118 @@
+.root {
+    -fx-background-color: linear-gradient(to bottom, #e0f7fa, #ffffff);
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.dark-mode {
+    -fx-background-color: #1e1e1e;
+}
+
+#title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 20px 0;
+}
+
+.dark-mode #title {
+    -fx-text-fill: #ecf0f1;
+}
+
+.bloc-demande {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #dcdcdc;
+    -fx-padding: 15px;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 4, 0.3, 0, 2);
+}
+
+.dark-mode .bloc-demande {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #444;
+}
+
+.resume-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.dark-mode .resume-label {
+    -fx-text-fill: #ffffff;
+}
+
+.details-box {
+    -fx-background-color: #f4f4f4;
+    -fx-padding: 10px;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #d3d3d3;
+}
+
+.dark-mode .details-box {
+    -fx-background-color: #3a3a3a;
+    -fx-border-color: #555;
+}
+
+.details-content {
+    -fx-text-fill: #2c3e50;
+}
+
+.dark-mode .details-content {
+    -fx-text-fill: #dddddd;
+}
+
+.button {
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 6px 12px;
+    -fx-cursor: hand;
+}
+
+.details-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.details-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.valider {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+}
+
+.valider:hover {
+    -fx-background-color: #27ae60;
+}
+
+.refuser {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.refuser:hover {
+    -fx-background-color: #c0392b;
+}
+
+.retour {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.retour:hover {
+    -fx-background-color: #2980b9;
+}
+
+.toggle-theme {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-padding: 6px 10px;
+}
+
+.toggle-theme:hover {
+    -fx-background-color: #2980b9;
+}

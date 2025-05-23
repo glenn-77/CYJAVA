@@ -22,6 +22,7 @@ import java.util.logging.Level;
 
 import service.AuthService;
 import entites.Personne;
+import service.CoherenceVerifier;
 import service.MailService;
 import service.DemandeAdminService.DemandeAdmin;
 import entites.enums.NiveauVisibilite;
@@ -192,7 +193,6 @@ public class MainView {
                 formButton.setOnAction(event -> ouvrirFormulaire(stage));
                 topBar.getChildren().add(formButton);
                 arbreView.setTop(topBar);
-                formButton.setOnAction(event -> ouvrirFormulaire(stage));
 
                 Group arbreGroup = new Group();
                 ScrollPane scrollPane = new ScrollPane(arbreGroup);
@@ -200,7 +200,18 @@ public class MainView {
                 scrollPane.setFitToHeight(true);
                 arbreView.setCenter(scrollPane);
 
-                new AffichageArbre(utilisateur, stage).afficher(arbreGroup);
+                if (!CoherenceVerifier.verifierToutesLesCoherences(utilisateur.getArbre())) {
+                    new Alert(Alert.AlertType.ERROR, "L'arbre est incohérent (liens cycliques, orphelins ou doublons).").show();
+                    return;
+                }
+
+                try {
+                    new AffichageArbre(utilisateur, stage).afficher(arbreGroup);
+                }
+                catch (StackOverflowError | NullPointerException er) {
+                    er.printStackTrace();
+                    new Alert(Alert.AlertType.ERROR, "Erreur d'affichage de l'arbre (liens invalides)").show();
+                }
 
                 Button retourBtn = new Button("🔙 Retour");
                 retourBtn.setOnAction(event -> new MainView(authService, utilisateur).start(stage));
@@ -337,7 +348,7 @@ public class MainView {
                     LienParente lien = lienCombo.getValue();
                     if (cible != null && lien != null) {
                         if (utilisateur.getCompte() instanceof Admin) {
-                            AuthService.modifierPersonne(cible.getNom(), cible.getPrenom(), cible.getNationalite(), cible.getGenre());
+                            ((Admin) utilisateur.getCompte()).modifierLienEnTempsReel(utilisateur, cible, lien, authService);
                             Alert info = new Alert(Alert.AlertType.INFORMATION, "Informations modifiées!");
                             info.show();
                             formStage.close();
@@ -369,4 +380,5 @@ public class MainView {
         formStage.setScene(new Scene(root, 1000, 1000));
         formStage.show();
     }
+
 }

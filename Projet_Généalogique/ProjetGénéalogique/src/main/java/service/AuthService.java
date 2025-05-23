@@ -227,7 +227,7 @@ public class AuthService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
             if (fichierVide) {
-                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId,photo,inscrit");
+                writer.write("nss,prenom,nom,dateNaissance,nationalite,carteIdentite,email,telephone,adresse,codePrive,nssPere,nssMere,genre,login,motDePasse,numero,premiereConnexion,familleId,photo,inscrit,niveauVisibilite");
                 writer.newLine();
             }
             String ligne;
@@ -254,7 +254,8 @@ public class AuthService {
                         personne.getFamilleId(),
                         "",
                         "false",
-                        "false");
+                        "false",
+                        "PUBLIQUE");
             } else {
                 Compte c = personne.getCompte();
                 ligne = String.join(",",
@@ -408,30 +409,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Updates the nationality and gender of an unregistered person by name.
-     *
-     * @param nomCible       target last name
-     * @param prenomCible    target first name
-     * @param nouvelleNat    new nationality
-     * @param nouveauGenre   new gender
-     * @throws IOException if the file update fails
-     */
-    public static void modifierPersonne(String nomCible, String prenomCible, String nouvelleNat, Genre nouveauGenre) throws IOException {
-        Path path = Paths.get(UTILISATEURS_FILE_PATH);
-        List<String> lignes = Files.readAllLines(path);
-        for (int i = 1; i < lignes.size(); i++) {  // i=1 pour sauter l'en-tête
-            String[] champs = lignes.get(i).split(",");
-            if (champs.length >= 18 && champs[1].equals(prenomCible) && champs[2].equals(nomCible)) {
-                // Mise à jour des champs Nationalité (index 4) et Genre (index 12)
-                champs[4]  = nouvelleNat;
-                champs[12] = nouveauGenre.toString();
-                lignes.set(i, String.join(",", champs));
-                break;
-            }
-        }
-        Files.write(path, lignes);
-    }
 
     /**
      * Finds a user by their social security number (NSS).

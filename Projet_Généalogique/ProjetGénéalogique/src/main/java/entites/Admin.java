@@ -65,14 +65,10 @@ public class Admin extends Compte {
                     }
                     break;
                 case MODIFICATION_INFO:
-                    try {
-                        AuthService.modifierPersonne(cible.getNom(), cible.getPrenom(), cible.getNationalite(), cible.getGenre());
-                        if (cible.getCompte().getEmail() != null) MailService.envoyerEmail(cible.getCompte().getEmail(),
-                                "✅ Informations modifiées",
-                                "Votre demande de modification de vos informations a été acceptée.");
-                    } catch (IOException e) {
-                        System.out.println("Erreur lors de la modification des informations : " + e.getMessage());
-                    }
+                    modifierLienEnTempsReel(demandeur, cible, lien, new AuthService());
+                    if (cible.getCompte().getEmail() != null) MailService.envoyerEmail(cible.getCompte().getEmail(),
+                            "✅ Informations modifiées",
+                            "Votre demande de modification de vos informations a été acceptée.");
                     break;
                 case SUPPRESSION_PERSONNE:
                     AffichageArbre.reattribuerLienAprèsSuppression(cible, demandeur.getArbre());
@@ -118,19 +114,28 @@ public class Admin extends Compte {
 
         ArbreGenealogique arbreDemandeur = demandeur.getArbre();
         if (!arbreDemandeur.contient(cible)) {
+            demandeur.ajouterLien(cible, lien);
+
             if (!CoherenceVerifier.verifierToutesLesCoherences(arbreDemandeur)) {
-                arbreDemandeur.getNoeuds().remove(cible);
+                demandeur.supprimerLien(cible);
                 return;
             }
-            demandeur.ajouterLien(cible, lien);
-            if (lien == LienParente.FILS || lien == LienParente.FILLE) demandeur.getEnfants().add(cible);
-            if (lien == LienParente.PERE) demandeur.setPere(cible);
-            if (lien == LienParente.MERE) demandeur.setMere(cible);
-        }
 
-        if (cible.isEstInscrit()) {
+            if (lien == LienParente.FILS || lien == LienParente.FILLE) {
+                demandeur.getEnfants().add(cible);
+            }
+
+            if (lien == LienParente.PERE) {
+                demandeur.setPere(cible);
+                cible.addEnfant(demandeur);
+            }
+
+            if (lien == LienParente.MERE) {
+                demandeur.setMere(cible);
+                cible.addEnfant(demandeur);
+            }
+
             LienParente lienInverse = cible.inverseLien(lien);
-            if (lienInverse == LienParente.FILS || lienInverse == LienParente.FILLE) cible.getEnfants().add(demandeur);
             if (lienInverse == LienParente.PERE) cible.setPere(demandeur);
             if (lienInverse == LienParente.MERE) cible.setMere(demandeur);
         }
@@ -170,6 +175,50 @@ public class Admin extends Compte {
                 "Votre inscription a été validée. Vous pouvez maintenant vous connecter.");
     }
 
+    public void modifierLienEnTempsReel(Personne admin, Personne cible, LienParente nouveauLien, AuthService authService) {
+        LienParente ancienLien = admin.getLiens().get(cible);
+        if (ancienLien != null) {
+            if (ancienLien == LienParente.FILS || ancienLien == LienParente.FILLE) {
+                admin.getEnfants().remove(cible);
+            }
+            if (ancienLien == LienParente.PERE) {
+                admin.setPere(null);
+            }
+            if (ancienLien == LienParente.MERE) {
+                admin.setMere(null);
+            }
+            admin.getLiens().remove(cible);
+        }
+
+        admin.getLiens().put(cible, nouveauLien);
+        if (nouveauLien == LienParente.FILS || nouveauLien == LienParente.FILLE) admin.getEnfants().add(cible);
+        if (nouveauLien == LienParente.PERE) admin.setPere(cible);
+        if (nouveauLien == LienParente.MERE) admin.setMere(cible);
+
+        LienParente lienInverse = cible.inverseLien(nouveauLien);
+        LienParente ancienInverse = cible.getLiens().get(admin);
+        if (ancienInverse != null) {
+            if (ancienInverse == LienParente.FILS || ancienInverse == LienParente.FILLE) {
+                cible.getEnfants().remove(admin);
+            }
+            if (ancienInverse == LienParente.PERE) {
+                cible.setPere(null);
+            }
+            if (ancienInverse == LienParente.MERE) {
+                cible.setMere(null);
+            }
+            cible.getLiens().remove(admin);
+        }
+
+        cible.getLiens().put(admin, lienInverse);
+        if (lienInverse == LienParente.FILS || lienInverse == LienParente.FILLE) cible.getEnfants().add(admin);
+        if (lienInverse == LienParente.PERE) cible.setPere(admin);
+        if (lienInverse == LienParente.MERE) cible.setMere(admin);
+
+        authService.mettreAJourUtilisateur(cible);
+        authService.mettreAJourUtilisateur(admin);
+    }
+
 
     /**
      * Checks if the requested relationship type is allowed.
@@ -181,6 +230,7 @@ public class Admin extends Compte {
         return lien == LienParente.PERE || lien == LienParente.MERE
                 || lien == LienParente.FILS || lien == LienParente.FILLE;
     }
+
 
     /**
      * Creates a person without an account for tree linking purposes.
