@@ -2,10 +2,7 @@ package initialisation;
 
 import dao.UserDAO;
 import entites.*;
-import entites.enums.Genre;
-import entites.enums.LienParente;
-import entites.enums.TypeDemande;
-import entites.enums.NiveauVisibilite;
+import entites.enums.*;
 import service.DemandeAdminService.DemandeAdmin;
 
 import java.io.*;
@@ -186,7 +183,9 @@ public class InitialisationCSV {
 
                     Personne demandeur = UserDAO.chercherParNSS(DemandeurNSS);
                     Personne cible = UserDAO.chercherParNSS(CibleNSS);
+                    Statut statut = Statut.valueOf(values[6].trim().toUpperCase());
                     DemandeAdmin d = new DemandeAdmin(demandeur, cible, lien, type);
+                    d.setStatut(statut);
                     demandes.add(d);
                 } catch (Exception e) {
                     System.err.println("Erreur sur la ligne : " + line + " -> " + e.getMessage());

@@ -455,8 +455,8 @@ public class AuthService {
      * @param nss the NSS of the user to delete
      */
     public void supprimerUtilisateurParNSS(String nss) {
-        File inputFile = new File("ressources/utilisateurs.csv");
-        File tempFile = new File("ressources/temp_utilisateurs.csv");
+        File inputFile = new File(UTILISATEURS_FILE_PATH);
+        File tempFile = new File("Projet_Généalogique/ProjetGénéalogique/ressources/temp_utilisateurs.csv");
 
         boolean supprime = false;
 
@@ -491,9 +491,9 @@ public class AuthService {
 
     }
 
-    public boolean supprimerDemandeParID(String id) {
-        File inputFile = new File("ressources/demandes.csv");
-        File tempFile = new File("ressources/temp_demandes.csv");
+    public void supprimerDemandeParID(String id) {
+        File inputFile = new File(DEMANDE_FILE_PATH);
+        File tempFile = new File("Projet_Généalogique/ProjetGénéalogique/ressources/temp_demandes.csv");
 
         boolean supprime = false;
 
@@ -518,16 +518,14 @@ public class AuthService {
 
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return;
         }
 
         // Remplacer l'ancien fichier par le nouveau
         if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
             System.out.println("❌ Erreur lors de la mise à jour du fichier.");
-            return false;
         }
 
-        return supprime;
     }
 
 

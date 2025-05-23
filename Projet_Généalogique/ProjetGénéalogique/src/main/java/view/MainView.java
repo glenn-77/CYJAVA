@@ -180,7 +180,6 @@ public class MainView {
             modifierCompteButton.setOnAction(e -> new ModifierCompteView(utilisateur, authService).start(stage));
             logoutButton.setOnAction(e -> new MainView(authService).start(stage));
 
-            layout.getChildren().add(logoutButton);
 
             voirMonArbreBtn.setOnAction(e -> {
                 BorderPane arbreView = new BorderPane();
@@ -226,8 +225,7 @@ public class MainView {
                 voirDemandesBtn.setOnAction(e -> new DemandesAdminView(authService, utilisateur).start(stage));
                 layout.getChildren().add(voirDemandesBtn);
             }
-
-            layout.getChildren().addAll(modifierCompteButton, logoutButton);
+            layout.getChildren().addAll(logoutButton);
         } else {
             Label titleLabel = new Label("Bienvenue !");
             titleLabel.getStyleClass().add("welcome-label");

@@ -148,6 +148,7 @@ public class DemandesAdminView {
                     if (admin.getCompte() instanceof Admin) {
                         ((Admin) admin.getCompte()).traiterDemande(demande, true);
                         authService.mettreAJourDemande(demande);
+                        authService.supprimerDemandeParID(demande.getId());
                         afficherDemandesFiltres(container, recherche, filtreType);
                     }
                 } catch (Exception ex) {
