@@ -225,7 +225,7 @@ public class MainView {
                 voirDemandesBtn.setOnAction(e -> new DemandesAdminView(authService, utilisateur).start(stage));
                 layout.getChildren().add(voirDemandesBtn);
             }
-            layout.getChildren().addAll(logoutButton);
+            layout.getChildren().addAll(modifierCompteButton, logoutButton);
         } else {
             Label titleLabel = new Label("Bienvenue !");
             titleLabel.getStyleClass().add("welcome-label");
